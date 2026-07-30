@@ -1,0 +1,86 @@
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from typing import List, Optional
+from app.database import get_db
+from app.models.financial_category import FinancialCategory
+from app.schemas.financial_category import (
+    FinancialCategoryCreate,
+    FinancialCategoryUpdate,
+    FinancialCategoryResponse,
+)
+from app.utils.security import get_current_user
+
+router = APIRouter(prefix="/api/financial-categories", tags=["Categorias Financeiras"])
+
+
+@router.get("/", response_model=List[FinancialCategoryResponse])
+def list_categories(
+    type: Optional[str] = None,
+    parent_id: Optional[int] = None,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    query = db.query(FinancialCategory).filter(FinancialCategory.is_active == True)
+    if type:
+        query = query.filter(FinancialCategory.type == type)
+    if parent_id is not None:
+        query = query.filter(FinancialCategory.parent_id == parent_id)
+    else:
+        query = query.filter(FinancialCategory.parent_id == None)
+    return query.all()
+
+
+@router.get("/all", response_model=List[FinancialCategoryResponse])
+def list_all_categories(
+    type: Optional[str] = None,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    query = db.query(FinancialCategory)
+    if type:
+        query = query.filter(FinancialCategory.type == type)
+    return query.all()
+
+
+@router.post("/", response_model=FinancialCategoryResponse)
+def create_category(
+    category: FinancialCategoryCreate,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    db_cat = FinancialCategory(**category.model_dump())
+    db.add(db_cat)
+    db.commit()
+    db.refresh(db_cat)
+    return db_cat
+
+
+@router.put("/{category_id}", response_model=FinancialCategoryResponse)
+def update_category(
+    category_id: int,
+    category: FinancialCategoryUpdate,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    db_cat = db.query(FinancialCategory).filter(FinancialCategory.id == category_id).first()
+    if not db_cat:
+        raise HTTPException(status_code=404, detail="Categoria não encontrada")
+    for key, value in category.model_dump(exclude_unset=True).items():
+        setattr(db_cat, key, value)
+    db.commit()
+    db.refresh(db_cat)
+    return db_cat
+
+
+@router.delete("/{category_id}")
+def delete_category(
+    category_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    db_cat = db.query(FinancialCategory).filter(FinancialCategory.id == category_id).first()
+    if not db_cat:
+        raise HTTPException(status_code=404, detail="Categoria não encontrada")
+    db.delete(db_cat)
+    db.commit()
+    return {"message": "Categoria removida"}

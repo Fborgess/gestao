@@ -1,0 +1,372 @@
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session, joinedload
+from typing import List
+from app.database import get_db
+from app.models.requisicao import Requisicao, RequisicaoItem
+from app.models.product import Product
+from app.models.deposit import Deposit
+from app.models.stock import StockMovement
+from app.models.user import User
+from app.schemas.requisicao import (
+    RequisicaoCreate, RequisicaoUpdate, RequisicaoResponse,
+    RequisicaoItemResponse, RequisicaoApprove,
+)
+from app.utils.security import get_current_user
+from app.routers.stock import recalculate_product_stock
+
+router = APIRouter(prefix="/api/requisicoes", tags=["Requisições de Estoque"])
+
+
+def _req_to_response(r: Requisicao) -> RequisicaoResponse:
+    items = [
+        RequisicaoItemResponse(
+            id=it.id, requisicao_id=it.requisicao_id,
+            product_id=it.product_id,
+            product_name=it.product.name if it.product else None,
+            quantity_requested=it.quantity_requested,
+            quantity_approved=it.quantity_approved,
+            unit_price=it.unit_price,
+        )
+        for it in r.items
+    ]
+    return RequisicaoResponse(
+        id=r.id,
+        requester_id=r.requester_id,
+        requester_name=r.requester.name if r.requester else None,
+        approver_id=r.approver_id,
+        approver_name=r.approver.name if r.approver else None,
+        deposit_requesting_id=r.deposit_requesting_id,
+        deposit_requesting_name=r.deposit_requesting.name if r.deposit_requesting else None,
+        deposit_fulfilling_id=r.deposit_fulfilling_id,
+        deposit_fulfilling_name=r.deposit_fulfilling.name if r.deposit_fulfilling else None,
+        status=r.status,
+        reason=r.reason,
+        notes=r.notes,
+        created_at=r.created_at,
+        updated_at=r.updated_at,
+        items=items,
+    )
+
+
+@router.get("/", response_model=List[RequisicaoResponse])
+def list_requisicoes(
+    status: str = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    query = db.query(Requisicao).options(
+        joinedload(Requisicao.requester),
+        joinedload(Requisicao.approver),
+        joinedload(Requisicao.deposit_requesting),
+        joinedload(Requisicao.deposit_fulfilling),
+        joinedload(Requisicao.items).joinedload(RequisicaoItem.product),
+    )
+    if status:
+        query = query.filter(Requisicao.status == status)
+    query = query.order_by(Requisicao.created_at.desc())
+    return [_req_to_response(r) for r in query.all()]
+
+
+@router.post("/", response_model=RequisicaoResponse, status_code=201)
+def create_requisicao(
+    data: RequisicaoCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if not data.items:
+        raise HTTPException(400, "Adicione pelo menos um item")
+
+    dep_req = db.query(Deposit).filter(Deposit.id == data.deposit_requesting_id).first()
+    if not dep_req:
+        raise HTTPException(404, "Depósito solicitante não encontrado")
+    dep_ful = db.query(Deposit).filter(Deposit.id == data.deposit_fulfilling_id).first()
+    if not dep_ful:
+        raise HTTPException(404, "Depósito de atendimento não encontrado")
+
+    for it in data.items:
+        if not db.query(Product).filter(Product.id == it.product_id).first():
+            raise HTTPException(404, f"Produto {it.product_id} não encontrado")
+
+    req = Requisicao(
+        requester_id=current_user.id,
+        deposit_requesting_id=data.deposit_requesting_id,
+        deposit_fulfilling_id=data.deposit_fulfilling_id,
+        reason=data.reason,
+        notes=data.notes,
+    )
+    db.add(req)
+    db.flush()
+
+    for it in data.items:
+        db.add(RequisicaoItem(
+            requisicao_id=req.id,
+            product_id=it.product_id,
+            quantity_requested=it.quantity_requested,
+            unit_price=it.unit_price,
+        ))
+
+    db.commit()
+    db.refresh(req)
+    # reload with joins
+    req = db.query(Requisicao).options(
+        joinedload(Requisicao.requester),
+        joinedload(Requisicao.approver),
+        joinedload(Requisicao.deposit_requesting),
+        joinedload(Requisicao.deposit_fulfilling),
+        joinedload(Requisicao.items).joinedload(RequisicaoItem.product),
+    ).filter(Requisicao.id == req.id).first()
+    return _req_to_response(req)
+
+
+@router.get("/{requisicao_id}", response_model=RequisicaoResponse)
+def get_requisicao(
+    requisicao_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    r = db.query(Requisicao).options(
+        joinedload(Requisicao.requester),
+        joinedload(Requisicao.approver),
+        joinedload(Requisicao.deposit_requesting),
+        joinedload(Requisicao.deposit_fulfilling),
+        joinedload(Requisicao.items).joinedload(RequisicaoItem.product),
+    ).filter(Requisicao.id == requisicao_id).first()
+    if not r:
+        raise HTTPException(404, "Requisição não encontrada")
+    return _req_to_response(r)
+
+
+@router.put("/{requisicao_id}", response_model=RequisicaoResponse)
+def update_requisicao(
+    requisicao_id: int,
+    data: RequisicaoUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    req = db.query(Requisicao).options(
+        joinedload(Requisicao.items),
+    ).filter(Requisicao.id == requisicao_id).first()
+    if not req:
+        raise HTTPException(404, "Requisição não encontrada")
+    if req.status not in ("pendente",):
+        raise HTTPException(400, "Só é possível editar requisições pendentes")
+
+    if data.deposit_requesting_id is not None:
+        req.deposit_requesting_id = data.deposit_requesting_id
+    if data.deposit_fulfilling_id is not None:
+        req.deposit_fulfilling_id = data.deposit_fulfilling_id
+    if data.reason is not None:
+        req.reason = data.reason
+    if data.notes is not None:
+        req.notes = data.notes
+
+    if data.items is not None:
+        existing = {it.id for it in req.items if it.id}
+        sent_ids = {it.id for it in data.items if it.id}
+        for item in req.items[:]:
+            if item.id and item.id not in sent_ids:
+                db.delete(item)
+        for it in data.items:
+            if it.id and it.id in existing:
+                item = db.query(RequisicaoItem).filter(RequisicaoItem.id == it.id).first()
+                if item:
+                    if it.product_id is not None:
+                        item.product_id = it.product_id
+                    if it.quantity_requested is not None:
+                        item.quantity_requested = it.quantity_requested
+                    if it.unit_price is not None:
+                        item.unit_price = it.unit_price
+            else:
+                db.add(RequisicaoItem(
+                    requisicao_id=req.id,
+                    product_id=it.product_id,
+                    quantity_requested=it.quantity_requested or 0,
+                    unit_price=it.unit_price,
+                ))
+
+    db.commit()
+    db.refresh(req)
+    req = db.query(Requisicao).options(
+        joinedload(Requisicao.requester),
+        joinedload(Requisicao.approver),
+        joinedload(Requisicao.deposit_requesting),
+        joinedload(Requisicao.deposit_fulfilling),
+        joinedload(Requisicao.items).joinedload(RequisicaoItem.product),
+    ).filter(Requisicao.id == req.id).first()
+    return _req_to_response(req)
+
+
+@router.delete("/{requisicao_id}")
+def delete_requisicao(
+    requisicao_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    req = db.query(Requisicao).filter(Requisicao.id == requisicao_id).first()
+    if not req:
+        raise HTTPException(404, "Requisição não encontrada")
+    if req.status not in ("pendente", "cancelado"):
+        raise HTTPException(400, "Só é possível remover requisições pendentes ou canceladas")
+    db.delete(req)
+    db.commit()
+    return {"message": "Requisição removida"}
+
+
+@router.put("/{requisicao_id}/approve", response_model=RequisicaoResponse)
+def approve_requisicao(
+    requisicao_id: int,
+    data: RequisicaoApprove,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    req = db.query(Requisicao).options(
+        joinedload(Requisicao.items),
+    ).filter(Requisicao.id == requisicao_id).first()
+    if not req:
+        raise HTTPException(404, "Requisição não encontrada")
+    if req.status != "pendente":
+        raise HTTPException(400, "Requisição não está pendente")
+
+    # validate all items have quantity_approved
+    app_map = {it.product_id: it for it in data.items}
+    for item in req.items:
+        if item.product_id in app_map:
+            qty = app_map[item.product_id].quantity_approved
+            if qty is not None:
+                item.quantity_approved = qty
+
+    req.approver_id = current_user.id
+    req.status = "aprovado"
+    db.commit()
+    db.refresh(req)
+    req = db.query(Requisicao).options(
+        joinedload(Requisicao.requester),
+        joinedload(Requisicao.approver),
+        joinedload(Requisicao.deposit_requesting),
+        joinedload(Requisicao.deposit_fulfilling),
+        joinedload(Requisicao.items).joinedload(RequisicaoItem.product),
+    ).filter(Requisicao.id == req.id).first()
+    return _req_to_response(req)
+
+
+@router.put("/{requisicao_id}/fulfill", response_model=RequisicaoResponse)
+def fulfill_requisicao(
+    requisicao_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    req = db.query(Requisicao).options(
+        joinedload(Requisicao.requester),
+        joinedload(Requisicao.approver),
+        joinedload(Requisicao.deposit_requesting),
+        joinedload(Requisicao.deposit_fulfilling),
+        joinedload(Requisicao.items).joinedload(RequisicaoItem.product),
+    ).filter(Requisicao.id == requisicao_id).first()
+    if not req:
+        raise HTTPException(404, "Requisição não encontrada")
+    if req.status != "aprovado":
+        raise HTTPException(400, "Requisição precisa estar aprovada para ser atendida")
+
+    for it in req.items:
+        qty = it.quantity_approved or it.quantity_requested
+        if qty <= 0:
+            continue
+        # create stock exit movement from deposit_fulfilling
+        total_val = qty * (it.unit_price or 0)
+        mov = StockMovement(
+            product_id=it.product_id,
+            deposit_id=req.deposit_fulfilling_id,
+            movement_type="saida",
+            quantity=qty,
+            unit_price=it.unit_price or 0,
+            total_value=total_val,
+            reason=f"Requisição #{req.id}: {req.reason or ''}",
+            user_id=current_user.id,
+        )
+        db.add(mov)
+        recalculate_product_stock(db, it.product_id)
+
+    req.status = "atendido"
+    db.commit()
+    db.refresh(req)
+    req = db.query(Requisicao).options(
+        joinedload(Requisicao.requester),
+        joinedload(Requisicao.approver),
+        joinedload(Requisicao.deposit_requesting),
+        joinedload(Requisicao.deposit_fulfilling),
+        joinedload(Requisicao.items).joinedload(RequisicaoItem.product),
+    ).filter(Requisicao.id == req.id).first()
+    return _req_to_response(req)
+
+
+@router.put("/{requisicao_id}/receive", response_model=RequisicaoResponse)
+def receive_requisicao(
+    requisicao_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    req = db.query(Requisicao).options(
+        joinedload(Requisicao.requester),
+        joinedload(Requisicao.approver),
+        joinedload(Requisicao.deposit_requesting),
+        joinedload(Requisicao.deposit_fulfilling),
+        joinedload(Requisicao.items).joinedload(RequisicaoItem.product),
+    ).filter(Requisicao.id == requisicao_id).first()
+    if not req:
+        raise HTTPException(404, "Requisição não encontrada")
+    if req.status != "atendido":
+        raise HTTPException(400, "Requisição precisa estar atendida para ser recebida")
+
+    for it in req.items:
+        qty = it.quantity_approved or it.quantity_requested
+        if qty <= 0:
+            continue
+        # create stock entry movement into deposit_requesting
+        total_val = qty * (it.unit_price or 0)
+        mov = StockMovement(
+            product_id=it.product_id,
+            deposit_id=req.deposit_requesting_id,
+            movement_type="entrada",
+            quantity=qty,
+            unit_price=it.unit_price or 0,
+            total_value=total_val,
+            reason=f"Recebimento Requisição #{req.id}: {req.reason or ''}",
+            user_id=current_user.id,
+        )
+        db.add(mov)
+        recalculate_product_stock(db, it.product_id)
+
+    req.status = "recebido"
+    db.commit()
+    db.refresh(req)
+    req = db.query(Requisicao).options(
+        joinedload(Requisicao.requester),
+        joinedload(Requisicao.approver),
+        joinedload(Requisicao.deposit_requesting),
+        joinedload(Requisicao.deposit_fulfilling),
+        joinedload(Requisicao.items).joinedload(RequisicaoItem.product),
+    ).filter(Requisicao.id == req.id).first()
+    return _req_to_response(req)
+
+
+@router.put("/{requisicao_id}/cancel", response_model=RequisicaoResponse)
+def cancel_requisicao(
+    requisicao_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    req = db.query(Requisicao).options(
+        joinedload(Requisicao.requester),
+        joinedload(Requisicao.approver),
+        joinedload(Requisicao.deposit_requesting),
+        joinedload(Requisicao.deposit_fulfilling),
+        joinedload(Requisicao.items).joinedload(RequisicaoItem.product),
+    ).filter(Requisicao.id == requisicao_id).first()
+    if not req:
+        raise HTTPException(404, "Requisição não encontrada")
+    if req.status in ("atendido", "recebido", "cancelado"):
+        raise HTTPException(400, "Requisição já está " + req.status)
+    req.status = "cancelado"
+    db.commit()
+    db.refresh(req)
+    return _req_to_response(req)
