@@ -445,13 +445,15 @@ function MovementsModal({ deposit, products, deposits, onClose }) {
 function StockBalanceModal({ deposit, onClose }) {
   const [balance, setBalance] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (!deposit) return;
     setLoading(true);
+    setError('');
     api.get('/stock/balance/', { params: { deposit_id: deposit.id } })
       .then(res => setBalance(res.data))
-      .catch(() => {})
+      .catch(err => setError(err.response?.data?.detail || 'Erro ao carregar o saldo'))
       .finally(() => setLoading(false));
   }, [deposit]);
 
@@ -468,6 +470,8 @@ function StockBalanceModal({ deposit, onClose }) {
         <div className="px-6 py-4">
           {loading ? (
             <p className="text-gray-400 text-center py-8">Carregando...</p>
+          ) : error ? (
+            <p className="text-red-500 text-center py-8">{error}</p>
           ) : balance.length === 0 ? (
             <p className="text-gray-400 text-center py-8">Nenhum saldo encontrado para este depósito</p>
           ) : (

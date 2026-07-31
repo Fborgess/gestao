@@ -12,7 +12,7 @@ from app.schemas.stock import (
     StockBalanceItem, StockMovementReportItem, StockTransferCreate, StockTransferItem,
     StockAvariaCreate, TransferReportItem,
 )
-from app.utils.security import get_current_user, require_module
+from app.utils.security import get_current_user, require_module, require_any_module
 from app.utils.helpers import product_label
 
 router = APIRouter(prefix="/api/stock", tags=["Estoque"])
@@ -175,7 +175,7 @@ def stock_balance(
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
     db: Session = Depends(get_db),
-    _=Depends(require_module("stock_reports")),
+    _=Depends(require_any_module(["stock_reports", "deposits"])),
 ):
     query = (
         db.query(StockMovement, Product.cost_price, Product.price)

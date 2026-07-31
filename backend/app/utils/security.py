@@ -70,3 +70,22 @@ def require_module(module: str, access_level: str = "view") -> Callable:
             raise HTTPException(status_code=403, detail=f"Permissão insuficiente no módulo '{module}'")
         return current_user
     return checker
+
+
+def require_any_module(modules, access_level: str = "view") -> Callable:
+    def checker(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+        role = db.query(Role).filter(Role.name == current_user.role).first()
+        if not role:
+            raise HTTPException(status_code=403, detail="Perfil de acesso não configurado")
+        if role.is_admin:
+            return current_user
+        levels = {"view": 0, "edit": 1}
+        for module in modules:
+            perm = db.query(RoleModule).filter(
+                RoleModule.role_id == role.id,
+                RoleModule.module == module,
+            ).first()
+            if perm and levels.get(perm.access_level, 0) >= levels.get(access_level, 0):
+                return current_user
+        raise HTTPException(status_code=403, detail=f"Acesso negado aos módulos {', '.join(modules)}")
+    return checker
