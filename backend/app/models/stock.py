@@ -17,6 +17,7 @@ class StockMovement(Base):
     total_value = Column(Float, default=0)
     reason = Column(String(255))
     notes = Column(Text)
+    source = Column(String(20))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     user_id = Column(Integer, ForeignKey("users.id"))
 

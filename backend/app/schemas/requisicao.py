@@ -24,6 +24,7 @@ class RequisicaoItemResponse(BaseModel):
     quantity_requested: int
     quantity_approved: Optional[int] = None
     quantity_fulfilled: int = 0
+    quantity_received: int = 0
     unit_price: Optional[float] = None
 
     class Config:
@@ -58,6 +59,15 @@ class RequisicaoItemFulfill(BaseModel):
 
 class RequisicaoFulfill(BaseModel):
     items: List[RequisicaoItemFulfill]
+
+
+class RequisicaoItemReceive(BaseModel):
+    product_id: int
+    quantity_received: int
+
+
+class RequisicaoReceive(BaseModel):
+    items: List[RequisicaoItemReceive]
 
 
 class RequisicaoResponse(BaseModel):

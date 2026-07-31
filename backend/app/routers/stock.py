@@ -115,6 +115,8 @@ def update_movement(
     db_movement = db.query(StockMovement).filter(StockMovement.id == movement_id).first()
     if not db_movement:
         raise HTTPException(status_code=404, detail="Movimentação não encontrada")
+    if db_movement.source == "requisicao":
+        raise HTTPException(status_code=400, detail="Movimentação gerada por requisição não pode ser editada")
 
     data = movement.model_dump(exclude_unset=True)
 
@@ -157,6 +159,8 @@ def delete_movement(
     db_movement = db.query(StockMovement).filter(StockMovement.id == movement_id).first()
     if not db_movement:
         raise HTTPException(status_code=404, detail="Movimentação não encontrada")
+    if db_movement.source == "requisicao":
+        raise HTTPException(status_code=400, detail="Movimentação gerada por requisição não pode ser excluída")
     product_id = db_movement.product_id
     db.delete(db_movement)
     db.commit()

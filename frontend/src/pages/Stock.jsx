@@ -165,8 +165,12 @@ export default function Stock() {
                 <td className="p-3 text-right whitespace-nowrap">{m.movement_type === 'entrada' ? formatCurrency(m.total_value || 0) : '-'}</td>
                 <td className="p-3 text-gray-500 text-xs whitespace-nowrap">{m.reason || '-'}</td>
                 <td className="p-3 text-center whitespace-nowrap">
-                  <button onClick={() => handleEdit(m)} className="text-blue-600 hover:text-blue-800 mr-2"><Edit size={16} /></button>
-                  <button onClick={() => handleDelete(m.id)} className="text-red-600 hover:text-red-800"><Trash2 size={16} /></button>
+                  {m.source !== 'requisicao' && (
+                    <>
+                      <button onClick={() => handleEdit(m)} className="text-blue-600 hover:text-blue-800 mr-2"><Edit size={16} /></button>
+                      <button onClick={() => handleDelete(m.id)} className="text-red-600 hover:text-red-800"><Trash2 size={16} /></button>
+                    </>
+                  )}
                 </td>
               </tr>
             ))}

@@ -57,6 +57,13 @@ if DATABASE_URL.startswith("sqlite"):
         ri_cols = [row[1] for row in c.fetchall()]
         if "quantity_fulfilled" not in ri_cols:
             c.execute("ALTER TABLE requisicao_items ADD COLUMN quantity_fulfilled INTEGER DEFAULT 0")
+        if "quantity_received" not in ri_cols:
+            c.execute("ALTER TABLE requisicao_items ADD COLUMN quantity_received INTEGER DEFAULT 0")
+        c.execute("PRAGMA table_info(stock_movements)")
+        sm_cols = [row[1] for row in c.fetchall()]
+        if "source" not in sm_cols:
+            c.execute("ALTER TABLE stock_movements ADD COLUMN source VARCHAR(20)")
+            c.execute("UPDATE stock_movements SET source='requisicao' WHERE reason LIKE 'Requisi\u00e7\u00e3o #%' OR reason LIKE 'Recebimento Requisi\u00e7\u00e3o #%'")
         conn.commit()
         conn.close()
 
@@ -67,11 +74,26 @@ if not DATABASE_URL.startswith("sqlite"):
         cols = conn.execute(text(
             "SELECT column_name FROM information_schema.columns WHERE table_name = 'requisicao_items'"
         )).fetchall()
-        if "quantity_fulfilled" not in {row[0] for row in cols}:
+        ri_names = {row[0] for row in cols}
+        if "quantity_fulfilled" not in ri_names:
             conn.execute(text(
                 "ALTER TABLE requisicao_items ADD COLUMN quantity_fulfilled INTEGER DEFAULT 0"
             ))
-            conn.commit()
+        if "quantity_received" not in ri_names:
+            conn.execute(text(
+                "ALTER TABLE requisicao_items ADD COLUMN quantity_received INTEGER DEFAULT 0"
+            ))
+        cols = conn.execute(text(
+            "SELECT column_name FROM information_schema.columns WHERE table_name = 'stock_movements'"
+        )).fetchall()
+        if "source" not in {row[0] for row in cols}:
+            conn.execute(text(
+                "ALTER TABLE stock_movements ADD COLUMN source VARCHAR(20)"
+            ))
+            conn.execute(text(
+                "UPDATE stock_movements SET source='requisicao' WHERE reason LIKE 'Requisi\u00e7\u00e3o #%' OR reason LIKE 'Recebimento Requisi\u00e7\u00e3o #%'"
+            ))
+        conn.commit()
 
 from seed import seed, seed_frequencies
 seed()

@@ -36,6 +36,7 @@ class StockMovementResponse(BaseModel):
     total_value: float
     reason: Optional[str] = None
     notes: Optional[str] = None
+    source: Optional[str] = None
     created_at: Optional[datetime] = None
     user_id: Optional[int] = None
 

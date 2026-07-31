@@ -11,7 +11,7 @@ from app.models.user import User
 from app.models.role import Role
 from app.schemas.requisicao import (
     RequisicaoCreate, RequisicaoUpdate, RequisicaoResponse,
-    RequisicaoItemResponse, RequisicaoApprove, RequisicaoFulfill,
+    RequisicaoItemResponse, RequisicaoApprove, RequisicaoFulfill, RequisicaoReceive,
 )
 from app.utils.security import get_current_user, require_module
 from app.utils.helpers import product_label
@@ -54,6 +54,7 @@ def _req_to_response(r: Requisicao) -> RequisicaoResponse:
             quantity_requested=it.quantity_requested,
             quantity_approved=it.quantity_approved,
             quantity_fulfilled=it.quantity_fulfilled or 0,
+            quantity_received=it.quantity_received or 0,
             unit_price=it.unit_price,
         )
         for it in r.items
@@ -354,6 +355,7 @@ def fulfill_requisicao(
             unit_price=it.unit_price or 0,
             total_value=total_val,
             reason=f"Requisição #{req.id}: {req.reason or ''}",
+            source="requisicao",
             user_id=current_user.id,
         )
         db.add(mov)
@@ -375,6 +377,7 @@ def fulfill_requisicao(
 @router.put("/{requisicao_id}/receive", response_model=RequisicaoResponse)
 def receive_requisicao(
     requisicao_id: int,
+    data: RequisicaoReceive,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
     _=Depends(require_module("requisicoes", "edit")),
@@ -393,20 +396,30 @@ def receive_requisicao(
     if req.status != "atendido":
         raise HTTPException(400, "Requisição precisa estar atendida para ser recebida")
 
+    rcv_map = {it.product_id: it.quantity_received for it in data.items}
     for it in req.items:
-        qty = it.quantity_fulfilled or it.quantity_approved or it.quantity_requested
-        if qty <= 0:
+        sent = it.quantity_fulfilled or it.quantity_approved or it.quantity_requested or 0
+        received = rcv_map.get(it.product_id)
+        if received is None:
+            received = sent
+        if received < 0:
+            raise HTTPException(400, "Quantidade recebida não pode ser negativa")
+        if received > sent:
+            raise HTTPException(400, "Quantidade recebida não pode exceder a enviada")
+        it.quantity_received = received
+        if received <= 0:
             continue
         # create stock entry movement into deposit_requesting
-        total_val = qty * (it.unit_price or 0)
+        total_val = received * (it.unit_price or 0)
         mov = StockMovement(
             product_id=it.product_id,
             deposit_id=req.deposit_requesting_id,
             movement_type="entrada",
-            quantity=qty,
+            quantity=received,
             unit_price=it.unit_price or 0,
             total_value=total_val,
             reason=f"Recebimento Requisição #{req.id}: {req.reason or ''}",
+            source="requisicao",
             user_id=current_user.id,
         )
         db.add(mov)

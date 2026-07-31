@@ -418,8 +418,12 @@ function MovementsModal({ deposit, products, deposits, onClose }) {
                         <td className="p-3 text-xs text-gray-500">{m.reason || '-'}</td>
                         <td className="p-3 text-center">
                           <div className="flex items-center justify-center gap-1">
-                            <button onClick={() => startEdit(m)} className="p-1 text-blue-600 hover:text-blue-800" title="Editar"><Edit size={14} /></button>
-                            <button onClick={() => handleDelete(m.id)} className="p-1 text-red-600 hover:text-red-800" title="Remover"><Trash2 size={14} /></button>
+                            {m.source !== 'requisicao' && (
+                              <>
+                                <button onClick={() => startEdit(m)} className="p-1 text-blue-600 hover:text-blue-800" title="Editar"><Edit size={14} /></button>
+                                <button onClick={() => handleDelete(m.id)} className="p-1 text-red-600 hover:text-red-800" title="Remover"><Trash2 size={14} /></button>
+                              </>
+                            )}
                           </div>
                         </td>
                       </>

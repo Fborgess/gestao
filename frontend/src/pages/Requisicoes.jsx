@@ -61,6 +61,8 @@ export default function Requisicoes() {
   const [printing, setPrinting] = useState(null);
   const [fulfilling, setFulfilling] = useState(null);
   const [fulfillQty, setFulfillQty] = useState({});
+  const [receiving, setReceiving] = useState(null);
+  const [receiveQty, setReceiveQty] = useState({});
 
   const isAdmin = user?.role === 'admin';
   const canManage = (r) => isAdmin || user?.id === r.requester_id;
@@ -177,10 +179,24 @@ export default function Requisicoes() {
     }
   };
 
-  const handleReceive = async (r) => {
+  const openReceive = (r) => {
+    const qty = {};
+    r.items.forEach(it => { qty[it.product_id] = it.quantity_fulfilled || it.quantity_approved || it.quantity_requested || 0; });
+    setReceiveQty(qty);
+    setReceiving(r);
+  };
+
+  const handleReceive = async () => {
+    const r = receiving;
+    if (!r) return;
+    const items = Object.entries(receiveQty).map(([pid, q]) => ({
+      product_id: parseInt(pid, 10),
+      quantity_received: parseInt(q, 10) || 0,
+    }));
     if (!confirm(`Confirmar recebimento da requisição #${r.id} no depósito? Isso criará movimentações de entrada no estoque.`)) return;
     try {
-      await api.put(`/requisicoes/${r.id}/receive`);
+      await api.put(`/requisicoes/${r.id}/receive`, { items });
+      setReceiving(null);
       load();
     } catch (err) {
       alert(err.response?.data?.detail || 'Erro ao receber');
@@ -235,6 +251,7 @@ export default function Requisicoes() {
                 <th className="p-3 text-right">Solicitado</th>
                 {r.status !== 'pendente' && <th className="p-3 text-right">Aprovado</th>}
                 {(r.status === 'atendido' || r.status === 'recebido') && <th className="p-3 text-right">Entregue</th>}
+                {r.status === 'recebido' && <th className="p-3 text-right">Recebido</th>}
                 {(r.status === 'atendido' || r.status === 'recebido') && <th className="p-3 text-right">Preço Unit.</th>}
               </tr>
             </thead>
@@ -245,6 +262,7 @@ export default function Requisicoes() {
                   <td className="p-3 text-right">{it.quantity_requested}</td>
                   {r.status !== 'pendente' && <td className="p-3 text-right">{it.quantity_approved || it.quantity_requested}</td>}
                   {(r.status === 'atendido' || r.status === 'recebido') && <td className="p-3 text-right">{it.quantity_fulfilled ?? '-'}</td>}
+                  {r.status === 'recebido' && <td className="p-3 text-right">{it.quantity_received ?? '-'}</td>}
                   {(r.status === 'atendido' || r.status === 'recebido') && <td className="p-3 text-right">{it.unit_price ? `R$ ${it.unit_price.toFixed(2)}` : '-'}</td>}
                 </tr>
               ))}
@@ -352,7 +370,7 @@ export default function Requisicoes() {
                       <button onClick={() => handleCancel(r)} className="p-1 text-red-600 hover:text-red-800" title="Cancelar"><XCircle size={15} /></button>
                     )}
                     {r.status === 'atendido' && canReceive(r) && (
-                      <button onClick={() => handleReceive(r)} className="p-1 text-teal-600 hover:text-teal-800" title="Confirmar recebimento (entrada)"><ArrowUpCircle size={15} /></button>
+                      <button onClick={() => openReceive(r)} className="p-1 text-teal-600 hover:text-teal-800" title="Confirmar recebimento (entrada)"><ArrowUpCircle size={15} /></button>
                     )}
                     {(r.status === 'pendente' || r.status === 'cancelado') && canManage(r) && (
                       <button onClick={() => handleDelete(r.id)} className="p-1 text-red-600 hover:text-red-800" title="Remover"><Trash2 size={15} /></button>
@@ -504,6 +522,52 @@ export default function Requisicoes() {
                 className="px-5 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Cancelar</button>
               <button type="button" onClick={handleFulfill}
                 className="px-5 py-2.5 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 shadow-sm">Confirmar Atendimento</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {receiving && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-3 sticky top-0 bg-white">
+              <div className="p-2 rounded-xl bg-teal-100 text-teal-600">
+                <ArrowUpCircle size={20} />
+              </div>
+              <h2 className="text-lg font-bold">Conferir Recebimento #{receiving.id}</h2>
+              <span className="ml-auto text-sm text-gray-500">Enviado por {receiving.deposit_fulfilling_name || '-'}</span>
+            </div>
+            <div className="px-6 py-4 space-y-2">
+              <p className="text-sm text-gray-500 mb-3">Confira a quantidade enviada e informe a quantidade realmente recebida de cada item.</p>
+              {receiving.items.map(it => {
+                const sent = it.quantity_fulfilled || it.quantity_approved || it.quantity_requested || 0;
+                return (
+                  <div key={it.product_id} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
+                    <span className="text-sm font-medium flex-1">{it.product_name}</span>
+                    <span className="text-xs text-gray-500 mr-2">Enviado: {sent}</span>
+                    <div className="flex items-center gap-1.5">
+                      <button type="button" onClick={() => setReceiveQty(q => ({ ...q, [it.product_id]: Math.max(0, (q[it.product_id] ?? 0) - 1) }))}
+                        className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">−</button>
+                      <input type="number" min="0" max={sent} value={receiveQty[it.product_id] ?? 0}
+                        onChange={e => {
+                          if (e.target.value === '') return;
+                          const n = parseInt(e.target.value, 10);
+                          if (isNaN(n)) return;
+                          setReceiveQty(q => ({ ...q, [it.product_id]: Math.max(0, Math.min(sent, n)) }));
+                        }}
+                        className="w-14 text-center font-bold text-sm border border-gray-200 rounded-lg py-1" />
+                      <button type="button" onClick={() => setReceiveQty(q => ({ ...q, [it.product_id]: Math.min(sent, (q[it.product_id] ?? 0) + 1) }))}
+                        className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">+</button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="px-6 py-4 border-t border-gray-100 flex justify-end gap-2 bg-gray-50 rounded-b-2xl">
+              <button type="button" onClick={() => setReceiving(null)}
+                className="px-5 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Cancelar</button>
+              <button type="button" onClick={handleReceive}
+                className="px-5 py-2.5 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700 shadow-sm">Confirmar Recebimento</button>
             </div>
           </div>
         </div>
