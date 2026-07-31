@@ -19,6 +19,7 @@ router = APIRouter(prefix="/api/stock", tags=["Estoque"])
 
 
 def recalculate_product_stock(db: Session, product_id: int):
+    db.flush()
     entrada = db.query(func.coalesce(func.sum(StockMovement.quantity), 0)).filter(
         StockMovement.product_id == product_id,
         StockMovement.movement_type == "entrada",

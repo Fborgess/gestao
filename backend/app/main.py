@@ -127,6 +127,15 @@ with Session(engine) as session:
             product = session.query(Product).filter(Product.id == pid).first()
             if product:
                 product.current_stock = entrada - saida
+    # Recalcula o estoque global de todos os produtos a partir das movimentações
+    for product in session.query(Product).all():
+        entrada = session.query(func.coalesce(func.sum(StockMovement.quantity), 0)).filter(
+            StockMovement.product_id == product.id, StockMovement.movement_type == "entrada"
+        ).scalar()
+        saida = session.query(func.coalesce(func.sum(StockMovement.quantity), 0)).filter(
+            StockMovement.product_id == product.id, StockMovement.movement_type == "saida"
+        ).scalar()
+        product.current_stock = entrada - saida
     session.commit()
 
 from seed import seed, seed_frequencies
