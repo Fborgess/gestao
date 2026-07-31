@@ -156,12 +156,12 @@ def import_products_excel(
     imported = 0
     errors = []
 
-    units_map = {u.abbreviation.lower(): u.id for u in db.query(Unit).all()}
-    units_names = {u.name.lower(): u.id for u in db.query(Unit).all()}
+    units_map = {u.abbreviation.strip().lower(): u.id for u in db.query(Unit).all()}
+    units_names = {u.name.strip().lower(): u.id for u in db.query(Unit).all()}
     cats_list = db.query(Category).all()
     cats_by_name = {}
     for c in cats_list:
-        key = c.name.lower()
+        key = c.name.strip().lower()
         if key not in cats_by_name:
             cats_by_name[key] = []
         cats_by_name[key].append(c)
