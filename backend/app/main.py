@@ -9,6 +9,7 @@ from app.routers import requisicoes, roles
 from app.routers.sales import sale_type_router, sale_router
 
 import traceback
+import os
 from datetime import datetime
 
 Base.metadata.create_all(bind=engine)
@@ -17,7 +18,7 @@ from app.config import DATABASE_URL
 
 # Migrações SQLite (só executa se for SQLite)
 if DATABASE_URL.startswith("sqlite"):
-    import sqlite3, os
+    import sqlite3
     db_path = DATABASE_URL.replace("sqlite:///", "")
     if os.path.exists(db_path):
         conn = sqlite3.connect(db_path)
