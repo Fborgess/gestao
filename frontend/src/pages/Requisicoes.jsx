@@ -65,6 +65,7 @@ export default function Requisicoes() {
   const isAdmin = user?.role === 'admin';
   const canManage = (r) => isAdmin || user?.id === r.requester_id;
   const canFulfill = (r) => isAdmin || (user?.deposit_ids || []).includes(r.deposit_fulfilling_id);
+  const canReceive = (r) => isAdmin || user?.id === r.requester_id || (user?.deposit_ids || []).includes(r.deposit_requesting_id);
 
   const [form, setForm] = useState({
     deposit_requesting_id: '',
@@ -346,7 +347,7 @@ export default function Requisicoes() {
                     {r.status === 'aprovado' && canManage(r) && (
                       <button onClick={() => handleCancel(r)} className="p-1 text-red-600 hover:text-red-800" title="Cancelar"><XCircle size={15} /></button>
                     )}
-                    {r.status === 'atendido' && canManage(r) && (
+                    {r.status === 'atendido' && canReceive(r) && (
                       <button onClick={() => handleReceive(r)} className="p-1 text-teal-600 hover:text-teal-800" title="Confirmar recebimento (entrada)"><ArrowUpCircle size={15} /></button>
                     )}
                     {(r.status === 'pendente' || r.status === 'cancelado') && canManage(r) && (

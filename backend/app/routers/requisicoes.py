@@ -33,6 +33,14 @@ def _is_requester_or_admin(db: Session, req: Requisicao, user: User) -> bool:
     return req.requester_id == user.id
 
 
+def _can_receive(db: Session, req: Requisicao, user: User) -> bool:
+    if _is_admin(db, user):
+        return True
+    if req.requester_id == user.id:
+        return True
+    return req.deposit_requesting_id in _user_deposit_ids(user)
+
+
 def _user_deposit_ids(user: User) -> List[int]:
     return [d.id for d in user.deposits] if user.deposits else []
 
@@ -87,6 +95,7 @@ def list_requisicoes(
         deposit_ids = _user_deposit_ids(current_user)
         query = query.filter(or_(
             Requisicao.requester_id == current_user.id,
+            Requisicao.deposit_requesting_id.in_(deposit_ids),
             and_(
                 Requisicao.deposit_fulfilling_id.in_(deposit_ids),
                 Requisicao.status != "pendente",
@@ -168,8 +177,10 @@ def get_requisicao(
         raise HTTPException(404, "Requisição não encontrada")
     if not _is_admin(db, current_user):
         deposit_ids = _user_deposit_ids(current_user)
-        visible = r.requester_id == current_user.id or (
-            r.deposit_fulfilling_id in deposit_ids and r.status != "pendente"
+        visible = (
+            r.requester_id == current_user.id
+            or r.deposit_requesting_id in deposit_ids
+            or (r.deposit_fulfilling_id in deposit_ids and r.status != "pendente")
         )
         if not visible:
             raise HTTPException(404, "Requisição não encontrada")
@@ -379,8 +390,8 @@ def receive_requisicao(
     ).filter(Requisicao.id == requisicao_id).first()
     if not req:
         raise HTTPException(404, "Requisição não encontrada")
-    if not _is_requester_or_admin(db, req, current_user):
-        raise HTTPException(403, "Apenas o requisitante pode confirmar o recebimento")
+    if not _can_receive(db, req, current_user):
+        raise HTTPException(403, "Apenas o requisitante ou o depósito solicitante pode confirmar o recebimento")
     if req.status != "atendido":
         raise HTTPException(400, "Requisição precisa estar atendida para ser recebida")
 
