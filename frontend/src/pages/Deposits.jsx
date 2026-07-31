@@ -68,6 +68,12 @@ function TransferModal({ type, deposit, deposits, products, onClose, onDone }) {
     setTimeout(() => searchRef.current?.focus(), 50);
   };
   const changeQty = (pid, delta) => setItems(i => i.map(it => it.product_id === pid ? { ...it, quantity: Math.max(1, it.quantity + delta) } : it));
+  const updateQty = (pid, value) => {
+    if (value === '') return;
+    const n = parseInt(value, 10);
+    if (isNaN(n)) return;
+    setItems(i => i.map(it => it.product_id === pid ? { ...it, quantity: Math.max(1, n) } : it));
+  };
   const removeItem = (pid) => setItems(i => i.filter(it => it.product_id !== pid));
 
   const handleSubmit = async (e) => {
@@ -131,7 +137,9 @@ function TransferModal({ type, deposit, deposits, products, onClose, onDone }) {
                     <div className="flex items-center gap-2">
                       <button type="button" onClick={() => changeQty(it.product_id, -1)}
                         className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">−</button>
-                      <span className="w-8 text-center font-bold text-sm">{it.quantity}</span>
+                      <input type="number" min="1" value={it.quantity}
+                        onChange={e => updateQty(it.product_id, e.target.value)}
+                        className="w-14 text-center font-bold text-sm border border-gray-200 rounded-lg py-1" />
                       <button type="button" onClick={() => changeQty(it.product_id, 1)}
                         className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">+</button>
                       <button type="button" onClick={() => removeItem(it.product_id)}
@@ -174,6 +182,12 @@ function AvariaModal({ deposit, deposits, products, onClose, onDone }) {
     setTimeout(() => searchRef.current?.focus(), 50);
   };
   const changeQty = (pid, delta) => setForm(f => ({ ...f, items: f.items.map(it => it.product_id === pid ? { ...it, quantity: Math.max(1, it.quantity + delta) } : it) }));
+  const updateQty = (pid, value) => {
+    if (value === '') return;
+    const n = parseInt(value, 10);
+    if (isNaN(n)) return;
+    setForm(f => ({ ...f, items: f.items.map(it => it.product_id === pid ? { ...it, quantity: Math.max(1, n) } : it) }));
+  };
   const removeItem = (pid) => setForm(f => ({ ...f, items: f.items.filter(it => it.product_id !== pid) }));
 
   const handleSubmit = async (e) => {
@@ -249,7 +263,9 @@ function AvariaModal({ deposit, deposits, products, onClose, onDone }) {
                       <div className="flex items-center gap-2">
                         <button type="button" onClick={() => changeQty(it.product_id, -1)}
                           className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">−</button>
-                        <span className="w-8 text-center font-bold text-sm">{it.quantity}</span>
+                        <input type="number" min="1" value={it.quantity}
+                          onChange={e => updateQty(it.product_id, e.target.value)}
+                          className="w-14 text-center font-bold text-sm border border-gray-200 rounded-lg py-1" />
                         <button type="button" onClick={() => changeQty(it.product_id, 1)}
                           className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">+</button>
                         <button type="button" onClick={() => removeItem(it.product_id)}

@@ -387,7 +387,14 @@ export default function Requisicoes() {
                           <div className="flex items-center gap-1.5">
                             <button type="button" onClick={() => updateItem(it.product_id, 'quantity_requested', Math.max(1, (it.quantity_requested || 1) - 1))}
                               className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">−</button>
-                            <span className="w-8 text-center font-bold text-sm">{it.quantity_requested}</span>
+                            <input type="number" min="1" value={it.quantity_requested}
+                              onChange={e => {
+                                if (e.target.value === '') return;
+                                const n = parseInt(e.target.value, 10);
+                                if (isNaN(n)) return;
+                                updateItem(it.product_id, 'quantity_requested', Math.max(1, n));
+                              }}
+                              className="w-14 text-center font-bold text-sm border border-gray-200 rounded-lg py-1" />
                             <button type="button" onClick={() => updateItem(it.product_id, 'quantity_requested', (it.quantity_requested || 1) + 1)}
                               className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">+</button>
                             <span className="text-gray-300 mx-1">|</span>
