@@ -53,8 +53,25 @@ if DATABASE_URL.startswith("sqlite"):
             c.execute("ALTER TABLE transactions ADD COLUMN due_date DATETIME")
         if "status" not in tx_cols:
             c.execute("ALTER TABLE transactions ADD COLUMN status TEXT DEFAULT 'pendente'")
+        c.execute("PRAGMA table_info(requisicao_items)")
+        ri_cols = [row[1] for row in c.fetchall()]
+        if "quantity_fulfilled" not in ri_cols:
+            c.execute("ALTER TABLE requisicao_items ADD COLUMN quantity_fulfilled INTEGER DEFAULT 0")
         conn.commit()
         conn.close()
+
+# Migrações PostgreSQL
+if not DATABASE_URL.startswith("sqlite"):
+    from sqlalchemy import text
+    with engine.connect() as conn:
+        cols = conn.execute(text(
+            "SELECT column_name FROM information_schema.columns WHERE table_name = 'requisicao_items'"
+        )).fetchall()
+        if "quantity_fulfilled" not in {row[0] for row in cols}:
+            conn.execute(text(
+                "ALTER TABLE requisicao_items ADD COLUMN quantity_fulfilled INTEGER DEFAULT 0"
+            ))
+            conn.commit()
 
 from seed import seed, seed_frequencies
 seed()

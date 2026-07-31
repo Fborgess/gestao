@@ -1,15 +1,16 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { Plus, ClipboardList, CheckCircle, XCircle, Truck, Printer, Edit, Trash2, Search, Eye, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
 import PrintPreview from '../components/PrintPreview';
 
 const statusLabels = {
   pendente: 'Pendente',
-  aprovado: 'Aprovado',
-  atendido: 'Atendido',
-  recebido: 'Recebido',
-  cancelado: 'Cancelado',
+  aprovado: 'Liberada',
+  atendido: 'Atendida',
+  recebido: 'Recebida',
+  cancelado: 'Cancelada',
 };
 const statusColors = {
   pendente: 'bg-yellow-100 text-yellow-700',
@@ -48,6 +49,7 @@ function SearchInput({ products, onSelect, searchRef }) {
 
 export default function Requisicoes() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [requisicoes, setRequisicoes] = useState([]);
   const [products, setProducts] = useState([]);
   const [deposits, setDeposits] = useState([]);
@@ -57,6 +59,12 @@ export default function Requisicoes() {
   const [editing, setEditing] = useState(null);
   const [statusFilter, setStatusFilter] = useState('');
   const [printing, setPrinting] = useState(null);
+  const [fulfilling, setFulfilling] = useState(null);
+  const [fulfillQty, setFulfillQty] = useState({});
+
+  const isAdmin = user?.role === 'admin';
+  const canManage = (r) => isAdmin || user?.id === r.requester_id;
+  const canFulfill = (r) => isAdmin || (user?.deposit_ids || []).includes(r.deposit_fulfilling_id);
 
   const [form, setForm] = useState({
     deposit_requesting_id: '',
@@ -131,19 +139,33 @@ export default function Requisicoes() {
       quantity_approved: it.quantity_approved || it.quantity_requested,
     }));
     const totals = itens.reduce((s, it) => s + it.quantity_approved, 0);
-    if (!confirm(`Aprovar requisição #${r.id} com ${totals} ite${totals === 1 ? 'm' : 'ns'}?`)) return;
+    if (!confirm(`Liberar requisição #${r.id} (${totals} ite${totals === 1 ? 'm' : 'ns'}) para atendimento?`)) return;
     try {
       await api.put(`/requisicoes/${r.id}/approve`, { items: itens });
       load();
     } catch (err) {
-      alert(err.response?.data?.detail || 'Erro ao aprovar');
+      alert(err.response?.data?.detail || 'Erro ao liberar');
     }
   };
 
-  const handleFulfill = async (r) => {
-    if (!confirm(`Atender requisição #${r.id}? Isso criará movimentações de saída no estoque.`)) return;
+  const openFulfill = (r) => {
+    const qty = {};
+    r.items.forEach(it => { qty[it.product_id] = it.quantity_approved || it.quantity_requested; });
+    setFulfillQty(qty);
+    setFulfilling(r);
+  };
+
+  const handleFulfill = async () => {
+    const r = fulfilling;
+    if (!r) return;
+    const items = Object.entries(fulfillQty).map(([pid, q]) => ({
+      product_id: parseInt(pid, 10),
+      quantity_fulfilled: parseInt(q, 10) || 0,
+    }));
+    if (!confirm(`Confirmar atendimento da requisição #${r.id}? Isso criará movimentações de saída no estoque.`)) return;
     try {
-      await api.put(`/requisicoes/${r.id}/fulfill`);
+      await api.put(`/requisicoes/${r.id}/fulfill`, { items });
+      setFulfilling(null);
       load();
     } catch (err) {
       alert(err.response?.data?.detail || 'Erro ao atender');
@@ -207,7 +229,8 @@ export default function Requisicoes() {
                 <th className="p-3 text-left">Produto</th>
                 <th className="p-3 text-right">Solicitado</th>
                 {r.status !== 'pendente' && <th className="p-3 text-right">Aprovado</th>}
-                {r.status === 'atendido' && <th className="p-3 text-right">Preço Unit.</th>}
+                {(r.status === 'atendido' || r.status === 'recebido') && <th className="p-3 text-right">Entregue</th>}
+                {(r.status === 'atendido' || r.status === 'recebido') && <th className="p-3 text-right">Preço Unit.</th>}
               </tr>
             </thead>
             <tbody>
@@ -216,7 +239,8 @@ export default function Requisicoes() {
                   <td className="p-3">{it.product_name}</td>
                   <td className="p-3 text-right">{it.quantity_requested}</td>
                   {r.status !== 'pendente' && <td className="p-3 text-right">{it.quantity_approved || it.quantity_requested}</td>}
-                  {r.status === 'atendido' && <td className="p-3 text-right">{it.unit_price ? `R$ ${it.unit_price.toFixed(2)}` : '-'}</td>}
+                  {(r.status === 'atendido' || r.status === 'recebido') && <td className="p-3 text-right">{it.quantity_fulfilled ?? '-'}</td>}
+                  {(r.status === 'atendido' || r.status === 'recebido') && <td className="p-3 text-right">{it.unit_price ? `R$ ${it.unit_price.toFixed(2)}` : '-'}</td>}
                 </tr>
               ))}
             </tbody>
@@ -266,7 +290,7 @@ export default function Requisicoes() {
             className="px-3 py-2 border border-gray-200 rounded-lg text-sm">
             <option value="">Todos os status</option>
             <option value="pendente">Pendentes</option>
-            <option value="aprovado">Aprovadas</option>
+            <option value="aprovado">Liberadas</option>
             <option value="atendido">Atendidas</option>
             <option value="recebido">Recebidas</option>
             <option value="cancelado">Canceladas</option>
@@ -309,26 +333,23 @@ export default function Requisicoes() {
                 <td className="p-3 text-center">
                   <div className="flex items-center justify-center gap-1">
                     <button onClick={() => handlePrint(r)} className="p-1 text-gray-600 hover:text-gray-800" title="Imprimir"><Printer size={15} /></button>
-                    {r.status === 'pendente' && (
+                    {r.status === 'pendente' && canManage(r) && (
                       <>
                         <button onClick={() => handleEdit(r)} className="p-1 text-blue-600 hover:text-blue-800" title="Editar"><Edit size={15} /></button>
-                        <button onClick={() => handleApprove(r)} className="p-1 text-blue-600 hover:text-blue-800" title="Aprovar"><CheckCircle size={15} /></button>
+                        <button onClick={() => handleApprove(r)} className="p-1 text-blue-600 hover:text-blue-800" title="Liberar"><CheckCircle size={15} /></button>
                         <button onClick={() => handleCancel(r)} className="p-1 text-red-600 hover:text-red-800" title="Cancelar"><XCircle size={15} /></button>
                       </>
                     )}
-                    {r.status === 'aprovado' && (
-                      <>
-                        <button onClick={() => handleFulfill(r)} className="p-1 text-green-600 hover:text-green-800" title="Atender (saída)"><Truck size={15} /></button>
-                        <button onClick={() => handleCancel(r)} className="p-1 text-red-600 hover:text-red-800" title="Cancelar"><XCircle size={15} /></button>
-                      </>
+                    {r.status === 'aprovado' && canFulfill(r) && (
+                      <button onClick={() => openFulfill(r)} className="p-1 text-green-600 hover:text-green-800" title="Atender (saída)"><Truck size={15} /></button>
                     )}
-                    {r.status === 'atendido' && (
-                      <>
-                        <button onClick={() => handleReceive(r)} className="p-1 text-teal-600 hover:text-teal-800" title="Receber (entrada)"><ArrowUpCircle size={15} /></button>
-                        <button onClick={() => handleCancel(r)} className="p-1 text-red-600 hover:text-red-800" title="Cancelar"><XCircle size={15} /></button>
-                      </>
+                    {r.status === 'aprovado' && canManage(r) && (
+                      <button onClick={() => handleCancel(r)} className="p-1 text-red-600 hover:text-red-800" title="Cancelar"><XCircle size={15} /></button>
                     )}
-                    {(r.status === 'pendente' || r.status === 'cancelado') && (
+                    {r.status === 'atendido' && canManage(r) && (
+                      <button onClick={() => handleReceive(r)} className="p-1 text-teal-600 hover:text-teal-800" title="Confirmar recebimento (entrada)"><ArrowUpCircle size={15} /></button>
+                    )}
+                    {(r.status === 'pendente' || r.status === 'cancelado') && canManage(r) && (
                       <button onClick={() => handleDelete(r.id)} className="p-1 text-red-600 hover:text-red-800" title="Remover"><Trash2 size={15} /></button>
                     )}
                   </div>
@@ -433,6 +454,52 @@ export default function Requisicoes() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {fulfilling && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-3 sticky top-0 bg-white">
+              <div className="p-2 rounded-xl bg-green-100 text-green-600">
+                <Truck size={20} />
+              </div>
+              <h2 className="text-lg font-bold">Atender Requisição #{fulfilling.id}</h2>
+              <span className="ml-auto text-sm text-gray-500">Liberada por {fulfilling.approver_name || '-'}</span>
+            </div>
+            <div className="px-6 py-4 space-y-2">
+              <p className="text-sm text-gray-500 mb-3">Informe a quantidade entregue de cada item (parcial ou completa). Máximo: aprovado.</p>
+              {fulfilling.items.map(it => {
+                const approved = it.quantity_approved || it.quantity_requested;
+                return (
+                  <div key={it.product_id} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
+                    <span className="text-sm font-medium flex-1">{it.product_name}</span>
+                    <span className="text-xs text-gray-500 mr-2">Aprovado: {approved}</span>
+                    <div className="flex items-center gap-1.5">
+                      <button type="button" onClick={() => setFulfillQty(q => ({ ...q, [it.product_id]: Math.max(0, (q[it.product_id] || 0) - 1) }))}
+                        className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">−</button>
+                      <input type="number" min="0" max={approved} value={fulfillQty[it.product_id] ?? 0}
+                        onChange={e => {
+                          if (e.target.value === '') return;
+                          const n = parseInt(e.target.value, 10);
+                          if (isNaN(n)) return;
+                          setFulfillQty(q => ({ ...q, [it.product_id]: Math.min(approved, Math.max(0, n)) }));
+                        }}
+                        className="w-14 text-center font-bold text-sm border border-gray-200 rounded-lg py-1" />
+                      <button type="button" onClick={() => setFulfillQty(q => ({ ...q, [it.product_id]: Math.min(approved, (q[it.product_id] || 0) + 1) }))}
+                        className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">+</button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="px-6 py-4 border-t border-gray-100 flex justify-end gap-2 bg-gray-50 rounded-b-2xl">
+              <button type="button" onClick={() => setFulfilling(null)}
+                className="px-5 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Cancelar</button>
+              <button type="button" onClick={handleFulfill}
+                className="px-5 py-2.5 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 shadow-sm">Confirmar Atendimento</button>
+            </div>
           </div>
         </div>
       )}

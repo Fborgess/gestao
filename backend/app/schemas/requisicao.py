@@ -23,6 +23,7 @@ class RequisicaoItemResponse(BaseModel):
     product_name: Optional[str] = None
     quantity_requested: int
     quantity_approved: Optional[int] = None
+    quantity_fulfilled: int = 0
     unit_price: Optional[float] = None
 
     class Config:
@@ -48,6 +49,15 @@ class RequisicaoUpdate(BaseModel):
 
 class RequisicaoApprove(BaseModel):
     items: List[RequisicaoItemUpdate]
+
+
+class RequisicaoItemFulfill(BaseModel):
+    product_id: int
+    quantity_fulfilled: int
+
+
+class RequisicaoFulfill(BaseModel):
+    items: List[RequisicaoItemFulfill]
 
 
 class RequisicaoResponse(BaseModel):

@@ -33,6 +33,7 @@ class RequisicaoItem(Base):
     product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
     quantity_requested = Column(Integer, nullable=False)
     quantity_approved = Column(Integer)
+    quantity_fulfilled = Column(Integer, default=0)
     unit_price = Column(Float)
 
     requisicao = relationship("Requisicao", back_populates="items")

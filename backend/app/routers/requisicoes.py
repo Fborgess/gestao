@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import or_, and_
 from typing import List
 from app.database import get_db
 from app.models.requisicao import Requisicao, RequisicaoItem
@@ -7,15 +8,33 @@ from app.models.product import Product
 from app.models.deposit import Deposit
 from app.models.stock import StockMovement
 from app.models.user import User
+from app.models.role import Role
 from app.schemas.requisicao import (
     RequisicaoCreate, RequisicaoUpdate, RequisicaoResponse,
-    RequisicaoItemResponse, RequisicaoApprove,
+    RequisicaoItemResponse, RequisicaoApprove, RequisicaoFulfill,
 )
 from app.utils.security import get_current_user, require_module
 from app.utils.helpers import product_label
 from app.routers.stock import recalculate_product_stock
 
 router = APIRouter(prefix="/api/requisicoes", tags=["Requisições de Estoque"])
+
+
+def _is_admin(db: Session, user: User) -> bool:
+    if user.role == "admin":
+        return True
+    role = db.query(Role).filter(Role.name == user.role).first()
+    return bool(role and role.is_admin)
+
+
+def _is_requester_or_admin(db: Session, req: Requisicao, user: User) -> bool:
+    if _is_admin(db, user):
+        return True
+    return req.requester_id == user.id
+
+
+def _user_deposit_ids(user: User) -> List[int]:
+    return [d.id for d in user.deposits] if user.deposits else []
 
 
 def _req_to_response(r: Requisicao) -> RequisicaoResponse:
@@ -26,6 +45,7 @@ def _req_to_response(r: Requisicao) -> RequisicaoResponse:
             product_name=product_label(it.product),
             quantity_requested=it.quantity_requested,
             quantity_approved=it.quantity_approved,
+            quantity_fulfilled=it.quantity_fulfilled or 0,
             unit_price=it.unit_price,
         )
         for it in r.items
@@ -53,6 +73,7 @@ def _req_to_response(r: Requisicao) -> RequisicaoResponse:
 def list_requisicoes(
     status: str = None,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
     _=Depends(require_module("requisicoes")),
 ):
     query = db.query(Requisicao).options(
@@ -62,6 +83,15 @@ def list_requisicoes(
         joinedload(Requisicao.deposit_fulfilling),
         joinedload(Requisicao.items).joinedload(RequisicaoItem.product),
     )
+    if not _is_admin(db, current_user):
+        deposit_ids = _user_deposit_ids(current_user)
+        query = query.filter(or_(
+            Requisicao.requester_id == current_user.id,
+            and_(
+                Requisicao.deposit_fulfilling_id.in_(deposit_ids),
+                Requisicao.status != "pendente",
+            ),
+        ))
     if status:
         query = query.filter(Requisicao.status == status)
     query = query.order_by(Requisicao.created_at.desc())
@@ -124,6 +154,7 @@ def create_requisicao(
 def get_requisicao(
     requisicao_id: int,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
     _=Depends(require_module("requisicoes")),
 ):
     r = db.query(Requisicao).options(
@@ -135,6 +166,13 @@ def get_requisicao(
     ).filter(Requisicao.id == requisicao_id).first()
     if not r:
         raise HTTPException(404, "Requisição não encontrada")
+    if not _is_admin(db, current_user):
+        deposit_ids = _user_deposit_ids(current_user)
+        visible = r.requester_id == current_user.id or (
+            r.deposit_fulfilling_id in deposit_ids and r.status != "pendente"
+        )
+        if not visible:
+            raise HTTPException(404, "Requisição não encontrada")
     return _req_to_response(r)
 
 
@@ -143,6 +181,7 @@ def update_requisicao(
     requisicao_id: int,
     data: RequisicaoUpdate,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
     _=Depends(require_module("requisicoes", "edit")),
 ):
     req = db.query(Requisicao).options(
@@ -150,6 +189,8 @@ def update_requisicao(
     ).filter(Requisicao.id == requisicao_id).first()
     if not req:
         raise HTTPException(404, "Requisição não encontrada")
+    if not _is_requester_or_admin(db, req, current_user):
+        raise HTTPException(403, "Apenas o requisitante pode editar a requisição")
     if req.status not in ("pendente",):
         raise HTTPException(400, "Só é possível editar requisições pendentes")
 
@@ -202,11 +243,14 @@ def update_requisicao(
 def delete_requisicao(
     requisicao_id: int,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
     _=Depends(require_module("requisicoes", "edit")),
 ):
     req = db.query(Requisicao).filter(Requisicao.id == requisicao_id).first()
     if not req:
         raise HTTPException(404, "Requisição não encontrada")
+    if not _is_requester_or_admin(db, req, current_user):
+        raise HTTPException(403, "Apenas o requisitante pode remover a requisição")
     if req.status not in ("pendente", "cancelado"):
         raise HTTPException(400, "Só é possível remover requisições pendentes ou canceladas")
     db.delete(req)
@@ -227,6 +271,8 @@ def approve_requisicao(
     ).filter(Requisicao.id == requisicao_id).first()
     if not req:
         raise HTTPException(404, "Requisição não encontrada")
+    if not _is_requester_or_admin(db, req, current_user):
+        raise HTTPException(403, "Apenas o requisitante pode liberar a requisição")
     if req.status != "pendente":
         raise HTTPException(400, "Requisição não está pendente")
 
@@ -255,6 +301,7 @@ def approve_requisicao(
 @router.put("/{requisicao_id}/fulfill", response_model=RequisicaoResponse)
 def fulfill_requisicao(
     requisicao_id: int,
+    data: RequisicaoFulfill,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
     _=Depends(require_module("requisicoes", "edit")),
@@ -269,19 +316,32 @@ def fulfill_requisicao(
     if not req:
         raise HTTPException(404, "Requisição não encontrada")
     if req.status != "aprovado":
-        raise HTTPException(400, "Requisição precisa estar aprovada para ser atendida")
+        raise HTTPException(400, "Requisição precisa estar liberada para ser atendida")
+    if not _is_admin(db, current_user):
+        deposit_ids = _user_deposit_ids(current_user)
+        if req.deposit_fulfilling_id not in deposit_ids:
+            raise HTTPException(403, "Este depósito não pode atender esta requisição")
 
+    qty_map = {it.product_id: it.quantity_fulfilled for it in data.items}
     for it in req.items:
-        qty = it.quantity_approved or it.quantity_requested
-        if qty <= 0:
+        approved = it.quantity_approved or it.quantity_requested or 0
+        delivered = qty_map.get(it.product_id, approved)
+        if delivered is None:
+            delivered = approved
+        if delivered < 0:
+            raise HTTPException(400, "Quantidade entregue não pode ser negativa")
+        if delivered > approved:
+            raise HTTPException(400, "Quantidade entregue não pode exceder a aprovada")
+        it.quantity_fulfilled = delivered
+        if delivered <= 0:
             continue
         # create stock exit movement from deposit_fulfilling
-        total_val = qty * (it.unit_price or 0)
+        total_val = delivered * (it.unit_price or 0)
         mov = StockMovement(
             product_id=it.product_id,
             deposit_id=req.deposit_fulfilling_id,
             movement_type="saida",
-            quantity=qty,
+            quantity=delivered,
             unit_price=it.unit_price or 0,
             total_value=total_val,
             reason=f"Requisição #{req.id}: {req.reason or ''}",
@@ -319,11 +379,13 @@ def receive_requisicao(
     ).filter(Requisicao.id == requisicao_id).first()
     if not req:
         raise HTTPException(404, "Requisição não encontrada")
+    if not _is_requester_or_admin(db, req, current_user):
+        raise HTTPException(403, "Apenas o requisitante pode confirmar o recebimento")
     if req.status != "atendido":
         raise HTTPException(400, "Requisição precisa estar atendida para ser recebida")
 
     for it in req.items:
-        qty = it.quantity_approved or it.quantity_requested
+        qty = it.quantity_fulfilled or it.quantity_approved or it.quantity_requested
         if qty <= 0:
             continue
         # create stock entry movement into deposit_requesting
@@ -358,6 +420,7 @@ def receive_requisicao(
 def cancel_requisicao(
     requisicao_id: int,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
     _=Depends(require_module("requisicoes", "edit")),
 ):
     req = db.query(Requisicao).options(
@@ -369,6 +432,8 @@ def cancel_requisicao(
     ).filter(Requisicao.id == requisicao_id).first()
     if not req:
         raise HTTPException(404, "Requisição não encontrada")
+    if not _is_requester_or_admin(db, req, current_user):
+        raise HTTPException(403, "Apenas o requisitante pode cancelar a requisição")
     if req.status in ("atendido", "recebido", "cancelado"):
         raise HTTPException(400, "Requisição já está " + req.status)
     req.status = "cancelado"
