@@ -41,7 +41,7 @@ export default function Stock() {
   const getDepositName = (id) => deposits.find(d => d.id === id)?.name || '-';
 
   const sortedMovements = useMemo(() => {
-    const arr = [...movements];
+    const arr = movements.filter(m => m.source !== 'requisicao');
     arr.sort((a, b) => {
       let aVal = a[sortConfig.key];
       let bVal = b[sortConfig.key];
