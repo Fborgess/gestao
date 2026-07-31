@@ -4,7 +4,7 @@ from typing import List, Optional
 from app.database import get_db
 from app.models.contact import Contact
 from app.schemas.contact import ContactCreate, ContactUpdate, ContactResponse
-from app.utils.security import get_current_user
+from app.utils.security import get_current_user, require_module
 
 router = APIRouter(prefix="/api/contacts", tags=["Clientes/Fornecedores"])
 
@@ -16,7 +16,7 @@ def list_contacts(
     contact_type: Optional[str] = None,
     search: Optional[str] = None,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("contacts")),
 ):
     query = db.query(Contact).filter(Contact.is_active == True)
     if contact_type:
@@ -30,7 +30,7 @@ def list_contacts(
 def get_contact(
     contact_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("contacts")),
 ):
     contact = db.query(Contact).filter(Contact.id == contact_id).first()
     if not contact:
@@ -42,7 +42,7 @@ def get_contact(
 def create_contact(
     contact: ContactCreate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("contacts", "edit")),
 ):
     db_contact = Contact(**contact.model_dump())
     db.add(db_contact)
@@ -56,7 +56,7 @@ def update_contact(
     contact_id: int,
     contact: ContactUpdate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("contacts", "edit")),
 ):
     db_contact = db.query(Contact).filter(Contact.id == contact_id).first()
     if not db_contact:
@@ -74,7 +74,7 @@ def update_contact(
 def delete_contact(
     contact_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("contacts", "edit")),
 ):
     db_contact = db.query(Contact).filter(Contact.id == contact_id).first()
     if not db_contact:

@@ -4,7 +4,7 @@ from typing import List, Optional
 from app.database import get_db
 from app.models.account import Account
 from app.schemas.account import AccountCreate, AccountUpdate, AccountResponse
-from app.utils.security import get_current_user
+from app.utils.security import get_current_user, require_module
 
 router = APIRouter(prefix="/api/accounts", tags=["Contas e Cartões"])
 
@@ -13,7 +13,7 @@ router = APIRouter(prefix="/api/accounts", tags=["Contas e Cartões"])
 def list_accounts(
     account_type: Optional[str] = None,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("accounts")),
 ):
     query = db.query(Account).filter(Account.is_active == True)
     if account_type:
@@ -25,7 +25,7 @@ def list_accounts(
 def get_account(
     account_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("accounts")),
 ):
     acc = db.query(Account).filter(Account.id == account_id).first()
     if not acc:
@@ -37,7 +37,7 @@ def get_account(
 def create_account(
     account: AccountCreate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("accounts", "edit")),
 ):
     db_acc = Account(**account.model_dump())
     db.add(db_acc)
@@ -51,7 +51,7 @@ def update_account(
     account_id: int,
     account: AccountUpdate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("accounts", "edit")),
 ):
     db_acc = db.query(Account).filter(Account.id == account_id).first()
     if not db_acc:
@@ -67,7 +67,7 @@ def update_account(
 def delete_account(
     account_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("accounts", "edit")),
 ):
     db_acc = db.query(Account).filter(Account.id == account_id).first()
     if not db_acc:

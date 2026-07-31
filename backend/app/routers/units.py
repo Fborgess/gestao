@@ -4,7 +4,7 @@ from typing import List
 from app.database import get_db
 from app.models.unit import Unit
 from app.schemas.unit import UnitCreate, UnitUpdate, UnitResponse
-from app.utils.security import get_current_user
+from app.utils.security import get_current_user, require_module
 
 router = APIRouter(prefix="/api/units", tags=["Unidades de Medida"])
 
@@ -12,7 +12,7 @@ router = APIRouter(prefix="/api/units", tags=["Unidades de Medida"])
 @router.get("/", response_model=List[UnitResponse])
 def list_units(
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("units")),
 ):
     return db.query(Unit).filter(Unit.is_active == True).all()
 
@@ -21,7 +21,7 @@ def list_units(
 def get_unit(
     unit_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("units")),
 ):
     unit = db.query(Unit).filter(Unit.id == unit_id).first()
     if not unit:
@@ -33,7 +33,7 @@ def get_unit(
 def create_unit(
     unit: UnitCreate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("units", "edit")),
 ):
     existing = db.query(Unit).filter(Unit.name == unit.name).first()
     if existing:
@@ -50,7 +50,7 @@ def update_unit(
     unit_id: int,
     unit: UnitUpdate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("units", "edit")),
 ):
     db_unit = db.query(Unit).filter(Unit.id == unit_id).first()
     if not db_unit:
@@ -66,7 +66,7 @@ def update_unit(
 def delete_unit(
     unit_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("units", "edit")),
 ):
     db_unit = db.query(Unit).filter(Unit.id == unit_id).first()
     if not db_unit:

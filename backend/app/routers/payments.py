@@ -5,8 +5,7 @@ from app.database import get_db
 from app.models.financial import Transaction
 from app.models.payment import Payment
 from app.schemas.payment import PaymentCreate, PaymentResponse
-from app.models.user import User
-from app.utils.security import get_current_user
+from app.utils.security import get_current_user, require_module
 
 router = APIRouter(prefix="/api/payments", tags=["Pagamentos"])
 
@@ -27,12 +26,12 @@ def update_transaction_status(db: Session, transaction_id: int):
 
 
 @router.get("/by-transaction/{transaction_id}", response_model=List[PaymentResponse])
-def list_payments(transaction_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def list_payments(transaction_id: int, db: Session = Depends(get_db), _=Depends(require_module("financial"))):
     return db.query(Payment).filter(Payment.transaction_id == transaction_id).order_by(Payment.payment_date).all()
 
 
 @router.post("/", response_model=PaymentResponse)
-def create_payment(data: PaymentCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def create_payment(data: PaymentCreate, db: Session = Depends(get_db), _=Depends(require_module("financial", "edit"))):
     transaction = db.query(Transaction).filter(Transaction.id == data.transaction_id).first()
     if not transaction:
         raise HTTPException(status_code=404, detail="Transação não encontrada")
@@ -50,7 +49,7 @@ def create_payment(data: PaymentCreate, db: Session = Depends(get_db), current_u
 
 
 @router.delete("/{payment_id}")
-def delete_payment(payment_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def delete_payment(payment_id: int, db: Session = Depends(get_db), _=Depends(require_module("financial", "edit"))):
     payment = db.query(Payment).filter(Payment.id == payment_id).first()
     if not payment:
         raise HTTPException(status_code=404, detail="Pagamento não encontrado")

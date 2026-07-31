@@ -4,7 +4,7 @@ from typing import List, Optional
 from app.database import get_db
 from app.models.product import Category
 from app.schemas.product import CategoryCreate, CategoryUpdate, CategoryResponse
-from app.utils.security import get_current_user
+from app.utils.security import get_current_user, require_module
 
 router = APIRouter(prefix="/api/categories", tags=["Categorias de Produtos"])
 
@@ -13,7 +13,7 @@ router = APIRouter(prefix="/api/categories", tags=["Categorias de Produtos"])
 def list_categories(
     parent_id: Optional[int] = None,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("categories")),
 ):
     query = db.query(Category)
     if parent_id is not None:
@@ -26,7 +26,7 @@ def list_categories(
 @router.get("/all", response_model=List[CategoryResponse])
 def list_all_categories(
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("categories")),
 ):
     return db.query(Category).all()
 
@@ -35,7 +35,7 @@ def list_all_categories(
 def get_category(
     category_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("categories")),
 ):
     cat = db.query(Category).filter(Category.id == category_id).first()
     if not cat:
@@ -47,7 +47,7 @@ def get_category(
 def create_category(
     category: CategoryCreate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("categories", "edit")),
 ):
     db_cat = Category(**category.model_dump())
     db.add(db_cat)
@@ -61,7 +61,7 @@ def update_category(
     category_id: int,
     category: CategoryUpdate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("categories", "edit")),
 ):
     db_cat = db.query(Category).filter(Category.id == category_id).first()
     if not db_cat:
@@ -77,7 +77,7 @@ def update_category(
 def delete_category(
     category_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("categories", "edit")),
 ):
     db_cat = db.query(Category).filter(Category.id == category_id).first()
     if not db_cat:

@@ -8,7 +8,7 @@ from app.schemas.recurrence_frequency import (
     RecurrenceFrequencyUpdate,
     RecurrenceFrequencyResponse,
 )
-from app.utils.security import get_current_user
+from app.utils.security import get_current_user, require_module
 
 router = APIRouter(prefix="/api/recurrence-frequencies", tags=["Frequências de Recorrência"])
 
@@ -16,7 +16,7 @@ router = APIRouter(prefix="/api/recurrence-frequencies", tags=["Frequências de 
 @router.get("/", response_model=List[RecurrenceFrequencyResponse])
 def list_frequencies(
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("recurrence_frequencies")),
 ):
     return db.query(RecurrenceFrequency).order_by(RecurrenceFrequency.days_interval).all()
 
@@ -24,7 +24,7 @@ def list_frequencies(
 @router.get("/active", response_model=List[RecurrenceFrequencyResponse])
 def list_active_frequencies(
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("recurrence_frequencies")),
 ):
     return db.query(RecurrenceFrequency).filter(RecurrenceFrequency.is_active == True).order_by(RecurrenceFrequency.days_interval).all()
 
@@ -33,7 +33,7 @@ def list_active_frequencies(
 def create_frequency(
     frequency: RecurrenceFrequencyCreate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("recurrence_frequencies", "edit")),
 ):
     existing = db.query(RecurrenceFrequency).filter(RecurrenceFrequency.name == frequency.name).first()
     if existing:
@@ -50,7 +50,7 @@ def update_frequency(
     frequency_id: int,
     frequency: RecurrenceFrequencyUpdate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("recurrence_frequencies", "edit")),
 ):
     db_freq = db.query(RecurrenceFrequency).filter(RecurrenceFrequency.id == frequency_id).first()
     if not db_freq:
@@ -66,7 +66,7 @@ def update_frequency(
 def delete_frequency(
     frequency_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("recurrence_frequencies", "edit")),
 ):
     db_freq = db.query(RecurrenceFrequency).filter(RecurrenceFrequency.id == frequency_id).first()
     if not db_freq:

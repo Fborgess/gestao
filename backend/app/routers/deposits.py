@@ -12,7 +12,7 @@ router = APIRouter(prefix="/api/deposits", tags=["Depósitos"])
 @router.get("/", response_model=List[DepositResponse])
 def list_deposits(
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("deposits")),
 ):
     return db.query(Deposit).filter(Deposit.is_active == True).order_by(Deposit.name).all()
 
@@ -21,6 +21,7 @@ def list_deposits(
 def list_my_deposits(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
+    _=Depends(require_module("deposits")),
 ):
     if current_user.role == "admin":
         return db.query(Deposit).filter(Deposit.is_active == True).order_by(Deposit.name).all()
@@ -40,6 +41,7 @@ def list_my_deposits(
 def list_parent_deposits(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
+    _=Depends(require_module("deposits")),
 ):
     if current_user.role == "admin":
         return db.query(Deposit).filter(
@@ -58,7 +60,7 @@ def list_parent_deposits(
 def get_deposit(
     deposit_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("deposits")),
 ):
     dep = db.query(Deposit).filter(Deposit.id == deposit_id).first()
     if not dep:

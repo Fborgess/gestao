@@ -61,7 +61,7 @@ const menuSections = [
   },
 ];
 
-const MODULE_MAP = {
+export const MODULE_MAP = {
   '/contacts': 'contacts',
   '/deposits': 'deposits', '/products': 'products', '/stock-reports': 'stock_reports',
   '/requisicoes': 'requisicoes', '/categories': 'categories', '/units': 'units', '/stock': 'stock_movements',
@@ -72,6 +72,13 @@ const MODULE_MAP = {
   '/users': 'users',
   '/roles': 'roles',
 };
+
+export const DEFAULT_ROUTE_ORDER = [
+  '/', '/contacts', '/deposits', '/products', '/stock-reports', '/requisicoes',
+  '/categories', '/units', '/stock', '/accounts', '/financial',
+  '/financial-categories', '/payment-types', '/recurrence-frequencies',
+  '/financial-reports', '/sale-types', '/sales', '/users', '/roles',
+];
 
 export default function Layout() {
   const { user, permissions, logout } = useAuth();

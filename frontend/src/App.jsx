@@ -24,7 +24,16 @@ import SaleDetail from './pages/SaleDetail';
 import SalePrint from './pages/SalePrint';
 import Requisicoes from './pages/Requisicoes';
 import TransferReport from './pages/TransferReport';
-import Layout from './components/Layout';
+import Layout, { MODULE_MAP, DEFAULT_ROUTE_ORDER } from './components/Layout';
+
+function Home() {
+  const { permissions } = useAuth();
+  if (!permissions || permissions['dashboard']) {
+    return <Dashboard />;
+  }
+  const target = DEFAULT_ROUTE_ORDER.find(p => p !== '/' && permissions[MODULE_MAP[p]]);
+  return <Navigate to={target || '/'} replace />;
+}
 
 function PrivateRoute() {
   const { user, loading } = useAuth();
@@ -52,7 +61,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route element={<PrivateRoute />}>
             <Route element={<Layout />}>
-              <Route path="/" element={<Dashboard />} />
+              <Route path="/" element={<Home />} />
               <Route path="/products" element={<Products />} />
               <Route path="/categories" element={<Categories />} />
               <Route path="/stock" element={<Stock />} />

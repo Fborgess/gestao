@@ -12,7 +12,7 @@ from app.schemas.stock import (
     StockBalanceItem, StockMovementReportItem, StockTransferCreate, StockTransferItem,
     StockAvariaCreate, TransferReportItem,
 )
-from app.utils.security import get_current_user
+from app.utils.security import get_current_user, require_module
 
 router = APIRouter(prefix="/api/stock", tags=["Estoque"])
 
@@ -42,7 +42,7 @@ def list_movements(
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("stock_movements")),
 ):
     query = db.query(StockMovement)
     if deposit_id:
@@ -65,6 +65,7 @@ def create_movement(
     movement: StockMovementCreate,
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
+    _=Depends(require_module("stock_movements", "edit")),
 ):
     product = db.query(Product).filter(Product.id == movement.product_id).first()
     if not product:
@@ -108,7 +109,7 @@ def update_movement(
     movement_id: int,
     movement: StockMovementUpdate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("stock_movements", "edit")),
 ):
     db_movement = db.query(StockMovement).filter(StockMovement.id == movement_id).first()
     if not db_movement:
@@ -150,7 +151,7 @@ def update_movement(
 def delete_movement(
     movement_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("stock_movements", "edit")),
 ):
     db_movement = db.query(StockMovement).filter(StockMovement.id == movement_id).first()
     if not db_movement:
@@ -168,7 +169,7 @@ def stock_balance(
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("stock_reports")),
 ):
     query = (
         db.query(StockMovement, Product.cost_price, Product.price)
@@ -233,7 +234,7 @@ def stock_movement_report(
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("stock_reports")),
 ):
     query = (
         db.query(StockMovement, Product.cost_price, Product.price)
@@ -275,6 +276,7 @@ def transfer_stock(
     data: StockTransferCreate,
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
+    _=Depends(require_module("stock_movements", "edit")),
 ):
     if data.source_deposit_id == data.destination_deposit_id:
         raise HTTPException(400, "Depósitos de origem e destino devem ser diferentes")
@@ -334,6 +336,7 @@ def register_avaria(
     data: StockAvariaCreate,
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
+    _=Depends(require_module("stock_movements", "edit")),
 ):
     deposit = db.query(Deposit).filter(Deposit.id == data.deposit_id).first()
     if not deposit:
@@ -395,7 +398,7 @@ def list_avarias(
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("stock_movements")),
 ):
     query = db.query(StockMovement).filter(
         StockMovement.movement_type == "saida",
@@ -418,7 +421,7 @@ def transfer_report(
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("stock_reports")),
 ):
     """
     Relatório de abastecimento vs devolução vs avarias vs vendas por sub-depósito.

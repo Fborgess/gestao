@@ -4,7 +4,7 @@ from typing import List
 from app.database import get_db
 from app.models.payment_type import PaymentType
 from app.schemas.payment_type import PaymentTypeCreate, PaymentTypeUpdate, PaymentTypeResponse
-from app.utils.security import get_current_user
+from app.utils.security import get_current_user, require_module
 
 router = APIRouter(prefix="/api/payment-types", tags=["Tipos de Pagamento"])
 
@@ -12,7 +12,7 @@ router = APIRouter(prefix="/api/payment-types", tags=["Tipos de Pagamento"])
 @router.get("/", response_model=List[PaymentTypeResponse])
 def list_payment_types(
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("payment_types")),
 ):
     return db.query(PaymentType).filter(PaymentType.is_active == True).all()
 
@@ -21,7 +21,7 @@ def list_payment_types(
 def get_payment_type(
     pt_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("payment_types")),
 ):
     pt = db.query(PaymentType).filter(PaymentType.id == pt_id).first()
     if not pt:
@@ -33,7 +33,7 @@ def get_payment_type(
 def create_payment_type(
     payment_type: PaymentTypeCreate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("payment_types", "edit")),
 ):
     db_pt = PaymentType(**payment_type.model_dump())
     db.add(db_pt)
@@ -47,7 +47,7 @@ def update_payment_type(
     pt_id: int,
     payment_type: PaymentTypeUpdate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("payment_types", "edit")),
 ):
     db_pt = db.query(PaymentType).filter(PaymentType.id == pt_id).first()
     if not db_pt:
@@ -63,7 +63,7 @@ def update_payment_type(
 def delete_payment_type(
     pt_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("payment_types", "edit")),
 ):
     db_pt = db.query(PaymentType).filter(PaymentType.id == pt_id).first()
     if not db_pt:

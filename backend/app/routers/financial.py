@@ -5,7 +5,7 @@ from datetime import datetime
 from app.database import get_db
 from app.models.financial import Transaction
 from app.schemas.financial import TransactionCreate, TransactionUpdate, TransactionResponse
-from app.utils.security import get_current_user
+from app.utils.security import get_current_user, require_module
 
 router = APIRouter(prefix="/api/financial", tags=["Financeiro"])
 
@@ -22,7 +22,7 @@ def list_transactions(
     due_date_end: Optional[datetime] = None,
     contact_id: int = None,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("financial")),
 ):
     query = db.query(Transaction)
     if type:
@@ -46,7 +46,7 @@ def list_transactions(
 def get_transaction(
     transaction_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("financial")),
 ):
     t = db.query(Transaction).filter(Transaction.id == transaction_id).first()
     if not t:
@@ -59,6 +59,7 @@ def create_transaction(
     transaction: TransactionCreate,
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
+    _=Depends(require_module("financial", "edit")),
 ):
     db_transaction = Transaction(**transaction.model_dump(), user_id=current_user.id)
     db.add(db_transaction)
@@ -72,7 +73,7 @@ def update_transaction(
     transaction_id: int,
     transaction: TransactionUpdate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("financial", "edit")),
 ):
     db_transaction = db.query(Transaction).filter(Transaction.id == transaction_id).first()
     if not db_transaction:
@@ -90,7 +91,7 @@ def update_transaction(
 def delete_transaction(
     transaction_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("financial", "edit")),
 ):
     db_transaction = db.query(Transaction).filter(Transaction.id == transaction_id).first()
     if not db_transaction:

@@ -8,7 +8,7 @@ from app.schemas.financial_category import (
     FinancialCategoryUpdate,
     FinancialCategoryResponse,
 )
-from app.utils.security import get_current_user
+from app.utils.security import get_current_user, require_module
 
 router = APIRouter(prefix="/api/financial-categories", tags=["Categorias Financeiras"])
 
@@ -18,7 +18,7 @@ def list_categories(
     type: Optional[str] = None,
     parent_id: Optional[int] = None,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("financial_categories")),
 ):
     query = db.query(FinancialCategory).filter(FinancialCategory.is_active == True)
     if type:
@@ -34,7 +34,7 @@ def list_categories(
 def list_all_categories(
     type: Optional[str] = None,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("financial_categories")),
 ):
     query = db.query(FinancialCategory)
     if type:
@@ -46,7 +46,7 @@ def list_all_categories(
 def create_category(
     category: FinancialCategoryCreate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("financial_categories", "edit")),
 ):
     db_cat = FinancialCategory(**category.model_dump())
     db.add(db_cat)
@@ -60,7 +60,7 @@ def update_category(
     category_id: int,
     category: FinancialCategoryUpdate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("financial_categories", "edit")),
 ):
     db_cat = db.query(FinancialCategory).filter(FinancialCategory.id == category_id).first()
     if not db_cat:
@@ -76,7 +76,7 @@ def update_category(
 def delete_category(
     category_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("financial_categories", "edit")),
 ):
     db_cat = db.query(FinancialCategory).filter(FinancialCategory.id == category_id).first()
     if not db_cat:

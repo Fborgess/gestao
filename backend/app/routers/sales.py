@@ -9,7 +9,7 @@ from app.schemas.sale import (
     SaleTypeCreate, SaleTypeUpdate, SaleTypeResponse,
     SaleCreate, SaleUpdate, SaleResponse, SaleItemResponse,
 )
-from app.utils.security import get_current_user
+from app.utils.security import get_current_user, require_module
 
 
 def _prod_label(p):
@@ -45,7 +45,7 @@ sale_type_router = APIRouter(prefix="/api/sale-types", tags=["Tipos de Lançamen
 @sale_type_router.get("/", response_model=List[SaleTypeResponse])
 def list_sale_types(
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("sale_types")),
 ):
     return db.query(SaleType).filter(SaleType.is_active == True).all()
 
@@ -54,7 +54,7 @@ def list_sale_types(
 def create_sale_type(
     data: SaleTypeCreate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("sale_types", "edit")),
 ):
     st = SaleType(**data.model_dump())
     db.add(st)
@@ -68,7 +68,7 @@ def update_sale_type(
     st_id: int,
     data: SaleTypeUpdate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("sale_types", "edit")),
 ):
     st = db.query(SaleType).filter(SaleType.id == st_id).first()
     if not st:
@@ -84,7 +84,7 @@ def update_sale_type(
 def delete_sale_type(
     st_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("sale_types", "edit")),
 ):
     st = db.query(SaleType).filter(SaleType.id == st_id).first()
     if not st:
@@ -102,7 +102,7 @@ sale_router = APIRouter(prefix="/api/sales", tags=["Lançamentos"])
 @sale_router.get("/", response_model=List[SaleResponse])
 def list_sales(
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("sales")),
 ):
     sales = (
         db.query(Sale)
@@ -117,7 +117,7 @@ def list_sales(
 def get_sale(
     sale_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("sales")),
 ):
     s = (
         db.query(Sale)
@@ -135,7 +135,7 @@ def update_sale(
     sale_id: int,
     data: SaleUpdate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("sales", "edit")),
 ):
     sale = db.query(Sale).filter(Sale.id == sale_id).first()
     if not sale:
@@ -180,6 +180,7 @@ def create_sale(
     data: SaleCreate,
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
+    _=Depends(require_module("sales", "edit")),
 ):
     contact = db.query(Contact).filter(Contact.id == data.contact_id).first()
     if not contact:

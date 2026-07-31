@@ -7,7 +7,7 @@ from app.database import get_db
 from app.models.product import Product, Category
 from app.models.unit import Unit
 from app.schemas.product import ProductCreate, ProductUpdate, ProductResponse
-from app.utils.security import get_current_user
+from app.utils.security import get_current_user, require_module
 import openpyxl
 import io
 import os
@@ -34,7 +34,7 @@ def list_products(
     category_id: Optional[int] = None,
     deposit_id: Optional[int] = None,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("products")),
 ):
     query = db.query(Product).filter(Product.is_active == True)
     if search:
@@ -47,7 +47,7 @@ def list_products(
 
 
 @router.get("/export-template")
-def export_template(background_tasks: BackgroundTasks):
+def export_template(background_tasks: BackgroundTasks, _=Depends(require_module("products"))):
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "Produtos"
@@ -73,7 +73,7 @@ def export_template(background_tasks: BackgroundTasks):
 def get_product(
     product_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("products")),
 ):
     product = db.query(Product).filter(Product.id == product_id).first()
     if not product:
@@ -85,7 +85,7 @@ def get_product(
 def create_product(
     product: ProductCreate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("products", "edit")),
 ):
     existing = db.query(Product).filter(Product.sku == product.sku).first()
     if existing:
@@ -102,7 +102,7 @@ def update_product(
     product_id: int,
     product: ProductUpdate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("products", "edit")),
 ):
     db_product = db.query(Product).filter(Product.id == product_id).first()
     if not db_product:
@@ -122,7 +122,7 @@ def update_product(
 def delete_product(
     product_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("products", "edit")),
 ):
     db_product = db.query(Product).filter(Product.id == product_id).first()
     if not db_product:
@@ -136,7 +136,7 @@ def delete_product(
 def import_products_excel(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("products", "edit")),
 ):
     if not file.filename.endswith((".xlsx", ".xls")):
         raise HTTPException(400, "Formato inválido. Envie um arquivo .xlsx ou .xls")
@@ -254,7 +254,7 @@ def import_products_excel(
 @router.get("/low-stock/", response_model=List[ProductResponse])
 def get_low_stock_products(
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("products")),
 ):
     return (
         db.query(Product)

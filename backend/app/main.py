@@ -85,7 +85,7 @@ async def global_exception_handler(request: Request, exc: Exception):
     traceback.print_exc()
     return JSONResponse(
         status_code=500,
-        content={"detail": str(exc)},
+        content={"detail": "Erro interno do servidor"},
     )
 
 app.include_router(auth.router)

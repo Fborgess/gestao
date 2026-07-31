@@ -11,7 +11,7 @@ from app.schemas.requisicao import (
     RequisicaoCreate, RequisicaoUpdate, RequisicaoResponse,
     RequisicaoItemResponse, RequisicaoApprove,
 )
-from app.utils.security import get_current_user
+from app.utils.security import get_current_user, require_module
 from app.routers.stock import recalculate_product_stock
 
 router = APIRouter(prefix="/api/requisicoes", tags=["Requisições de Estoque"])
@@ -52,7 +52,7 @@ def _req_to_response(r: Requisicao) -> RequisicaoResponse:
 def list_requisicoes(
     status: str = None,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    _=Depends(require_module("requisicoes")),
 ):
     query = db.query(Requisicao).options(
         joinedload(Requisicao.requester),
@@ -72,6 +72,7 @@ def create_requisicao(
     data: RequisicaoCreate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
+    _=Depends(require_module("requisicoes", "edit")),
 ):
     if not data.items:
         raise HTTPException(400, "Adicione pelo menos um item")
@@ -122,7 +123,7 @@ def create_requisicao(
 def get_requisicao(
     requisicao_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    _=Depends(require_module("requisicoes")),
 ):
     r = db.query(Requisicao).options(
         joinedload(Requisicao.requester),
@@ -141,7 +142,7 @@ def update_requisicao(
     requisicao_id: int,
     data: RequisicaoUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    _=Depends(require_module("requisicoes", "edit")),
 ):
     req = db.query(Requisicao).options(
         joinedload(Requisicao.items),
@@ -200,7 +201,7 @@ def update_requisicao(
 def delete_requisicao(
     requisicao_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    _=Depends(require_module("requisicoes", "edit")),
 ):
     req = db.query(Requisicao).filter(Requisicao.id == requisicao_id).first()
     if not req:
@@ -218,6 +219,7 @@ def approve_requisicao(
     data: RequisicaoApprove,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
+    _=Depends(require_module("requisicoes", "edit")),
 ):
     req = db.query(Requisicao).options(
         joinedload(Requisicao.items),
@@ -254,6 +256,7 @@ def fulfill_requisicao(
     requisicao_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
+    _=Depends(require_module("requisicoes", "edit")),
 ):
     req = db.query(Requisicao).options(
         joinedload(Requisicao.requester),
@@ -304,6 +307,7 @@ def receive_requisicao(
     requisicao_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
+    _=Depends(require_module("requisicoes", "edit")),
 ):
     req = db.query(Requisicao).options(
         joinedload(Requisicao.requester),
@@ -353,7 +357,7 @@ def receive_requisicao(
 def cancel_requisicao(
     requisicao_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    _=Depends(require_module("requisicoes", "edit")),
 ):
     req = db.query(Requisicao).options(
         joinedload(Requisicao.requester),

@@ -8,7 +8,7 @@ from app.models.stock import StockMovement
 from app.models.financial import Transaction
 from app.models.financial_category import FinancialCategory
 from app.models.contact import Contact
-from app.utils.security import get_current_user
+from app.utils.security import get_current_user, require_module
 from fastapi import APIRouter, Depends
 
 router = APIRouter(prefix="/api/reports", tags=["Relatórios"])
@@ -17,7 +17,7 @@ router = APIRouter(prefix="/api/reports", tags=["Relatórios"])
 @router.get("/dashboard")
 def get_dashboard(
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("dashboard")),
 ):
     total_products = db.query(Product).filter(Product.is_active == True).count()
     low_stock = (
@@ -265,7 +265,7 @@ def get_financial_summary(
     start_date: datetime = None,
     end_date: datetime = None,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("financial_reports")),
 ):
     if not start_date:
         start_date = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0)
@@ -296,7 +296,7 @@ def get_financial_summary(
 def get_stock_summary(
     days: int = 30,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _=Depends(require_module("stock_reports")),
 ):
     since = datetime.utcnow() - timedelta(days=days)
 
