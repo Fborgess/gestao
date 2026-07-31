@@ -343,23 +343,6 @@ def fulfill_requisicao(
         if delivered < 0:
             raise HTTPException(400, "Quantidade entregue não pode ser negativa")
         it.quantity_fulfilled = delivered
-        if delivered <= 0:
-            continue
-        # create stock exit movement from deposit_fulfilling
-        total_val = delivered * (it.unit_price or 0)
-        mov = StockMovement(
-            product_id=it.product_id,
-            deposit_id=req.deposit_fulfilling_id,
-            movement_type="saida",
-            quantity=delivered,
-            unit_price=it.unit_price or 0,
-            total_value=total_val,
-            reason=f"Requisição #{req.id}: {req.reason or ''}",
-            source="requisicao",
-            user_id=current_user.id,
-        )
-        db.add(mov)
-        recalculate_product_stock(db, it.product_id)
 
     req.status = "atendido"
     db.commit()
@@ -397,6 +380,10 @@ def receive_requisicao(
         raise HTTPException(400, "Requisição precisa estar atendida para ser recebida")
 
     rcv_map = {it.product_id: it.quantity_received for it in data.items}
+    existing_saida = {m.product_id for m in db.query(StockMovement).filter(
+        StockMovement.movement_type == "saida",
+        StockMovement.reason.like(f"Requisição #{req.id}:%"),
+    ).all()}
     for it in req.items:
         sent = it.quantity_fulfilled or it.quantity_approved or it.quantity_requested or 0
         received = rcv_map.get(it.product_id)
@@ -407,6 +394,22 @@ def receive_requisicao(
         if received > sent:
             raise HTTPException(400, "Quantidade recebida não pode exceder a enviada")
         it.quantity_received = received
+        if sent > 0 and it.product_id not in existing_saida:
+            # create stock exit movement from deposit_fulfilling (recorded at receipt)
+            total_val = sent * (it.unit_price or 0)
+            mov = StockMovement(
+                product_id=it.product_id,
+                deposit_id=req.deposit_fulfilling_id,
+                movement_type="saida",
+                quantity=sent,
+                unit_price=it.unit_price or 0,
+                total_value=total_val,
+                reason=f"Requisição #{req.id}: {req.reason or ''}",
+                source="requisicao",
+                user_id=current_user.id,
+            )
+            db.add(mov)
+            recalculate_product_stock(db, it.product_id)
         if received <= 0:
             continue
         # create stock entry movement into deposit_requesting

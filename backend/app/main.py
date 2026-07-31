@@ -95,6 +95,40 @@ if not DATABASE_URL.startswith("sqlite"):
             ))
         conn.commit()
 
+# Migração: movimentações de requisição só são gravadas após o recebimento.
+# Remove saídas de requisições ainda não recebidas (em trânsito).
+from sqlalchemy import func
+from sqlalchemy.orm import Session
+from app.models.stock import StockMovement
+from app.models.requisicao import Requisicao
+from app.models.product import Product
+
+with Session(engine) as session:
+    pending = [r[0] for r in session.query(Requisicao.id).filter(Requisicao.status != "recebido").all()]
+    affected = set()
+    for rid in pending:
+        movs = session.query(StockMovement).filter(
+            StockMovement.movement_type == "saida",
+            StockMovement.source == "requisicao",
+            StockMovement.reason.like(f"Requisição #{rid}:%"),
+        ).all()
+        for m in movs:
+            affected.add(m.product_id)
+            session.delete(m)
+    if affected:
+        session.flush()
+        for pid in affected:
+            entrada = session.query(func.coalesce(func.sum(StockMovement.quantity), 0)).filter(
+                StockMovement.product_id == pid, StockMovement.movement_type == "entrada"
+            ).scalar()
+            saida = session.query(func.coalesce(func.sum(StockMovement.quantity), 0)).filter(
+                StockMovement.product_id == pid, StockMovement.movement_type == "saida"
+            ).scalar()
+            product = session.query(Product).filter(Product.id == pid).first()
+            if product:
+                product.current_stock = entrada - saida
+    session.commit()
+
 from seed import seed, seed_frequencies
 seed()
 seed_frequencies()

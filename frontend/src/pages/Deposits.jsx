@@ -300,7 +300,7 @@ function MovementsModal({ deposit, products, deposits, onClose }) {
     if (!deposit) return;
     setLoading(true);
     api.get('/stock/movements/', { params: { deposit_id: deposit.id } })
-      .then(res => setMovements(res.data.filter(m => m.source !== 'requisicao')))
+      .then(res => setMovements(res.data))
       .catch(() => {})
       .finally(() => setLoading(false));
   };
