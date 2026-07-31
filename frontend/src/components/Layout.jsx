@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Package, ArrowRightLeft, DollarSign, Users, LogOut,
     Tag, Building, Wallet, CreditCard, Banknote, ChevronDown, ChevronRight,
     ChevronLeft, Warehouse, Ruler, BarChart3, Menu, UserCog, Clock, FileText,
-    ShoppingCart, ClipboardList, Shield
+    ShoppingCart, ClipboardList, Shield, X
 } from 'lucide-react';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import InactivityWarning from './InactivityWarning';
@@ -78,7 +78,18 @@ export default function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [expandedSections, setExpandedSections] = useState({});
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(() => window.matchMedia('(max-width: 768px)').matches ? false : true);
+  const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width: 768px)').matches);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)');
+    const handler = (e) => {
+      setIsMobile(e.matches);
+      setSidebarOpen(!e.matches);
+    };
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
 
   useEffect(() => {
     setSidebarOpen(false);
@@ -146,20 +157,26 @@ export default function Layout() {
 
   return (
     <div className="flex h-screen bg-gray-100">
-      <aside className={`${sidebarOpen ? 'w-64' : 'w-16'} bg-gray-900 text-white flex flex-col overflow-y-auto transition-all duration-300`}>
-        <div className={`p-4 border-b border-gray-700 flex items-center ${sidebarOpen ? 'justify-between' : 'justify-center'}`}>
-          {sidebarOpen && (
+      {isMobile && sidebarOpen && (
+        <div className="fixed inset-0 bg-black/50 z-30" onClick={() => setSidebarOpen(false)} />
+      )}
+      <aside className={`${isMobile
+          ? `fixed inset-y-0 left-0 z-40 w-72 transform transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`
+          : `${sidebarOpen ? 'w-64' : 'w-16'} transition-all duration-300`
+        } bg-gray-900 text-white flex flex-col overflow-y-auto`}>
+        <div className={`p-4 border-b border-gray-700 flex items-center ${!isMobile && !sidebarOpen ? 'justify-center' : 'justify-between'}`}>
+          {(!isMobile && sidebarOpen) || isMobile ? (
             <div>
               <h1 className="text-lg font-bold">Sistema de Gestão</h1>
               <p className="text-xs text-gray-400 mt-1">Estoque, Vendas e Financeiro</p>
             </div>
-          )}
+          ) : null}
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="text-gray-400 hover:text-white p-1 rounded"
-            title={sidebarOpen ? 'Recolher menu' : 'Expandir menu'}
+            title={isMobile ? 'Fechar menu' : (sidebarOpen ? 'Recolher menu' : 'Expandir menu')}
           >
-            {sidebarOpen ? <ChevronLeft size={18} /> : <Menu size={18} />}
+            {isMobile ? <X size={18} /> : (sidebarOpen ? <ChevronLeft size={18} /> : <Menu size={18} />)}
           </button>
         </div>
         <nav className="flex-1 p-2">
@@ -228,8 +245,16 @@ export default function Layout() {
         </div>
       </aside>
       <main className="flex-1 overflow-auto">
+        {isMobile && (
+          <div className="sticky top-0 z-20 bg-gray-900 text-white px-4 py-3 flex items-center gap-3 shadow-md">
+            <button onClick={() => setSidebarOpen(true)} className="text-gray-300 hover:text-white" title="Abrir menu">
+              <Menu size={20} />
+            </button>
+            <span className="text-sm font-semibold truncate">Sistema de Gestão</span>
+          </div>
+        )}
         <ConnectionStatus />
-        <div className="p-6"><Outlet /></div>
+        <div className="p-4 md:p-6"><Outlet /></div>
       </main>
       <InactivityWarning
         show={showWarning}
