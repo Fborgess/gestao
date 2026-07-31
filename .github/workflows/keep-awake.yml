@@ -8,6 +8,8 @@ on:
 jobs:
   ping:
     runs-on: ubuntu-latest
+    timeout-minutes: 2
     steps:
       - name: Ping Render service
-        run: curl -s -o /dev/null -w "%{http_code}\n" https://gestao-iscb.onrender.com/api/health || true
+        run: |
+          curl -s -o /dev/null -w "HTTP %{http_code} em %{time_total}s\n" https://gestao-iscb.onrender.com/api/health || true
