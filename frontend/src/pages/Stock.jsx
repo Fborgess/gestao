@@ -150,20 +150,20 @@ export default function Stock() {
             {sortedMovements.map(m => (
               <tr key={m.id} className="border-t hover:bg-gray-50">
                 <td className="p-3 text-gray-600 whitespace-nowrap">{m.movement_date ? new Date(m.movement_date).toLocaleDateString('pt-BR') : '-'}</td>
-                <td className="p-3 whitespace-nowrap">{getDepositName(m.deposit_id)}</td>
-                <td className="p-3 font-medium whitespace-nowrap">{getProductName(m.product_id)}</td>
+                <td className="p-3 whitespace-nowrap">{m.deposit_name || getDepositName(m.deposit_id)}</td>
+                <td className="p-3 font-medium whitespace-nowrap">{m.product_name || getProductName(m.product_id)}</td>
                 <td className="p-3 text-center whitespace-nowrap">
                   <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
                     m.movement_type === 'entrada' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
                   }`}>
                     {m.movement_type === 'entrada' ? <ArrowDownCircle size={12} /> : <ArrowUpCircle size={12} />}
-                    {m.movement_type === 'entrada' ? 'Entrada' : 'Requisição'}
+                    {m.movement_type === 'entrada' ? 'Entrada' : 'Saída'}
                   </span>
                 </td>
                 <td className="p-3 text-right font-medium whitespace-nowrap">{m.quantity}</td>
                 <td className="p-3 text-right whitespace-nowrap">{m.movement_type === 'entrada' ? formatCurrency(m.unit_price || 0) : '-'}</td>
                 <td className="p-3 text-right whitespace-nowrap">{m.movement_type === 'entrada' ? formatCurrency(m.total_value || 0) : '-'}</td>
-                <td className="p-3 text-gray-500 text-xs whitespace-nowrap">{m.reason || '-'}</td>
+                <td className="p-3 text-gray-500 text-xs whitespace-nowrap">{m.source === 'requisicao' ? '-' : (m.reason || '-')}</td>
                 <td className="p-3 text-center whitespace-nowrap">
                   {m.source !== 'requisicao' && (
                     <>

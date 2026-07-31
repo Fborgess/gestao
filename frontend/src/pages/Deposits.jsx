@@ -406,7 +406,7 @@ function MovementsModal({ deposit, products, deposits, onClose }) {
                     ) : (
                       <>
                         <td className="p-3 text-gray-500 text-xs">{m.movement_date ? new Date(m.movement_date).toLocaleDateString('pt-BR') : '-'}</td>
-                        <td className="p-3 font-medium">{prodName(m.product_id)}</td>
+                        <td className="p-3 font-medium">{m.product_name || prodName(m.product_id)}</td>
                         <td className="p-3 text-center">
                           <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${m.movement_type === 'entrada' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
                             {m.movement_type === 'entrada' ? <ArrowDownCircle size={11} /> : <ArrowUpCircle size={11} />}
@@ -415,7 +415,7 @@ function MovementsModal({ deposit, products, deposits, onClose }) {
                         </td>
                         <td className="p-3 text-center font-medium">{m.quantity}</td>
                         <td className="p-3 text-center text-gray-500">{m.movement_type === 'entrada' ? `R$ ${(m.unit_price || 0).toFixed(2)}` : '-'}</td>
-                        <td className="p-3 text-xs text-gray-500">{m.reason || '-'}</td>
+                        <td className="p-3 text-xs text-gray-500">{m.source === 'requisicao' ? '-' : (m.reason || '-')}</td>
                         <td className="p-3 text-center">
                           <div className="flex items-center justify-center gap-1">
                             {m.source !== 'requisicao' && (

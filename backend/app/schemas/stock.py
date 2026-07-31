@@ -28,7 +28,9 @@ class StockMovementUpdate(BaseModel):
 class StockMovementResponse(BaseModel):
     id: int
     product_id: int
+    product_name: Optional[str] = None
     deposit_id: int
+    deposit_name: Optional[str] = None
     movement_type: str
     movement_date: Optional[datetime] = None
     quantity: int

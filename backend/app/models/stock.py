@@ -23,3 +23,11 @@ class StockMovement(Base):
 
     product = relationship("Product", back_populates="stock_movements")
     deposit = relationship("Deposit")
+
+    @property
+    def product_name(self):
+        return self.product.name if self.product else None
+
+    @property
+    def deposit_name(self):
+        return self.deposit.name if self.deposit else None
