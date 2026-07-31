@@ -179,7 +179,7 @@ export default function Stock() {
 
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-auto">
             <div className="flex gap-2 mb-4">
               <button type="button" onClick={() => setActiveTab('entrada')}
                 className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'entrada' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-600'}`}>

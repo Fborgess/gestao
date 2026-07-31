@@ -687,7 +687,7 @@ const dueDaysInfo = (t) => {
 
       {showPaymentModal && payingTransaction && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-sm">
+          <div className="bg-white rounded-xl p-6 w-full max-w-sm max-h-[90vh] overflow-auto">
             <h2 className="text-lg font-bold mb-4">Registrar Pagamento</h2>
             <div className="mb-3 text-sm text-gray-600">
               <p><strong>{payingTransaction.description}</strong></p>

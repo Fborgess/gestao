@@ -658,7 +658,7 @@ export default function Deposits() {
 
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-auto">
             <h2 className="text-lg font-bold mb-4">{editing ? 'Editar' : form.parent_id ? 'Novo Sub-depósito' : 'Novo Depósito'}</h2>
             <form onSubmit={handleSubmit} className="space-y-3">
               <input placeholder="Nome *" value={form.name} onChange={e => setForm({...form, name: e.target.value})}

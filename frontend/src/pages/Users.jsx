@@ -183,15 +183,15 @@ export default function Users() {
 
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl flex flex-col max-h-[90vh]">
             <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
               <div className="p-2 rounded-xl bg-blue-100 text-blue-600">
                 <UsersIcon size={20} />
               </div>
               <h2 className="text-lg font-bold text-gray-900">{editing ? 'Editar' : 'Novo'} Usuário</h2>
             </div>
-            <form onSubmit={handleSubmit}>
-              <div className="px-6 py-4 space-y-4">
+            <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+              <div className="px-6 py-4 space-y-4 overflow-y-auto">
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1">Nome *</label>
                   <input placeholder="Nome completo" value={form.name}
