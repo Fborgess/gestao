@@ -250,7 +250,7 @@ export default function Requisicoes() {
                 <th className="p-3 text-left">Produto</th>
                 <th className="p-3 text-right">Solicitado</th>
                 {r.status !== 'pendente' && <th className="p-3 text-right">Aprovado</th>}
-                {(r.status === 'atendido' || r.status === 'recebido') && <th className="p-3 text-right">Entregue</th>}
+                {(r.status === 'atendido' || r.status === 'recebido') && <th className="p-3 text-right">Enviado</th>}
                 {r.status === 'recebido' && <th className="p-3 text-right">Recebido</th>}
                 {(r.status === 'atendido' || r.status === 'recebido') && <th className="p-3 text-right">Preço Unit.</th>}
               </tr>
