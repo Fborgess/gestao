@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Eye, EyeOff } from 'lucide-react';
 
@@ -90,11 +90,6 @@ export default function Login() {
             ) : 'Entrar'}
           </button>
         </form>
-
-        <p className="text-center mt-4 text-sm text-gray-500">
-          Não tem conta?{' '}
-          <Link to="/register" className="text-blue-600 hover:underline">Cadastre-se</Link>
-        </p>
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.user import User
 from app.models.deposit import Deposit
+from app.models.role import Role
 from app.schemas.user import UserCreate, UserUpdate, UserResponse, Token, LoginRequest
 from app.utils.security import (
     verify_password,
@@ -16,7 +17,14 @@ router = APIRouter(prefix="/api/auth", tags=["Autenticação"])
 
 
 @router.post("/register", response_model=UserResponse)
-def register(user: UserCreate, db: Session = Depends(get_db)):
+def register(user: UserCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Apenas administradores podem criar usuários")
+
+    role = db.query(Role).filter(Role.name == user.role).first()
+    if not role:
+        raise HTTPException(status_code=400, detail="Perfil inválido")
+
     existing = db.query(User).filter(User.email == user.email).first()
     if existing:
         raise HTTPException(status_code=400, detail="Email já cadastrado")
@@ -25,7 +33,7 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
         name=user.name,
         email=user.email,
         hashed_password=get_password_hash(user.password),
-        role=user.role,
+        role=role.name,
     )
     db.add(new_user)
     db.flush()

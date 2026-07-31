@@ -39,10 +39,7 @@ export function AuthProvider({ children }) {
         /* roles table may not exist yet */
       }
       if (!foundRole) {
-        const allMods = ['dashboard','contacts','deposits','deposits_manage','products','stock_reports','requisicoes','categories','units','stock_movements','accounts','financial','financial_categories','payment_types','recurrence_frequencies','financial_reports','sale_types','sales','users','roles'];
-        const perms = {};
-        allMods.forEach(mod => { perms[mod] = 'edit'; });
-        setPermissions(perms);
+        setPermissions({});
       }
     } catch {
       localStorage.removeItem('token');
@@ -57,11 +54,6 @@ export function AuthProvider({ children }) {
     await loadUser();
   };
 
-  const register = async (name, email, password) => {
-    await api.post('/auth/register', { name, email, password });
-    await login(email, password);
-  };
-
   const logout = () => {
     localStorage.removeItem('token');
     setUser(null);
@@ -69,7 +61,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, permissions, login, register, logout, loading }}>
+    <AuthContext.Provider value={{ user, permissions, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );
