@@ -163,7 +163,11 @@ export default function Requisicoes() {
       product_id: parseInt(pid, 10),
       quantity_fulfilled: parseInt(q, 10) || 0,
     }));
-    if (!confirm(`Confirmar atendimento da requisição #${r.id}? Isso criará movimentações de saída no estoque.`)) return;
+    const exceed = r.items.filter(it => (fulfillQty[it.product_id] || 0) > (it.quantity_approved || it.quantity_requested));
+    if (exceed.length > 0) {
+      const msg = exceed.map(it => `${it.product_name}: entregar ${fulfillQty[it.product_id]} (solicitado ${it.quantity_requested})`).join('\n');
+      if (!confirm(`Atenção! A quantidade de alguns itens é MAIOR que a solicitada:\n\n${msg}\n\nDeseja continuar mesmo assim?`)) return;
+    } else if (!confirm(`Confirmar atendimento da requisição #${r.id}? Isso criará movimentações de saída no estoque.`)) return;
     try {
       await api.put(`/requisicoes/${r.id}/fulfill`, { items });
       setFulfilling(null);
@@ -470,25 +474,25 @@ export default function Requisicoes() {
               <span className="ml-auto text-sm text-gray-500">Liberada por {fulfilling.approver_name || '-'}</span>
             </div>
             <div className="px-6 py-4 space-y-2">
-              <p className="text-sm text-gray-500 mb-3">Informe a quantidade entregue de cada item (parcial ou completa). Máximo: aprovado.</p>
+              <p className="text-sm text-gray-500 mb-3">Informe a quantidade entregue de cada item (parcial ou completa). Se informar mais que o solicitado, será pedida uma confirmação.</p>
               {fulfilling.items.map(it => {
                 const approved = it.quantity_approved || it.quantity_requested;
                 return (
                   <div key={it.product_id} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
                     <span className="text-sm font-medium flex-1">{it.product_name}</span>
-                    <span className="text-xs text-gray-500 mr-2">Aprovado: {approved}</span>
+                    <span className="text-xs text-gray-500 mr-2">Solicitado: {it.quantity_requested}</span>
                     <div className="flex items-center gap-1.5">
                       <button type="button" onClick={() => setFulfillQty(q => ({ ...q, [it.product_id]: Math.max(0, (q[it.product_id] || 0) - 1) }))}
                         className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">−</button>
-                      <input type="number" min="0" max={approved} value={fulfillQty[it.product_id] ?? 0}
+                      <input type="number" min="0" value={fulfillQty[it.product_id] ?? 0}
                         onChange={e => {
                           if (e.target.value === '') return;
                           const n = parseInt(e.target.value, 10);
                           if (isNaN(n)) return;
-                          setFulfillQty(q => ({ ...q, [it.product_id]: Math.min(approved, Math.max(0, n)) }));
+                          setFulfillQty(q => ({ ...q, [it.product_id]: Math.max(0, n) }));
                         }}
                         className="w-14 text-center font-bold text-sm border border-gray-200 rounded-lg py-1" />
-                      <button type="button" onClick={() => setFulfillQty(q => ({ ...q, [it.product_id]: Math.min(approved, (q[it.product_id] || 0) + 1) }))}
+                      <button type="button" onClick={() => setFulfillQty(q => ({ ...q, [it.product_id]: (q[it.product_id] || 0) + 1 }))}
                         className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">+</button>
                     </div>
                   </div>

@@ -341,8 +341,6 @@ def fulfill_requisicao(
             delivered = approved
         if delivered < 0:
             raise HTTPException(400, "Quantidade entregue não pode ser negativa")
-        if delivered > approved:
-            raise HTTPException(400, "Quantidade entregue não pode exceder a aprovada")
         it.quantity_fulfilled = delivered
         if delivered <= 0:
             continue
