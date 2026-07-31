@@ -2,23 +2,25 @@ import { useState, useEffect, useRef } from 'react';
 import { WifiOff } from 'lucide-react';
 
 const CHECK_INTERVAL = 30000;
+const CHECK_TIMEOUT = 40000;
+const FAILURES_TO_SHOW = 2;
 
 export default function ConnectionStatus() {
   const [offline, setOffline] = useState(false);
   const [dismissed, setDismissed] = useState(false);
-  const prevRef = useRef(false);
+  const failuresRef = useRef(0);
 
   useEffect(() => {
     const check = () => {
-      fetch('/api/health', { signal: AbortSignal.timeout(5000) })
+      fetch('/api/health', { signal: AbortSignal.timeout(CHECK_TIMEOUT) })
         .then(r => r.ok ? Promise.resolve() : Promise.reject())
         .then(() => {
-          if (prevRef.current) setOffline(false);
-          prevRef.current = false;
+          failuresRef.current = 0;
+          if (offline) setOffline(false);
         })
         .catch(() => {
-          if (!prevRef.current) { setOffline(true); setDismissed(false); }
-          prevRef.current = true;
+          failuresRef.current += 1;
+          if (failuresRef.current >= FAILURES_TO_SHOW && !offline) { setOffline(true); setDismissed(false); }
         });
     };
     check();
@@ -26,7 +28,7 @@ export default function ConnectionStatus() {
     window.addEventListener('online', check);
     window.addEventListener('offline', () => { setOffline(true); setDismissed(false); });
     return () => { clearInterval(id); window.removeEventListener('online', check); };
-  }, []);
+  }, [offline]);
 
   if (!offline || dismissed) return null;
 
