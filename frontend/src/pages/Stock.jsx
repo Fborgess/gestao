@@ -33,7 +33,11 @@ export default function Stock() {
     loadMovements();
   }, []);
 
-  const getProductName = (id) => products.find(p => p.id === id)?.name || '-';
+  const getProductName = (id) => {
+    const p = products.find(p => p.id === id);
+    if (!p) return '-';
+    return p.display_name || (p.unit?.abbreviation ? `${p.name} ${p.unit.abbreviation}` : p.name);
+  };
   const getDepositName = (id) => deposits.find(d => d.id === id)?.name || '-';
 
   const sortedMovements = useMemo(() => {
@@ -108,7 +112,7 @@ export default function Stock() {
     }
   };
 
-  const productOptions = products.map(p => ({ value: p.id, label: p.name }));
+  const productOptions = products.map(p => ({ value: p.id, label: getProductName(p.id) }));
   const depositOptions = deposits.map(d => ({ value: d.id, label: d.name }));
 
   return (

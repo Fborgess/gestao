@@ -10,12 +10,11 @@ from app.schemas.sale import (
     SaleCreate, SaleUpdate, SaleResponse, SaleItemResponse,
 )
 from app.utils.security import get_current_user, require_module
+from app.utils.helpers import product_label
 
 
 def _prod_label(p):
-    if p and p.unit:
-        return f"{p.name} {p.unit.abbreviation}"
-    return p.name if p else None
+    return product_label(p)
 
 
 def _sale_to_response(s: Sale) -> SaleResponse:

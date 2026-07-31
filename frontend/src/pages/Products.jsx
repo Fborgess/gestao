@@ -105,6 +105,8 @@ export default function Products() {
     return p.category.name;
   };
 
+  const getProductName = (p) => p.display_name || (p.unit?.abbreviation ? `${p.name} ${p.unit.abbreviation}` : p.name);
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -144,7 +146,7 @@ export default function Products() {
           <tbody>
             {sortedProducts.map(p => (
               <tr key={p.id} className="border-t hover:bg-gray-50">
-                <td className="p-3 font-medium">{p.name}</td>
+                <td className="p-3 font-medium">{getProductName(p)}</td>
                 <td className="p-3 text-gray-500">{p.sku}</td>
                 <td className="p-3 text-gray-500 text-xs">{getCategoryName(p)}</td>
                 <td className="p-3 text-right">{p.price != null ? formatCurrency(p.price) : '-'}</td>

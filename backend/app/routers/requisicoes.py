@@ -12,6 +12,7 @@ from app.schemas.requisicao import (
     RequisicaoItemResponse, RequisicaoApprove,
 )
 from app.utils.security import get_current_user, require_module
+from app.utils.helpers import product_label
 from app.routers.stock import recalculate_product_stock
 
 router = APIRouter(prefix="/api/requisicoes", tags=["Requisições de Estoque"])
@@ -22,7 +23,7 @@ def _req_to_response(r: Requisicao) -> RequisicaoResponse:
         RequisicaoItemResponse(
             id=it.id, requisicao_id=it.requisicao_id,
             product_id=it.product_id,
-            product_name=it.product.name if it.product else None,
+            product_name=product_label(it.product),
             quantity_requested=it.quantity_requested,
             quantity_approved=it.quantity_approved,
             unit_price=it.unit_price,

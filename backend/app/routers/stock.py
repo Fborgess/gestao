@@ -13,6 +13,7 @@ from app.schemas.stock import (
     StockAvariaCreate, TransferReportItem,
 )
 from app.utils.security import get_current_user, require_module
+from app.utils.helpers import product_label
 
 router = APIRouter(prefix="/api/stock", tags=["Estoque"])
 
@@ -193,7 +194,7 @@ def stock_balance(
         if pid not in products:
             products[pid] = {
                 "product_id": pid,
-                "product_name": movement.product.name,
+                "product_name": product_label(movement.product),
                 "quantity_entries": 0,
                 "quantity_exits": 0,
                 "total_value_entries": 0.0,
@@ -256,7 +257,7 @@ def stock_movement_report(
         StockMovementReportItem(
             id=m.id,
             product_id=m.product_id,
-            product_name=m.product.name,
+            product_name=product_label(m.product),
             deposit_id=m.deposit_id,
             deposit_name=m.deposit.name,
             movement_type=m.movement_type,
@@ -492,7 +493,7 @@ def transfer_report(
 
         for pid in sorted(all_product_ids):
             product = db.query(Product).filter(Product.id == pid).first()
-            pname = product.name if product else f"Produto #{pid}"
+            pname = product_label(product) or f"Produto #{pid}"
             ab_qty = abastecimento_data[pid].total_qty if pid in abastecimento_data else 0
             dev_qty = devolucao_data[pid].total_qty if pid in devolucao_data else 0
             av_qty = avaria_data.get(pid, 0)

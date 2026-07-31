@@ -16,6 +16,8 @@ const SIDES = {
   avaria: { label: 'Avaria', icon: AlertTriangle, color: 'text-red-600', bg: 'bg-red-50', btn: 'bg-red-600 hover:bg-red-700' },
 };
 
+const productLabel = (p) => p?.display_name || (p?.unit?.abbreviation ? `${p.name} ${p.unit.abbreviation}` : p?.name || '');
+
 function ProductSearch({ products, onSelect, onClose }) {
   const [q, setQ] = useState('');
   const results = useMemo(() => {
@@ -30,7 +32,7 @@ function ProductSearch({ products, onSelect, onClose }) {
       {results.map(p => (
         <button key={p.id} type="button" onClick={() => onSelect(p)}
           className="w-full text-left px-3 py-2 text-sm hover:bg-blue-100 border-b flex justify-between">
-          <span>{p.name}{p.unit?.abbreviation ? ` ${p.unit.abbreviation}` : ''}</span>
+          <span>{productLabel(p)}</span>
           <span className="text-gray-400 text-xs">{p.sku}</span>
         </button>
       ))}
@@ -61,7 +63,7 @@ function TransferModal({ type, deposit, deposits, products, onClose, onDone }) {
 
   const addItem = (p) => {
     if (items.find(it => it.product_id === p.id)) return;
-    setItems(i => [...i, { product_id: p.id, product_name: p.name, quantity: 1 }]);
+    setItems(i => [...i, { product_id: p.id, product_name: productLabel(p), quantity: 1 }]);
     setSearchQ('');
     setTimeout(() => searchRef.current?.focus(), 50);
   };
@@ -112,7 +114,7 @@ function TransferModal({ type, deposit, deposits, products, onClose, onDone }) {
                   {searchResults.map(p => (
                     <button key={p.id} type="button" onClick={() => addItem(p)}
                       className="w-full text-left px-3 py-2.5 text-sm hover:bg-blue-50 border-b last:border-0 flex justify-between">
-                      <span>{p.name}{p.unit?.abbreviation ? ` ${p.unit.abbreviation}` : ''}</span>
+                      <span>{productLabel(p)}</span>
                       <span className="text-gray-400 text-xs">{p.sku}</span>
                     </button>
                   ))}
@@ -167,7 +169,7 @@ function AvariaModal({ deposit, deposits, products, onClose, onDone }) {
 
   const addItem = (p) => {
     if (form.items.find(it => it.product_id === p.id)) return;
-    setForm(f => ({ ...f, items: [...f.items, { product_id: p.id, product_name: p.name, quantity: 1 }] }));
+    setForm(f => ({ ...f, items: [...f.items, { product_id: p.id, product_name: productLabel(p), quantity: 1 }] }));
     setSearchQ('');
     setTimeout(() => searchRef.current?.focus(), 50);
   };
@@ -230,7 +232,7 @@ function AvariaModal({ deposit, deposits, products, onClose, onDone }) {
                     {searchResults.map(p => (
                       <button key={p.id} type="button" onClick={() => addItem(p)}
                         className="w-full text-left px-3 py-2.5 text-sm hover:bg-blue-50 border-b last:border-0 flex justify-between">
-                        <span>{p.name}{p.unit?.abbreviation ? ` ${p.unit.abbreviation}` : ''}</span>
+                        <span>{productLabel(p)}</span>
                         <span className="text-gray-400 text-xs">{p.sku}</span>
                       </button>
                     ))}
@@ -324,7 +326,7 @@ function MovementsModal({ deposit, products, deposits, onClose }) {
     }
   };
 
-  const prodName = (id) => products.find(p => p.id === id)?.name || '-';
+  const prodName = (id) => { const p = products.find(p => p.id === id); return p ? productLabel(p) : '-'; };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">

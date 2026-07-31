@@ -41,3 +41,9 @@ class Product(Base):
     deposit = relationship("Deposit", back_populates="products")
     unit = relationship("Unit")
     stock_movements = relationship("StockMovement", back_populates="product")
+
+    @property
+    def display_name(self):
+        if self.unit and self.unit.abbreviation:
+            return f"{self.name} {self.unit.abbreviation}"
+        return self.name

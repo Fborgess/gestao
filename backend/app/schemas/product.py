@@ -79,6 +79,7 @@ class ProductResponse(BaseModel):
     updated_at: Optional[datetime] = None
     category: Optional[CategoryResponse] = None
     unit: Optional[UnitResponse] = None
+    display_name: Optional[str] = None
 
     class Config:
         from_attributes = True
