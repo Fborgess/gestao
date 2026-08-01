@@ -460,8 +460,6 @@ def transfer_report(
     query = db.query(Deposit).filter(Deposit.is_active == True)
     if deposit_id:
         query = query.filter(Deposit.id == deposit_id)
-    else:
-        query = query.filter(Deposit.parent_id.isnot(None))
     deposits = query.all()
 
     def apply_dates(q):

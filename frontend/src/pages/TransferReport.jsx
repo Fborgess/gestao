@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import api from '../services/api';
-import { BarChart3, ArrowRightLeft, AlertTriangle, TrendingUp, Search, Printer } from 'lucide-react';
+import { BarChart3, ArrowRightLeft, AlertTriangle, TrendingUp, Printer } from 'lucide-react';
 import PrintPreview from '../components/PrintPreview';
 
 export default function TransferReport() {
@@ -33,7 +33,7 @@ export default function TransferReport() {
     } finally { setLoading(false); }
   };
 
-  useEffect(() => { loadReport(); }, [filterDeposit]);
+  useEffect(() => { loadReport(); }, [filterDeposit, startDate, endDate]);
 
   const summaries = useMemo(() => {
     const byDeposit = {};
@@ -154,10 +154,6 @@ export default function TransferReport() {
             <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)}
               className="px-3 py-2 border rounded-lg text-sm" />
           </div>
-          <button onClick={loadReport} disabled={loading}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 flex items-center gap-2">
-            <Search size={16} /> {loading ? 'Carregando...' : 'Gerar Relatório'}
-          </button>
           {report.length > 0 && (
             <button onClick={handlePrint}
               className="px-4 py-2 bg-gray-600 text-white rounded-lg text-sm hover:bg-gray-700 flex items-center gap-2">
@@ -223,9 +219,7 @@ export default function TransferReport() {
               <tr><td colSpan={7} className="p-8 text-center text-gray-400">
                 {filterDeposit
                   ? 'Nenhum dado de abastecimento, devolução ou avaria para este depósito no período.'
-                  : subDeposits.length === 0
-                    ? 'Nenhum sub-depósito encontrado. Crie sub-depósitos na página de Depósitos.'
-                    : 'Clique em "Gerar Relatório" para visualizar os dados.'}
+                  : 'Nenhum dado de abastecimento, devolução ou avaria no período selecionado.'}
               </td></tr>
             )}
           </tbody>
