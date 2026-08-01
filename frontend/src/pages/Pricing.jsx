@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import api from '../services/api';
-import { Calculator, Save, Trash2, Package, Percent, Edit, Tag } from 'lucide-react';
+import { Calculator, Save, Trash2, Package, Percent, Edit, Tag, X } from 'lucide-react';
 
 const PERCENT_FIELDS = ['avarias_pct', 'comissao_pct', 'frete_pct', 'outros_custos_pct', 'recursos_humanos_pct', 'taxa_cartao_pct', 'taxas_antecipacao_pct', 'margem_alvo', 'impostos_pct'];
 
@@ -44,6 +44,7 @@ export default function Pricing() {
   const [products, setProducts] = useState([]);
   const [pricings, setPricings] = useState([]);
   const [search, setSearch] = useState('');
+  const [showDropdown, setShowDropdown] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState('');
   const [form, setForm] = useState({ ...DEFAULTS });
   const [result, setResult] = useState(null);
@@ -64,37 +65,42 @@ export default function Pricing() {
 
   const selected = useMemo(() => products.find(p => String(p.id) === String(selectedProductId)) || null, [products, selectedProductId]);
 
-  const handleSelect = (e) => {
-    const pid = e.target.value;
-    setSelectedProductId(pid);
-    const config = pricings.find(p => String(p.product_id) === String(pid));
-    const prod = products.find(p => String(p.id) === String(pid));
+  const handleSelectProduct = (p) => {
+    setSelectedProductId(String(p.id));
+    setSearch(p.display_name || p.name);
+    setShowDropdown(false);
+    const config = pricings.find(c => String(c.product_id) === String(p.id));
     if (config) {
       setForm(fromConfig(config));
     } else {
       const f = { ...DEFAULTS };
-      if (prod && (prod.cost_price != null || prod.price != null)) f.acquisition_price = prod.cost_price ?? prod.price ?? '';
+      if (p.cost_price != null || p.price != null) f.acquisition_price = p.cost_price ?? p.price ?? '';
       setForm(f);
     }
-    setResult(null);
+    setMsg(null);
+  };
+
+  const handleClearSelection = () => {
+    setSelectedProductId('');
+    setSearch('');
+    setShowDropdown(false);
     setMsg(null);
   };
 
   useEffect(() => {
-    if (!selectedProductId) return;
+    const acquisition = parseFloat(form.acquisition_price);
+    if (!acquisition || acquisition <= 0) { setResult(null); return; }
     setCalcLoading(true);
     clearTimeout(timer.current);
     timer.current = setTimeout(async () => {
       try {
-        const payload = toPayload(form);
-        payload.product_id = parseInt(selectedProductId, 10);
-        const res = await api.post('/pricing/calculate', payload);
+        const res = await api.post('/pricing/calculate', toPayload(form));
         setResult(res.data);
       } catch (e) { setResult(null); }
       finally { setCalcLoading(false); }
     }, 300);
     return () => clearTimeout(timer.current);
-  }, [form, selectedProductId]);
+  }, [form]);
 
   const handleSave = async () => {
     if (!selectedProductId) { alert('Selecione um produto'); return; }
@@ -117,6 +123,7 @@ export default function Pricing() {
     setSearch(p.display_name || p.product_name || '');
     setForm(fromConfig(p));
     setResult(null);
+    setShowDropdown(false);
     setMsg(null);
   };
 
@@ -138,19 +145,41 @@ export default function Pricing() {
       </div>
 
       <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
-        <div className="flex items-end gap-3 flex-wrap">
-          <div className="flex-1 min-w-[220px]">
-            <label className={labelCls}>Produto</label>
-            <input placeholder="Buscar produto..." value={search} onChange={e => setSearch(e.target.value)}
-              className={inputCls} />
-          </div>
-          <div className="flex-1 min-w-[220px]">
-            <label className={labelCls}>Selecionar produto</label>
-            <select value={selectedProductId} onChange={handleSelect} className={inputCls}>
-              <option value="">Selecione...</option>
-              {filtered.map(p => <option key={p.id} value={p.id}>{p.display_name || p.name}</option>)}
-            </select>
-          </div>
+        <div className="relative max-w-xl">
+          <label className={labelCls}>Produto (opcional — para carregar/salvar os parâmetros de um produto)</label>
+          <input
+            placeholder="Buscar produto..."
+            value={search}
+            onChange={e => { setSearch(e.target.value); setShowDropdown(true); }}
+            onFocus={() => setShowDropdown(true)}
+            onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+            className={`${inputCls} ${selectedProductId ? 'pr-8' : ''}`}
+          />
+          {selectedProductId && (
+            <button
+              onClick={handleClearSelection}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-600"
+              title="Limpar seleção"
+            >
+              <X size={16} />
+            </button>
+          )}
+          {showDropdown && (
+            <div className="absolute z-20 mt-1 w-full max-h-60 overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg">
+              {filtered.length === 0 ? (
+                <div className="p-3 text-sm text-gray-400">Nenhum produto encontrado</div>
+              ) : filtered.map(p => (
+                <button
+                  key={p.id}
+                  onMouseDown={() => handleSelectProduct(p)}
+                  className={`w-full text-left px-3 py-2 text-sm flex items-center justify-between gap-2 hover:bg-blue-50 ${String(p.id) === selectedProductId ? 'bg-blue-50' : ''}`}
+                >
+                  <span>{p.display_name || p.name}</span>
+                  <span className="text-gray-400 text-xs">{p.price != null ? `R$ ${fmtMoney(p.price)}` : ''}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
         {selected && (
           <div className="mt-3 text-sm text-gray-500 flex gap-4 flex-wrap">
@@ -205,10 +234,10 @@ export default function Pricing() {
             <h3 className="font-semibold text-sm mb-3 flex items-center gap-2"><Calculator size={16} className="text-green-600" /> Preço de Venda Final</h3>
             {calcLoading ? (
               <p className="text-sm text-gray-400">Calculando...</p>
-            ) : result ? (
+            ) : result && result.preco_venda > 0 ? (
               <div className="text-3xl font-bold text-green-600 mb-4">R$ {fmtMoney(result.preco_venda)}</div>
             ) : (
-              <p className="text-sm text-gray-400">Selecione um produto para calcular.</p>
+              <p className="text-sm text-gray-400 mb-4">Informe o preço de aquisição para calcular.</p>
             )}
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div className="flex justify-between"><span className="text-gray-500">Custo unitário</span><span className="font-medium">R$ {fmtMoney(result?.custo_unitario)}</span></div>
@@ -216,7 +245,7 @@ export default function Pricing() {
               <div className="flex justify-between"><span className="text-gray-500">Custos variáveis</span><span className="font-medium">R$ {fmtMoney(result?.custos_variaveis)}</span></div>
               <div className="flex justify-between"><span className="text-gray-500">Total custos</span><span className="font-medium">R$ {fmtMoney(result?.total_custos)}</span></div>
             </div>
-            {result && (
+            {result && result.preco_venda > 0 && (
               <div className="mt-4 border-t pt-3 text-sm">
                 <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Confronto</h4>
                 <div className="grid grid-cols-2 gap-2">
@@ -232,11 +261,14 @@ export default function Pricing() {
               </div>
             )}
             <div className="flex gap-2 mt-4">
-              <button onClick={handleSave}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 flex items-center gap-2">
+              <button onClick={handleSave} disabled={!selectedProductId}
+                className={`px-4 py-2 rounded-lg text-sm flex items-center gap-2 ${selectedProductId
+                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}>
                 <Save size={16} /> Salvar Precificação
               </button>
             </div>
+            {!selectedProductId && <p className="mt-2 text-xs text-gray-400">Selecione um produto para salvar os parâmetros.</p>}
             {msg && <p className="mt-3 text-sm text-green-600">{msg}</p>}
           </div>
         </div>
@@ -251,7 +283,7 @@ export default function Pricing() {
               <th className="text-right p-3">Aquisição</th>
               <th className="text-center p-3">Lote</th>
               <th className="text-center p-3">Margem Alvo</th>
-              <th className="text-right p-3">Preço aplicado</th>
+              <th className="text-right p-3">Preço atual</th>
               <th className="text-center p-3">Ações</th>
             </tr>
           </thead>
