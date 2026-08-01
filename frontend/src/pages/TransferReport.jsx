@@ -67,7 +67,7 @@ export default function TransferReport() {
             <table className="w-full text-sm border-collapse mb-6">
               <thead>
                 <tr className="bg-gray-50">
-                  <th className="p-3 text-left">Sub-depósito</th>
+                  <th className="p-3 text-left">Depósito</th>
                   <th className="p-3 text-right">Abastecimento</th>
                   <th className="p-3 text-right">Devolução</th>
                   <th className="p-3 text-right">Avaria</th>
@@ -90,11 +90,11 @@ export default function TransferReport() {
             </table>
           )}
           <table className="w-full text-sm border-collapse">
-            <thead>
-              <tr className="bg-gray-50">
-                <th className="p-3 text-left">Sub-depósito</th>
-                <th className="p-3 text-left">Produto</th>
-                <th className="p-3 text-center">Abast.</th>
+              <thead>
+                <tr className="bg-gray-50">
+                  <th className="p-3 text-left">Depósito</th>
+                  <th className="p-3 text-left">Produto</th>
+                  <th className="p-3 text-center">Abast.</th>
                 <th className="p-3 text-center">Devol.</th>
                 <th className="p-3 text-center">Avaria</th>
                 <th className="p-3 text-center">Venda</th>
@@ -190,7 +190,7 @@ export default function TransferReport() {
         <table className="w-full text-sm">
           <thead className="bg-gray-50">
             <tr>
-              <th className="text-left p-3">Sub-depósito</th>
+              <th className="text-left p-3">Depósito</th>
               <th className="text-left p-3">Produto</th>
               <th className="text-center p-3">
                 <span className="flex items-center justify-center gap-1"><ArrowRightLeft size={12} className="text-blue-600" /> Abast.</span>
@@ -221,9 +221,11 @@ export default function TransferReport() {
             ))}
             {report.length === 0 && !loading && (
               <tr><td colSpan={7} className="p-8 text-center text-gray-400">
-                {subDeposits.length === 0
-                  ? 'Nenhum sub-depósito encontrado. Crie sub-depósitos na página de Depósitos.'
-                  : 'Clique em "Gerar Relatório" para visualizar os dados.'}
+                {filterDeposit
+                  ? 'Nenhum dado de abastecimento, devolução ou avaria para este depósito no período.'
+                  : subDeposits.length === 0
+                    ? 'Nenhum sub-depósito encontrado. Crie sub-depósitos na página de Depósitos.'
+                    : 'Clique em "Gerar Relatório" para visualizar os dados.'}
               </td></tr>
             )}
           </tbody>
