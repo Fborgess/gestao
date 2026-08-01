@@ -6,7 +6,7 @@ import SortableHeader from '../components/SortableHeader';
 import ImportExcelModal from '../components/ImportExcelModal';
 import {
   currencyToDigits, formatDigitsToCurrency, parseCurrencyToNumber, formatNumberToCurrency,
-  maskDecimalInput, parseDecimal, isWeightUnit, unitDecimals,
+  maskDecimalInput, parseDecimal,
 } from '../services/masks';
 
 export default function Products() {
@@ -110,12 +110,11 @@ export default function Products() {
 
   const handleUnitChange = (v) => {
     const u = units.find(x => x.id === v);
-    const nd = isWeightUnit(u) ? 3 : 2;
     setForm(f => ({
       ...f,
       unit_id: String(v),
-      cost_price: f.cost_price ? formatNumberToCurrency(parseCurrencyToNumber(f.cost_price, formDecimals), nd) : '',
-      price: f.price ? formatNumberToCurrency(parseCurrencyToNumber(f.price, formDecimals), nd) : '',
+      cost_price: f.cost_price ? formatNumberToCurrency(parseCurrencyToNumber(f.cost_price, formDecimals), 2) : '',
+      price: f.price ? formatNumberToCurrency(parseCurrencyToNumber(f.price, formDecimals), 2) : '',
     }));
   };
 
@@ -142,12 +141,11 @@ export default function Products() {
   const handleEdit = (p) => {
     const cat = allCategories.find(c => c.id === p.category_id);
     const parentCat = cat?.parent_id ? allCategories.find(c => c.id === cat.parent_id) : null;
-    const d = unitDecimals(p.unit);
     setEditingProduct(p);
     setForm({
       name: p.name, sku: p.sku, description: p.description || '',
-      price: p.price != null ? formatNumberToCurrency(p.price, d) : '',
-      cost_price: p.cost_price != null ? formatNumberToCurrency(p.cost_price, d) : '',
+      price: p.price != null ? formatNumberToCurrency(p.price, formDecimals) : '',
+      cost_price: p.cost_price != null ? formatNumberToCurrency(p.cost_price, formDecimals) : '',
       markup: p.markup != null ? formatDecimal(p.markup, 4) : '',
       unit_id: p.unit_id || '', category_id: parentCat ? parentCat.id : (cat ? cat.id : ''),
       subcategory_id: cat?.parent_id ? cat.id : '', barcode: p.barcode || '', deposit_id: p.deposit_id || '',
@@ -177,13 +175,12 @@ export default function Products() {
 
   const getProductName = (p) => p.display_name || (p.unit?.abbreviation ? `${p.name} ${p.unit.abbreviation}` : p.name);
 
-  const fmtVal = (n, u) => n == null ? '-' : Number(n).toLocaleString('pt-BR', {
-    minimumFractionDigits: isWeightUnit(u) ? 3 : 2,
-    maximumFractionDigits: isWeightUnit(u) ? 3 : 2,
+  const fmtVal = (n) => n == null ? '-' : Number(n).toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   });
 
-  const formUnit = units.find(u => u.id === parseInt(form.unit_id));
-  const formDecimals = isWeightUnit(formUnit) ? 3 : 2;
+  const formDecimals = 2;
 
   return (
     <div>
