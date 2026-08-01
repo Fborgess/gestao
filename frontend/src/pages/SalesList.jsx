@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import { Plus, Edit, Printer, Share2, Eye, FileText } from 'lucide-react';
+import { Plus, Edit, Printer, Share2, Trash2 } from 'lucide-react';
 
 export default function SalesList() {
   const [sales, setSales] = useState([]);
@@ -10,6 +10,12 @@ export default function SalesList() {
   useEffect(() => {
     api.get('/sales/').then(res => setSales(res.data)).catch(() => {});
   }, []);
+
+  const handleDelete = async (s) => {
+    if (!confirm(`Remover o lançamento #${s.id} de ${s.contact_name || '-'}?`)) return;
+    try { await api.delete(`/sales/${s.id}`); setSales(sales.filter(x => x.id !== s.id)); }
+    catch (err) { alert(err.response?.data?.detail || 'Erro ao remover lançamento'); }
+  };
 
   return (
     <div>
@@ -85,6 +91,8 @@ export default function SalesList() {
                         }
                       } catch (err) { alert('Erro ao gerar PDF: ' + (err.message || 'erro desconhecido')); }
                     }} className="text-gray-600 hover:text-gray-800" title="Compartilhar"><Share2 size={16} /></button>
+                    <button onClick={() => handleDelete(s)}
+                      className="text-red-600 hover:text-red-800" title="Excluir"><Trash2 size={16} /></button>
                   </div>
                 </td>
               </tr>

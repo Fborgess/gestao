@@ -199,6 +199,20 @@ def update_sale(
     return _sale_to_response(result)
 
 
+@sale_router.delete("/{sale_id}")
+def delete_sale(
+    sale_id: int,
+    db: Session = Depends(get_db),
+    _=Depends(require_module("sales", "edit")),
+):
+    sale = db.query(Sale).filter(Sale.id == sale_id).first()
+    if not sale:
+        raise HTTPException(status_code=404, detail="Lançamento não encontrado")
+    db.delete(sale)
+    db.commit()
+    return {"message": "Lançamento removido"}
+
+
 @sale_router.post("/", response_model=SaleResponse)
 def create_sale(
     data: SaleCreate,
