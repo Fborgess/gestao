@@ -72,6 +72,9 @@ def update_user(user_id: int, data: UserUpdate, db: Session = Depends(get_db), c
     if data.password is not None:
         user.hashed_password = get_password_hash(data.password)
     if data.role is not None:
+        role = db.query(Role).filter(Role.name == data.role).first()
+        if not role:
+            raise HTTPException(status_code=400, detail="Perfil inválido")
         user.role = data.role
     if data.is_active is not None:
         user.is_active = data.is_active

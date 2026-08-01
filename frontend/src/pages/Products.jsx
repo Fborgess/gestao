@@ -113,7 +113,6 @@ export default function Products() {
   };
 
   const handleUnitChange = (v) => {
-    const u = units.find(x => x.id === v);
     setForm(f => ({
       ...f,
       unit_id: String(v),

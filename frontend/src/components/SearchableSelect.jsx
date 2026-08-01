@@ -10,7 +10,7 @@ export default function SearchableSelect({ options, value, onChange, placeholder
 
   const selected = options.find(o => o.value === value);
   const filtered = options.filter(o =>
-    o.label.toLowerCase().includes(search.toLowerCase())
+    String(o.label ?? '').toLowerCase().includes(search.toLowerCase())
   );
 
   useEffect(() => {

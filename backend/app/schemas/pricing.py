@@ -1,21 +1,21 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import datetime
 
 
 class PricingInput(BaseModel):
     product_id: Optional[int] = None
-    acquisition_price: float = 0
-    lote: float = 1
-    avarias_pct: float = 0.06
-    comissao_pct: float = 0
-    frete_pct: float = 0.05
-    outros_custos_pct: float = 0
-    recursos_humanos_pct: float = 0.05
-    taxa_cartao_pct: float = 0
-    taxas_antecipacao_pct: float = 0
-    margem_alvo: float = 0.20
-    impostos_pct: float = 0.06
+    acquisition_price: float = Field(default=0, ge=0)
+    lote: float = Field(default=1, gt=0)
+    avarias_pct: float = Field(default=0.06, ge=0)
+    comissao_pct: float = Field(default=0, ge=0)
+    frete_pct: float = Field(default=0.05, ge=0)
+    outros_custos_pct: float = Field(default=0, ge=0)
+    recursos_humanos_pct: float = Field(default=0.05, ge=0)
+    taxa_cartao_pct: float = Field(default=0, ge=0)
+    taxas_antecipacao_pct: float = Field(default=0, ge=0)
+    margem_alvo: float = Field(default=0.20, ge=0)
+    impostos_pct: float = Field(default=0.06, ge=0)
 
 
 class PricingResult(BaseModel):

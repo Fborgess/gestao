@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime
 
@@ -27,8 +27,8 @@ class SaleTypeResponse(BaseModel):
 
 class SaleItemCreate(BaseModel):
     product_id: int
-    quantity: float = 1
-    unit_price: float
+    quantity: float = Field(gt=0)
+    unit_price: float = Field(gt=0)
 
 
 class SaleItemResponse(BaseModel):

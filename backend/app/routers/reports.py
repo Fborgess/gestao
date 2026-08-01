@@ -30,17 +30,17 @@ def get_dashboard(
     now = datetime.utcnow()
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     month_start = today_start.replace(day=1)
-    month_end = month_start.replace(month=month_start.month + 1)
+    month_end = (month_start.replace(day=28) + timedelta(days=4)).replace(day=1)
     next_7 = today_start + timedelta(days=7)
 
     receitas = (
         db.query(func.coalesce(func.sum(Transaction.amount), 0))
-        .filter(Transaction.type == "receita", Transaction.date >= month_start)
+        .filter(Transaction.type == "receita", Transaction.date >= month_start, Transaction.date < month_end)
         .scalar()
     )
     despesas = (
         db.query(func.coalesce(func.sum(Transaction.amount), 0))
-        .filter(Transaction.type == "despesa", Transaction.date >= month_start)
+        .filter(Transaction.type == "despesa", Transaction.date >= month_start, Transaction.date < month_end)
         .scalar()
     )
 
