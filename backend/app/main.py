@@ -6,6 +6,7 @@ from app.database import engine, Base
 from app.routers import auth, products, stock, financial, contacts, reports, payments
 from app.routers import categories, financial_categories, deposits, accounts, payment_types, units, recurrence_frequencies
 from app.routers import requisicoes, roles, pricing
+from app.routers import price_tables
 from app.routers.sales import sale_type_router, sale_router
 
 import traceback
@@ -48,6 +49,10 @@ if DATABASE_URL.startswith("sqlite"):
             if col not in acc_cols:
                 c.execute("ALTER TABLE accounts ADD COLUMN " + col + " " + typedef)
         conn.commit()
+        c.execute("PRAGMA table_info(contacts)")
+        ct_cols = [row[1] for row in c.fetchall()]
+        if "price_table_id" not in ct_cols:
+            c.execute("ALTER TABLE contacts ADD COLUMN price_table_id INTEGER")
         c.execute("PRAGMA table_info(transactions)")
         tx_cols = [row[1] for row in c.fetchall()]
         if "recurrence_frequency" not in tx_cols:
@@ -123,6 +128,13 @@ if not DATABASE_URL.startswith("sqlite"):
                     conn.execute(text(
                         f"ALTER TABLE {table} ALTER COLUMN {col} TYPE DOUBLE PRECISION"
                     ))
+        cols = conn.execute(text(
+            "SELECT column_name FROM information_schema.columns WHERE table_name = 'contacts'"
+        )).fetchall()
+        if "price_table_id" not in {row[0] for row in cols}:
+            conn.execute(text(
+                "ALTER TABLE contacts ADD COLUMN price_table_id INTEGER REFERENCES price_tables(id)"
+            ))
         conn.commit()
 
 # Migração: movimentações de requisição só são gravadas após o recebimento.
@@ -186,6 +198,33 @@ with Session(engine) as session:
         if changed:
             session.commit()
 
+# Garante acesso às tabelas de preços: perfis com vendas recebem edição, perfis com contatos recebem leitura
+with Session(engine) as session:
+    for role in session.query(Role).all():
+        if role.is_admin:
+            continue
+        has_sales = session.query(RoleModule).filter(
+            RoleModule.role_id == role.id,
+            RoleModule.module == "sales",
+        ).first()
+        has_contacts = session.query(RoleModule).filter(
+            RoleModule.role_id == role.id,
+            RoleModule.module == "contacts",
+        ).first()
+        if not has_sales and not has_contacts:
+            continue
+        exists = session.query(RoleModule).filter(
+            RoleModule.role_id == role.id,
+            RoleModule.module == "price_tables",
+        ).first()
+        if not exists:
+            session.add(RoleModule(
+                role_id=role.id,
+                module="price_tables",
+                access_level="edit" if has_sales else "view",
+            ))
+            session.commit()
+
 from seed import seed, seed_frequencies
 seed()
 seed_frequencies()
@@ -237,6 +276,7 @@ app.include_router(sale_router)
 app.include_router(requisicoes.router)
 app.include_router(roles.router)
 app.include_router(pricing.router)
+app.include_router(price_tables.router)
 
 FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "frontend", "dist")
 if os.path.isdir(FRONTEND_DIR):

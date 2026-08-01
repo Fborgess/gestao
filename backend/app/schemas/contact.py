@@ -12,6 +12,7 @@ class ContactCreate(BaseModel):
     address: Optional[str] = None
     city: Optional[str] = None
     state: Optional[str] = None
+    price_table_id: Optional[int] = None
     notes: Optional[str] = None
 
 
@@ -24,6 +25,7 @@ class ContactUpdate(BaseModel):
     address: Optional[str] = None
     city: Optional[str] = None
     state: Optional[str] = None
+    price_table_id: Optional[int] = None
     notes: Optional[str] = None
     is_active: Optional[bool] = None
 
@@ -38,6 +40,7 @@ class ContactResponse(BaseModel):
     address: Optional[str] = None
     city: Optional[str] = None
     state: Optional[str] = None
+    price_table_id: Optional[int] = None
     notes: Optional[str] = None
     is_active: bool
     created_at: Optional[datetime] = None

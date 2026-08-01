@@ -5,6 +5,7 @@ from app.database import get_db
 from app.models.sale import SaleType, Sale, SaleItem
 from app.models.contact import Contact
 from app.models.product import Product
+from app.models.price_table import PriceTable
 from app.schemas.sale import (
     SaleTypeCreate, SaleTypeUpdate, SaleTypeResponse,
     SaleCreate, SaleUpdate, SaleResponse, SaleItemResponse,
@@ -34,6 +35,29 @@ def _sale_to_response(s: Sale) -> SaleResponse:
         sale_type_name=s.sale_type.name if s.sale_type else None,
         items=items,
     )
+
+
+def _client_table_prices(db: Session, contact_id: int):
+    contact = db.query(Contact).filter(Contact.id == contact_id).first()
+    if not contact or not contact.price_table_id:
+        return {}
+    tbl = db.query(PriceTable).filter(
+        PriceTable.id == contact.price_table_id,
+        PriceTable.is_active == True,
+    ).first()
+    if not tbl:
+        return {}
+    return {it.product_id: it.price for it in tbl.items}
+
+
+def _resolve_price(db: Session, contact_id: int, product_id: int, sent_price: float) -> float:
+    table_prices = _client_table_prices(db, contact_id)
+    if not table_prices:
+        return sent_price
+    if product_id in table_prices:
+        return table_prices[product_id]
+    product = db.query(Product).filter(Product.id == product_id).first()
+    return product.price if product and product.price else sent_price
 
 
 # ─── Sale Types ───
@@ -157,10 +181,11 @@ def update_sale(
             product = db.query(Product).filter(Product.id == it_data.product_id).first()
             if not product:
                 raise HTTPException(status_code=400, detail=f"Produto id={it_data.product_id} não encontrado")
-            total_price = round(it_data.quantity * it_data.unit_price, 2)
+            unit_price = _resolve_price(db, sale.contact_id, it_data.product_id, it_data.unit_price)
+            total_price = round(it_data.quantity * unit_price, 2)
             total += total_price
             db.add(SaleItem(sale_id=sale.id, product_id=it_data.product_id,
-                           quantity=it_data.quantity, unit_price=it_data.unit_price,
+                           quantity=it_data.quantity, unit_price=unit_price,
                            total_price=total_price))
         sale.total_amount = total
     db.commit()
@@ -191,12 +216,13 @@ def create_sale(
         product = db.query(Product).filter(Product.id == it_data.product_id).first()
         if not product:
             raise HTTPException(status_code=400, detail=f"Produto id={it_data.product_id} não encontrado")
-        total_price = round(it_data.quantity * it_data.unit_price, 2)
+        unit_price = _resolve_price(db, data.contact_id, it_data.product_id, it_data.unit_price)
+        total_price = round(it_data.quantity * unit_price, 2)
         total += total_price
         items.append(SaleItem(
             product_id=it_data.product_id,
             quantity=it_data.quantity,
-            unit_price=it_data.unit_price,
+            unit_price=unit_price,
             total_price=total_price,
         ))
 
