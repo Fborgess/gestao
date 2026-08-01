@@ -48,6 +48,7 @@ const menuSections = [
   {
     label: 'Vendas',
     items: [
+      { path: '/price-tables', label: 'Tabela de Preços', icon: Tag },
       { path: '/sale-types', label: 'Tipos de Lançamento', icon: FileText },
       { path: '/sales', label: 'Lançamentos', icon: ShoppingCart },
     ],
@@ -68,7 +69,7 @@ export const MODULE_MAP = {
   '/requisicoes': 'requisicoes', '/pricing': 'precificacao', '/categories': 'categories', '/units': 'units', '/stock': 'stock_movements',
   '/accounts': 'accounts', '/financial': 'financial', '/financial-categories': 'financial_categories',
   '/payment-types': 'payment_types', '/recurrence-frequencies': 'recurrence_frequencies', '/financial-reports': 'financial_reports',
-  '/sale-types': 'sale_types', '/sales': 'sales',
+  '/sale-types': 'sale_types', '/sales': 'sales', '/price-tables': 'price_tables',
   '/': 'dashboard',
   '/users': 'users',
   '/roles': 'roles',
@@ -78,9 +79,8 @@ export const DEFAULT_ROUTE_ORDER = [
   '/', '/contacts', '/deposits', '/products', '/stock-reports', '/requisicoes',
   '/pricing', '/categories', '/units', '/stock', '/accounts', '/financial',
   '/financial-categories', '/payment-types', '/recurrence-frequencies',
-  '/financial-reports', '/sale-types', '/sales', '/users', '/roles',
+  '/financial-reports', '/sale-types', '/price-tables', '/sales', '/users', '/roles',
 ];
-
 export default function Layout() {
   const { user, permissions, logout } = useAuth();
   const navigate = useNavigate();

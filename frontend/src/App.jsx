@@ -18,6 +18,7 @@ import Roles from './pages/Roles';
 import RecurrenceFrequencies from './pages/RecurrenceFrequencies';
 import FinancialReports from './pages/FinancialReports';
 import SaleTypes from './pages/SaleTypes';
+import PriceTables from './pages/PriceTables';
 import SalesList from './pages/SalesList';
 import SaleNew from './pages/SaleNew';
 import SaleDetail from './pages/SaleDetail';
@@ -82,6 +83,7 @@ function App() {
               <Route path="/recurrence-frequencies" element={<RecurrenceFrequencies />} />
               <Route path="/financial-reports" element={<FinancialReports />} />
               <Route path="/sale-types" element={<SaleTypes />} />
+              <Route path="/price-tables" element={<PriceTables />} />
               <Route path="/sales" element={<SalesList />} />
               <Route path="/sales/new" element={<SaleNew />} />
               <Route path="/sales/:id" element={<SaleDetail />} />

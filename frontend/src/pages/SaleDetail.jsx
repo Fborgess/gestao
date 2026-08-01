@@ -21,6 +21,8 @@ export default function SaleDetail() {
   const [productSearch, setProductSearch] = useState('');
   const [productResults, setProductResults] = useState([]);
   const [showProductSearch, setShowProductSearch] = useState(false);
+  const [priceTables, setPriceTables] = useState([]);
+  const [tablePrices, setTablePrices] = useState({});
   const [loading, setLoading] = useState(true);
   const isNew = !id;
   const prodLabel = (p) => p.unit?.abbreviation ? `${p.name} ${p.unit.abbreviation}` : p.name;
@@ -29,6 +31,7 @@ export default function SaleDetail() {
     const c1 = api.get('/contacts/').then(r => setContacts(r.data.filter(c => c.contact_type === 'cliente' || c.contact_type === 'both'))).catch(() => {});
     const c2 = api.get('/sale-types/').then(r => setSaleTypes(r.data)).catch(() => {});
     const c3 = api.get('/products/').then(r => setProducts(r.data)).catch(() => {});
+    const c5 = api.get('/price-tables/').then(r => setPriceTables(r.data)).catch(() => {});
     const c4 = id ? api.get(`/sales/${id}`).then(r => {
       const s = r.data;
       setContactId(String(s.contact_id));
@@ -42,8 +45,19 @@ export default function SaleDetail() {
         unitPrice: it.unit_price,
       })));
     }).catch(() => {}) : Promise.resolve();
-    Promise.all([c1, c2, c3, c4]).finally(() => setLoading(false));
+    Promise.all([c1, c2, c3, c4, c5]).finally(() => setLoading(false));
   }, [id]);
+
+  useEffect(() => {
+    if (!contactId) { setTablePrices({}); return; }
+    const contact = contacts.find(c => c.id === parseInt(contactId));
+    if (!contact || !contact.price_table_id) { setTablePrices({}); return; }
+    const table = priceTables.find(t => t.id === contact.price_table_id);
+    if (!table) { setTablePrices({}); return; }
+    const map = {};
+    (table.items || []).forEach(it => { map[it.product_id] = it.price; });
+    setTablePrices(map);
+  }, [contactId, contacts, priceTables]);
 
   const total = items.reduce((sum, it) => sum + it.quantity * it.unitPrice, 0);
 
@@ -52,7 +66,7 @@ export default function SaleDetail() {
     if (existing) {
       setItems(items.map(it => it.productId === product.id ? { ...it, quantity: it.quantity + 1 } : it));
     } else {
-      setItems([...items, { productId: product.id, productName: prodLabel(product), quantity: 1, unitAbbr: product.unit?.abbreviation || '', unitPrice: product.price || 0 }]);
+      setItems([...items, { productId: product.id, productName: prodLabel(product), quantity: 1, unitAbbr: product.unit?.abbreviation || '', unitPrice: (tablePrices[product.id] ?? product.price) || 0 }]);
     }
     setShowProductSearch(false);
     setProductSearch('');
@@ -171,7 +185,7 @@ export default function SaleDetail() {
                   {productResults.map(p => (
                     <button key={p.id} type="button" onClick={() => addItem(p)} className="w-full text-left px-3 py-2 text-sm hover:bg-blue-100 border-b flex items-center justify-between">
                       <span>{prodLabel(p)}</span>
-                      <span className="text-gray-400 text-xs">{p.sku} - R$ {p.price?.toFixed(2) || '0,00'}</span>
+                      <span className="text-gray-400 text-xs">{p.sku} - R$ {(tablePrices[p.id] ?? p.price)?.toFixed(2) || '0,00'}</span>
                     </button>
                   ))}
                 </div>

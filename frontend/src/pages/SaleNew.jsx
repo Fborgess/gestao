@@ -10,6 +10,8 @@ export default function SaleNew() {
   const [contacts, setContacts] = useState([]);
   const [saleTypes, setSaleTypes] = useState([]);
   const [products, setProducts] = useState([]);
+  const [priceTables, setPriceTables] = useState([]);
+  const [tablePrices, setTablePrices] = useState({});
   const [contactId, setContactId] = useState('');
   const [saleTypeId, setSaleTypeId] = useState('');
   const [notes, setNotes] = useState('');
@@ -22,7 +24,19 @@ export default function SaleNew() {
     api.get('/contacts/').then(res => setContacts(res.data.filter(c => c.contact_type === 'cliente' || c.contact_type === 'both'))).catch(() => {});
     api.get('/sale-types/').then(res => setSaleTypes(res.data)).catch(() => {});
     api.get('/products/').then(res => setProducts(res.data)).catch(() => {});
+    api.get('/price-tables/').then(res => setPriceTables(res.data)).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (!contactId) { setTablePrices({}); return; }
+    const contact = contacts.find(c => c.id === parseInt(contactId));
+    if (!contact || !contact.price_table_id) { setTablePrices({}); return; }
+    const table = priceTables.find(t => t.id === contact.price_table_id);
+    if (!table) { setTablePrices({}); return; }
+    const map = {};
+    (table.items || []).forEach(it => { map[it.product_id] = it.price; });
+    setTablePrices(map);
+  }, [contactId, contacts, priceTables]);
 
   const total = items.reduce((sum, it) => sum + it.quantity * it.unitPrice, 0);
 
@@ -39,7 +53,7 @@ export default function SaleNew() {
         sku: product.sku,
         quantity: 1,
         unitAbbr: product.unit?.abbreviation || '',
-        unitPrice: product.price || 0,
+        unitPrice: (tablePrices[product.id] ?? product.price) || 0,
       }]);
     }
     setShowProductSearch(false);
@@ -129,7 +143,7 @@ export default function SaleNew() {
                     <button key={p.id} type="button" onClick={() => addItem(p)}
                       className="w-full text-left px-3 py-2 text-sm hover:bg-blue-100 border-b flex items-center justify-between">
                       <span>{prodLabel(p)}</span>
-                      <span className="text-gray-400 text-xs">{p.sku} - R$ {p.price?.toFixed(2) || '0,00'}</span>
+                      <span className="text-gray-400 text-xs">{p.sku} - R$ {(tablePrices[p.id] ?? p.price)?.toFixed(2) || '0,00'}</span>
                     </button>
                   ))}
                 </div>

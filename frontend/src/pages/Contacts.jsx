@@ -8,9 +8,10 @@ export default function Contacts() {
   const [filter, setFilter] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [priceTables, setPriceTables] = useState([]);
   const [form, setForm] = useState({
     name: '', contact_type: 'cliente', cpf_cnpj: '', email: '',
-    phone: '', address: '', city: '', state: '', notes: '',
+    phone: '', address: '', city: '', state: '', notes: '', price_table_id: '',
   });
 
   const loadContacts = () => {
@@ -22,6 +23,10 @@ export default function Contacts() {
 
   useEffect(() => { loadContacts(); }, [search, filter]);
 
+  useEffect(() => {
+    api.get('/price-tables/').then(res => setPriceTables(res.data)).catch(() => {});
+  }, []);
+
   const sortedContacts = useMemo(() =>
     [...contacts].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR')),
     [contacts]
@@ -29,9 +34,13 @@ export default function Contacts() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const payload = {
+      ...form,
+      price_table_id: form.price_table_id ? parseInt(form.price_table_id) : null,
+    };
     try {
-      if (editing) { await api.put(`/contacts/${editing.id}`, form); }
-      else { await api.post('/contacts/', form); }
+      if (editing) { await api.put(`/contacts/${editing.id}`, payload); }
+      else { await api.post('/contacts/', payload); }
       setShowModal(false); setEditing(null); resetForm(); loadContacts();
     } catch (err) {
       alert(err.response?.data?.detail || 'Erro ao salvar contato');
@@ -44,6 +53,7 @@ export default function Contacts() {
       name: c.name, contact_type: c.contact_type, cpf_cnpj: c.cpf_cnpj || '',
       email: c.email || '', phone: c.phone || '', address: c.address || '',
       city: c.city || '', state: c.state || '', notes: c.notes || '',
+      price_table_id: c.price_table_id || '',
     });
     setShowModal(true);
   };
@@ -55,7 +65,7 @@ export default function Contacts() {
   };
 
   const resetForm = () => {
-    setForm({ name: '', contact_type: 'cliente', cpf_cnpj: '', email: '', phone: '', address: '', city: '', state: '', notes: '' });
+    setForm({ name: '', contact_type: 'cliente', cpf_cnpj: '', email: '', phone: '', address: '', city: '', state: '', notes: '', price_table_id: '' });
   };
 
   const typeLabels = { cliente: 'Cliente', fornecedor: 'Fornecedor', both: 'Cliente/Fornecedor' };
@@ -147,6 +157,13 @@ export default function Contacts() {
                 <input placeholder="UF" maxLength={2} value={form.state}
                   onChange={e => setForm({...form, state: e.target.value.toUpperCase()})}
                   className="px-3 py-2 border rounded-lg text-sm" />
+                <select value={form.price_table_id} onChange={e => setForm({...form, price_table_id: e.target.value})}
+                  className="col-span-2 px-3 py-2 border rounded-lg text-sm">
+                  <option value="">Sem tabela de preços</option>
+                  {priceTables.map(t => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </select>
               </div>
               <textarea placeholder="Observações" value={form.notes} rows={2}
                 onChange={e => setForm({...form, notes: e.target.value})}
