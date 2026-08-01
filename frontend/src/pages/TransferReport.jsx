@@ -52,13 +52,13 @@ export default function TransferReport() {
   const formatDate = (d) => d ? new Date(d + 'T00:00:00').toLocaleDateString('pt-BR') : '-';
 
   const handlePrint = () => {
-    const filterLabel = subDeposits.find(d => String(d.id) === String(filterDeposit))?.name || 'Todos';
+    const filterLabel = deposits.find(d => String(d.id) === String(filterDeposit))?.name || 'Todos';
     setPrinting({
       title: 'Relatório de Abastecimento x Devolução x Vendas',
       content: (
         <div>
           <div className="mb-4 text-sm">
-            <p>Sub-depósito: <span className="font-medium">{filterLabel}</span></p>
+            <p>Depósito: <span className="font-medium">{filterLabel}</span></p>
             <p>Período: <span className="font-medium">{formatDate(startDate)} a {formatDate(endDate)}</span></p>
           </div>
           {summaries.length > 0 && (
@@ -128,11 +128,18 @@ export default function TransferReport() {
       <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
         <div className="flex items-end gap-3 flex-wrap">
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Sub-depósito</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">Depósito</label>
             <select value={filterDeposit} onChange={e => setFilterDeposit(e.target.value)}
               className="px-3 py-2 border rounded-lg text-sm">
               <option value="">Todos</option>
-              {subDeposits.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+              {parentDeposits.length > 0 && (
+                <optgroup label="Depósitos">
+                  {parentDeposits.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                </optgroup>
+              )}
+              <optgroup label="Sub-depósitos">
+                {subDeposits.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+              </optgroup>
             </select>
           </div>
           <div>
