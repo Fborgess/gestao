@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { Plus, Trash2, Save, X } from 'lucide-react';
@@ -19,6 +19,8 @@ export default function SaleNew() {
   const [productSearch, setProductSearch] = useState('');
   const [productResults, setProductResults] = useState([]);
   const [showProductSearch, setShowProductSearch] = useState(false);
+  const [focusQtyId, setFocusQtyId] = useState(null);
+  const qtyRefs = useRef({});
 
   useEffect(() => {
     api.get('/contacts/').then(res => setContacts(res.data.filter(c => c.contact_type === 'cliente' || c.contact_type === 'both'))).catch(() => {});
@@ -58,7 +60,16 @@ export default function SaleNew() {
     }
     setShowProductSearch(false);
     setProductSearch('');
+    setFocusQtyId(product.id);
   };
+
+  useEffect(() => {
+    if (focusQtyId != null && qtyRefs.current[focusQtyId]) {
+      qtyRefs.current[focusQtyId].focus();
+      qtyRefs.current[focusQtyId].select();
+      setFocusQtyId(null);
+    }
+  }, [focusQtyId, items]);
 
   const removeItem = (productId) => setItems(items.filter(it => it.productId !== productId));
 
@@ -175,6 +186,7 @@ export default function SaleNew() {
                     <td className="p-2 font-medium">{it.productName}</td>
                     <td className="p-2">
                       <input type="number" min={qtyStep(it.unitAbbr)} step={qtyStep(it.unitAbbr)} value={it.quantity}
+                        ref={el => { qtyRefs.current[it.productId] = el; }}
                         onChange={e => updateItem(it.productId, 'quantity', roundQty(e.target.value, it.unitAbbr))}
                         className="w-16 px-2 py-1 border rounded text-sm text-center" />
                     </td>

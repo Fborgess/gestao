@@ -1,6 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import api from '../services/api';
 import { Plus, Edit, Trash2, Tag, Search } from 'lucide-react';
+import {
+  currencyToDigits, formatDigitsToCurrency, parseCurrencyToNumber, formatNumberToCurrency,
+} from '../services/masks';
 
 export default function PriceTables() {
   const [tables, setTables] = useState([]);
@@ -11,6 +14,8 @@ export default function PriceTables() {
   const [items, setItems] = useState([]);
   const [productSearch, setProductSearch] = useState('');
   const [productResults, setProductResults] = useState([]);
+  const [focusPriceId, setFocusPriceId] = useState(null);
+  const priceRefs = useRef({});
 
   const load = () => api.get('/price-tables/').then(res => setTables(res.data)).catch(() => {});
   useEffect(() => { load(); }, []);
@@ -32,14 +37,24 @@ export default function PriceTables() {
 
   const addProduct = (product) => {
     if (items.some(it => it.productId === product.id)) { setProductSearch(''); setProductResults([]); return; }
+    const newId = product.id;
     setItems([...items, {
       productId: product.id,
       productName: prodLabel(product),
-      price: product.price || 0,
+      price: formatNumberToCurrency(product.price || 0, 2),
     }]);
     setProductSearch('');
     setProductResults([]);
+    setFocusPriceId(newId);
   };
+
+  useEffect(() => {
+    if (focusPriceId != null && priceRefs.current[focusPriceId]) {
+      priceRefs.current[focusPriceId].focus();
+      priceRefs.current[focusPriceId].select();
+      setFocusPriceId(null);
+    }
+  }, [focusPriceId, items]);
 
   const openNew = () => {
     setEditing(null);
@@ -54,7 +69,7 @@ export default function PriceTables() {
     setItems((t.items || []).map(it => ({
       productId: it.product_id,
       productName: it.product_name,
-      price: it.price,
+      price: formatNumberToCurrency(it.price, 2),
     })));
     setShowModal(true);
   };
@@ -64,7 +79,7 @@ export default function PriceTables() {
     const payload = {
       name: form.name,
       description: form.description || null,
-      items: items.map(it => ({ product_id: it.productId, price: parseFloat(it.price) })),
+      items: items.map(it => ({ product_id: it.productId, price: parseCurrencyToNumber(it.price, 2) })),
     };
     try {
       if (editing) { await api.put(`/price-tables/${editing.id}`, payload); }
@@ -162,9 +177,13 @@ export default function PriceTables() {
                         <tr key={it.productId} className="border-t">
                           <td className="p-2">{it.productName}</td>
                           <td className="p-2">
-                            <input type="number" min="0" step="0.01" value={it.price}
-                              onChange={e => setItems(items.map(x => x.productId === it.productId ? { ...x, price: e.target.value } : x))}
-                              className="w-24 px-2 py-1 border rounded text-sm text-right" />
+                            <div className="flex items-center gap-1">
+                              <span className="text-xs text-gray-400">R$</span>
+                              <input type="text" inputMode="decimal" placeholder="0,00" value={it.price}
+                                ref={el => { priceRefs.current[it.productId] = el; }}
+                                onChange={e => setItems(items.map(x => x.productId === it.productId ? { ...x, price: formatDigitsToCurrency(currencyToDigits(e.target.value), 2) } : x))}
+                                className="w-24 px-2 py-1 border rounded text-sm text-right" />
+                            </div>
                           </td>
                           <td className="p-2 text-center">
                             <button type="button" onClick={() => setItems(items.filter(x => x.productId !== it.productId))}

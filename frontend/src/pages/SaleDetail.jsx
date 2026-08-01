@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../services/api';
 import { Plus, Trash2, Save, X, Printer, Share2 } from 'lucide-react';
@@ -23,6 +23,8 @@ export default function SaleDetail() {
   const [showProductSearch, setShowProductSearch] = useState(false);
   const [priceTables, setPriceTables] = useState([]);
   const [tablePrices, setTablePrices] = useState({});
+  const [focusQtyId, setFocusQtyId] = useState(null);
+  const qtyRefs = useRef({});
   const [loading, setLoading] = useState(true);
   const isNew = !id;
   const prodLabel = (p) => p.unit?.abbreviation ? `${p.name} ${p.unit.abbreviation}` : p.name;
@@ -70,7 +72,16 @@ export default function SaleDetail() {
     }
     setShowProductSearch(false);
     setProductSearch('');
+    setFocusQtyId(product.id);
   };
+
+  useEffect(() => {
+    if (focusQtyId != null && qtyRefs.current[focusQtyId]) {
+      qtyRefs.current[focusQtyId].focus();
+      qtyRefs.current[focusQtyId].select();
+      setFocusQtyId(null);
+    }
+  }, [focusQtyId, items]);
 
   const removeItem = (pid) => setItems(items.filter(it => it.productId !== pid));
   const updateItem = (pid, field, value) => setItems(items.map(it => it.productId === pid ? { ...it, [field]: value } : it));
@@ -208,7 +219,7 @@ export default function SaleDetail() {
                 {items.map(it => (
                   <tr key={it.productId} className="border-t">
                     <td className="p-2 font-medium">{it.productName}</td>
-                    <td className="p-2"><input type="number" min={qtyStep(unitOf(it))} step={qtyStep(unitOf(it))} value={it.quantity} onChange={e => updateItem(it.productId, 'quantity', roundQty(e.target.value, unitOf(it)))} className="w-16 px-2 py-1 border rounded text-sm text-center" /></td>
+                    <td className="p-2"><input type="number" min={qtyStep(unitOf(it))} step={qtyStep(unitOf(it))} value={it.quantity} ref={el => { qtyRefs.current[it.productId] = el; }} onChange={e => updateItem(it.productId, 'quantity', roundQty(e.target.value, unitOf(it)))} className="w-16 px-2 py-1 border rounded text-sm text-center" /></td>
                     <td className="p-2"><input type="number" min="0" step="0.01" value={it.unitPrice} onChange={e => updateItem(it.productId, 'unitPrice', parseFloat(e.target.value) || 0)} className="w-24 px-2 py-1 border rounded text-sm text-right" /></td>
                     <td className="p-2 text-right font-medium">R$ {(it.quantity * it.unitPrice).toFixed(2)}</td>
                     <td className="p-2 text-center"><button type="button" onClick={() => removeItem(it.productId)} className="text-red-500"><Trash2 size={16} /></button></td>
