@@ -158,6 +158,12 @@ def apply_price(
     if not product:
         raise HTTPException(404, "Produto não encontrado")
     result = calculate(data)
+    existing = db.query(ProductPricing).filter(ProductPricing.product_id == product_id).first()
+    if existing:
+        for field in FIELDS:
+            setattr(existing, field, getattr(data, field))
+    else:
+        db.add(ProductPricing(product_id=product_id, **data.model_dump(exclude={"product_id"})))
     product.price = result.preco_venda
     db.commit()
     db.refresh(product)

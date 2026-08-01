@@ -170,6 +170,20 @@ with Session(engine) as session:
             session.add(RoleModule(role_id=gerente.id, module="precificacao", access_level="edit"))
             session.commit()
 
+# Garante que o perfil operador também tenha acesso ao módulo de precificação
+from app.models.role import Role, RoleModule
+
+with Session(engine) as session:
+    operador = session.query(Role).filter(Role.name == "operador").first()
+    if operador:
+        exists = session.query(RoleModule).filter(
+            RoleModule.role_id == operador.id,
+            RoleModule.module == "precificacao",
+        ).first()
+        if not exists:
+            session.add(RoleModule(role_id=operador.id, module="precificacao", access_level="edit"))
+            session.commit()
+
 from seed import seed, seed_frequencies
 seed()
 seed_frequencies()
