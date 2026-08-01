@@ -76,6 +76,13 @@ export default function Contacts() {
     setForm({ name: '', contact_type: 'cliente', cpf_cnpj: '', segment: '', email: '', phone: '', address: '', cep: '', city: '', state: '', notes: '', price_table_id: '' });
   };
 
+  const fmtPhone = (v) => {
+    const digits = String(v || '').replace(/\D/g, '');
+    if (digits.length === 11) return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+    if (digits.length === 10) return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+    return digits;
+  };
+
   const lookupCnpj = async () => {
     const cnpj = form.cpf_cnpj.replace(/\D/g, '');
     if (cnpj.length !== 14) { alert('Informe um CNPJ válido (14 dígitos)'); return; }
@@ -87,9 +94,9 @@ export default function Contacts() {
       const address = [d.logradouro, d.numero, d.complemento].filter(Boolean).join(', ');
       setForm(f => ({
         ...f,
-        name: (d.fantasia || '').trim() || (d.nome || '').trim(),
+        name: (d.nome_fantasia || '').trim() || (d.razao_social || '').trim(),
         email: d.email || f.email,
-        phone: d.telefone || f.phone,
+        phone: fmtPhone(d.ddd_telefone_1) || f.phone,
         address: (address || f.address) && (address ? [address, d.bairro].filter(Boolean).join(' - ') : f.address),
         cep: d.cep ? d.cep.replace(/\D/g, '').replace(/(\d{5})(\d{3})/, '$1-$2') : f.cep,
         city: d.municipio || f.city,
