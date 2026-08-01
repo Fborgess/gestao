@@ -129,8 +129,9 @@ export default function Pricing() {
   const timer = useRef(null);
 
   const loadPricings = () => api.get('/pricing/').then(res => setPricings(res.data)).catch(() => {});
+  const loadProducts = () => api.get('/products/').then(res => setProducts(res.data)).catch(() => {});
   useEffect(() => {
-    api.get('/products/').then(res => setProducts(res.data)).catch(() => {});
+    loadProducts();
     loadPricings();
   }, []);
 
@@ -194,7 +195,8 @@ export default function Pricing() {
       payload.product_id = parseInt(selectedProductId, 10);
       await api.post('/pricing/', payload);
       loadPricings();
-      setMsg('Precificação salva.');
+      loadProducts();
+      setMsg('Precificação salva. Custo, markup e preço de venda atualizados no cadastro do produto.');
     } catch (err) { alert(err.response?.data?.detail || 'Erro ao salvar'); }
   };
 

@@ -31,12 +31,17 @@ if DATABASE_URL.startswith("sqlite"):
         c.execute("PRAGMA table_info(products)")
         product_cols = {row[1]: row for row in c.fetchall()}
         if product_cols.get("name") and product_cols["name"][3]:
-            c.execute("CREATE TABLE IF NOT EXISTS products_new (id INTEGER PRIMARY KEY, name TEXT, description TEXT, sku TEXT UNIQUE, barcode TEXT, price REAL, cost_price REAL, current_stock INTEGER DEFAULT 0, min_stock INTEGER DEFAULT 0, unit_id INTEGER REFERENCES units(id), category_id INTEGER REFERENCES categories(id), deposit_id INTEGER REFERENCES deposits(id), is_active BOOLEAN DEFAULT 1, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME)")
+            c.execute("CREATE TABLE IF NOT EXISTS products_new (id INTEGER PRIMARY KEY, name TEXT, description TEXT, sku TEXT UNIQUE, barcode TEXT, price REAL, cost_price REAL, markup REAL, current_stock INTEGER DEFAULT 0, min_stock INTEGER DEFAULT 0, unit_id INTEGER REFERENCES units(id), category_id INTEGER REFERENCES categories(id), deposit_id INTEGER REFERENCES deposits(id), is_active BOOLEAN DEFAULT 1, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME)")
             c.execute("INSERT INTO products_new SELECT * FROM products")
             c.execute("DROP TABLE products")
             c.execute("ALTER TABLE products_new RENAME TO products")
             c.execute("CREATE INDEX IF NOT EXISTS ix_products_sku ON products(sku)")
             conn.commit()
+        c.execute("PRAGMA table_info(products)")
+        prod_cols2 = [row[1] for row in c.fetchall()]
+        if "markup" not in prod_cols2:
+            c.execute("ALTER TABLE products ADD COLUMN markup REAL")
+        conn.commit()
         c.execute("PRAGMA table_info(accounts)")
         acc_cols = [row[1] for row in c.fetchall()]
         for col, typedef in [("flag", "TEXT"), ("closing_day", "INTEGER"), ("due_day", "INTEGER"), ("best_purchase_day", "INTEGER"), ("credit_limit", "REAL")]:
@@ -92,6 +97,13 @@ if not DATABASE_URL.startswith("sqlite"):
             ))
             conn.execute(text(
                 "UPDATE stock_movements SET source='requisicao' WHERE reason LIKE 'Requisi\u00e7\u00e3o #%' OR reason LIKE 'Recebimento Requisi\u00e7\u00e3o #%'"
+            ))
+        cols = conn.execute(text(
+            "SELECT column_name FROM information_schema.columns WHERE table_name = 'products'"
+        )).fetchall()
+        if "markup" not in {row[0] for row in cols}:
+            conn.execute(text(
+                "ALTER TABLE products ADD COLUMN markup DOUBLE PRECISION"
             ))
         conn.commit()
 

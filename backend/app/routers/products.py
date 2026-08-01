@@ -19,6 +19,19 @@ def cleanup(path: str):
     except: pass
 
 
+def sync_markup(product, explicit_markup=False, explicit_price=False):
+    """Mantém coerentes Preço de Venda e Markup a partir do Preço de Custo.
+    Se o markup foi informado, recalcula o preço de venda;
+    caso contrário, se o preço de venda foi informado, calcula o markup."""
+    cost = product.cost_price
+    if not cost or cost <= 0:
+        return
+    if explicit_markup and product.markup and product.markup > 0:
+        product.price = round(cost * product.markup, 2)
+    elif explicit_price and product.price and product.price > 0:
+        product.markup = round(product.price / cost, 4)
+
+
 class ImportResult(BaseModel):
     imported: int
     errors: List[str]
@@ -91,6 +104,7 @@ def create_product(
     if existing:
         raise HTTPException(status_code=400, detail="SKU já cadastrado")
     db_product = Product(**product.model_dump())
+    sync_markup(db_product, explicit_markup=bool(product.markup), explicit_price=bool(product.price))
     db.add(db_product)
     db.commit()
     db.refresh(db_product)
@@ -111,8 +125,14 @@ def update_product(
         dup_sku = db.query(Product).filter(Product.sku == product.sku, Product.id != product_id).first()
         if dup_sku:
             raise HTTPException(status_code=400, detail="SKU já cadastrado")
-    for key, value in product.model_dump(exclude_unset=True).items():
+    data = product.model_dump(exclude_unset=True)
+    for key, value in data.items():
         setattr(db_product, key, value)
+    sync_markup(
+        db_product,
+        explicit_markup=bool(data.get("markup")),
+        explicit_price=bool(data.get("price")),
+    )
     db.commit()
     db.refresh(db_product)
     return db_product

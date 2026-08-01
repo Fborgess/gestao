@@ -81,6 +81,24 @@ def _to_response(p: ProductPricing) -> PricingResponse:
     )
 
 
+WEIGHT_ABBR = {"kg", "g", "mg", "cg", "dg", "hg", "t", "ton"}
+
+
+def _unit_decimals(product) -> int:
+    if product and product.unit and product.unit.abbreviation:
+        return 3 if product.unit.abbreviation.lower().replace(".", "") in WEIGHT_ABBR else 2
+    return 2
+
+
+def _update_product_from_pricing(product, result: PricingResult):
+    """Atualiza Preço de Custo, Markup e Preço de Venda no cadastro do produto."""
+    if not product or result.custo_unitario <= 0:
+        return
+    product.cost_price = round(result.custo_unitario, _unit_decimals(product))
+    product.markup = round(result.markup_multiplicador, 4)
+    product.price = round(result.preco_venda, 2)
+
+
 @router.post("/calculate", response_model=PricingResult)
 def calculate_pricing(
     data: PricingInput,
@@ -117,7 +135,8 @@ def save_pricing(
 ):
     if not data.product_id:
         raise HTTPException(400, "Informe o produto")
-    if not db.query(Product).filter(Product.id == data.product_id).first():
+    product = db.query(Product).filter(Product.id == data.product_id).first()
+    if not product:
         raise HTTPException(404, "Produto não encontrado")
     existing = db.query(ProductPricing).filter(ProductPricing.product_id == data.product_id).first()
     if existing:
@@ -125,12 +144,14 @@ def save_pricing(
             setattr(existing, field, getattr(data, field))
         db.commit()
         db.refresh(existing)
-        return _to_response(existing)
-    p = ProductPricing(product_id=data.product_id, **data.model_dump(exclude={"product_id"}))
-    db.add(p)
+    else:
+        existing = ProductPricing(product_id=data.product_id, **data.model_dump(exclude={"product_id"}))
+        db.add(existing)
+        db.commit()
+        db.refresh(existing)
+    _update_product_from_pricing(product, calculate(data))
     db.commit()
-    db.refresh(p)
-    return _to_response(p)
+    return _to_response(existing)
 
 
 @router.delete("/{product_id}")
@@ -165,6 +186,7 @@ def apply_price(
     else:
         db.add(ProductPricing(product_id=product_id, **data.model_dump(exclude={"product_id"})))
     product.price = result.preco_venda
+    _update_product_from_pricing(product, result)
     db.commit()
     db.refresh(product)
     return ApplyResult(

@@ -17,9 +17,10 @@ export default function Products() {
   const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'asc' });
   const [showImport, setShowImport] = useState(false);
   const [form, setForm] = useState({
-    name: '', sku: '', description: '', price: '', cost_price: '',
+    name: '', sku: '', description: '', price: '', cost_price: '', markup: '',
     unit_id: '', category_id: '', subcategory_id: '', barcode: '', deposit_id: '',
   });
+  const [lastEdited, setLastEdited] = useState('markup');
 
   const parentCategories = allCategories.filter(c => !c.parent_id);
   const subcategories = form.category_id
@@ -56,6 +57,46 @@ export default function Products() {
 
   const handleSort = (key, direction) => setSortConfig({ key, direction });
 
+  const round2 = (n) => Math.round(n * 100) / 100;
+  const round4 = (n) => Math.round(n * 10000) / 10000;
+
+  const handlePriceChange = (v) => {
+    const cost = parseFloat(form.cost_price);
+    setForm({
+      ...form, price: v,
+      markup: cost > 0 && parseFloat(v) > 0 ? String(round4(parseFloat(v) / cost)) : form.markup,
+    });
+    setLastEdited('price');
+  };
+
+  const handleMarkupChange = (v) => {
+    const cost = parseFloat(form.cost_price);
+    setForm({
+      ...form, markup: v,
+      price: cost > 0 && parseFloat(v) > 0 ? String(round2(cost * parseFloat(v))) : form.price,
+    });
+    setLastEdited('markup');
+  };
+
+  const handleCostChange = (v) => {
+    const cost = parseFloat(v);
+    const f = { ...form, cost_price: v };
+    if (cost > 0) {
+      const markup = parseFloat(f.markup);
+      const price = parseFloat(f.price);
+      if (lastEdited === 'markup' && markup > 0) {
+        f.price = String(round2(cost * markup));
+      } else if (lastEdited === 'price' && price > 0) {
+        f.markup = String(round4(price / cost));
+      } else if (markup > 0) {
+        f.price = String(round2(cost * markup));
+      } else if (price > 0) {
+        f.markup = String(round4(price / cost));
+      }
+    }
+    setForm(f);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError('');
@@ -63,6 +104,7 @@ export default function Products() {
       name: form.name, sku: form.sku, description: form.description || null,
       barcode: form.barcode || null, price: form.price ? parseFloat(form.price) : null,
       cost_price: form.cost_price ? parseFloat(form.cost_price) : null,
+      markup: form.markup ? parseFloat(form.markup) : null,
       unit_id: form.unit_id ? parseInt(form.unit_id) : null,
       category_id: form.subcategory_id ? parseInt(form.subcategory_id) : (form.category_id ? parseInt(form.category_id) : null),
       deposit_id: form.deposit_id ? parseInt(form.deposit_id) : null,
@@ -80,10 +122,11 @@ export default function Products() {
     setEditingProduct(p);
     setForm({
       name: p.name, sku: p.sku, description: p.description || '',
-      price: p.price ?? '', cost_price: p.cost_price ?? '',
+      price: p.price ?? '', cost_price: p.cost_price ?? '', markup: p.markup ?? '',
       unit_id: p.unit_id || '', category_id: parentCat ? parentCat.id : (cat ? cat.id : ''),
       subcategory_id: cat?.parent_id ? cat.id : '', barcode: p.barcode || '', deposit_id: p.deposit_id || '',
     });
+    setLastEdited('markup');
     setShowModal(true);
   };
 
@@ -94,7 +137,8 @@ export default function Products() {
   };
 
   const resetForm = () => {
-    setForm({ name: '', sku: '', description: '', price: '', cost_price: '', unit_id: '', category_id: '', subcategory_id: '', barcode: '', deposit_id: '' });
+    setForm({ name: '', sku: '', description: '', price: '', cost_price: '', markup: '', unit_id: '', category_id: '', subcategory_id: '', barcode: '', deposit_id: '' });
+    setLastEdited('markup');
     setFormError('');
   };
 
@@ -139,6 +183,7 @@ export default function Products() {
               <SortableHeader label="SKU" sortKey="sku" currentSort={sortConfig} onSort={handleSort} />
               <SortableHeader label="Categoria" sortKey="category_id" currentSort={sortConfig} onSort={handleSort} />
               <SortableHeader label="Preço Venda" sortKey="price" currentSort={sortConfig} onSort={handleSort} align="right" />
+              <SortableHeader label="Markup" sortKey="markup" currentSort={sortConfig} onSort={handleSort} align="right" />
               <SortableHeader label="Preço Custo" sortKey="cost_price" currentSort={sortConfig} onSort={handleSort} align="right" />
               <th className="text-center p-3">Ações</th>
             </tr>
@@ -150,6 +195,7 @@ export default function Products() {
                 <td className="p-3 text-gray-500">{p.sku}</td>
                 <td className="p-3 text-gray-500 text-xs">{getCategoryName(p)}</td>
                 <td className="p-3 text-right">{p.price != null ? formatCurrency(p.price) : '-'}</td>
+                <td className="p-3 text-right">{p.markup != null ? Number(p.markup).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 4 }) : '-'}</td>
                 <td className="p-3 text-right">{p.cost_price != null ? formatCurrency(p.cost_price) : '-'}</td>
                 <td className="p-3 text-center">
                   <button onClick={() => handleEdit(p)} className="text-blue-600 hover:text-blue-800 mr-2"><Edit size={16} /></button>
@@ -158,7 +204,7 @@ export default function Products() {
               </tr>
             ))}
             {sortedProducts.length === 0 && (
-              <tr><td colSpan={6} className="p-8 text-center text-gray-500">Nenhum produto cadastrado</td></tr>
+              <tr><td colSpan={7} className="p-8 text-center text-gray-500">Nenhum produto cadastrado</td></tr>
             )}
           </tbody>
         </table>
@@ -208,20 +254,32 @@ export default function Products() {
                   onChange={v => setForm({...form, unit_id: String(v)})}
                   placeholder="Selecione..." />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs text-gray-500 mb-1">Preço de Venda</label>
                   <input type="number" step="0.01" placeholder="R$ 0,00" value={form.price}
-                    onChange={e => setForm({...form, price: e.target.value})}
+                    onChange={e => handlePriceChange(e.target.value)}
                     className="w-full px-3 py-2 border rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="block text-xs text-gray-500 mb-1">Preço de Custo</label>
                   <input type="number" step="0.01" placeholder="R$ 0,00" value={form.cost_price}
-                    onChange={e => setForm({...form, cost_price: e.target.value})}
+                    onChange={e => handleCostChange(e.target.value)}
+                    className="w-full px-3 py-2 border rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Markup</label>
+                  <input type="number" step="0.0001" placeholder="Ex.: 1,50" value={form.markup}
+                    onChange={e => handleMarkupChange(e.target.value)}
                     className="w-full px-3 py-2 border rounded-lg text-sm" />
                 </div>
               </div>
+              {form.cost_price && (form.markup || form.price) && (
+                <p className="text-xs text-gray-400">
+                  {form.markup && form.cost_price ? `Preço de venda = custo × markup → R$ ${(round2(parseFloat(form.cost_price) * parseFloat(form.markup))).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ''}
+                  {form.price && form.cost_price && !form.markup ? `Markup = venda ÷ custo → ${(round4(parseFloat(form.price) / parseFloat(form.cost_price))).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 4 })}` : ''}
+                </p>
+              )}
               <textarea placeholder="Descrição do produto" value={form.description} rows={4}
                 onChange={e => setForm({...form, description: e.target.value})}
                 className="w-full px-3 py-2 border rounded-lg text-sm" />

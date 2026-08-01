@@ -28,6 +28,7 @@ class Product(Base):
     barcode = Column(String(100))
     price = Column(Float, nullable=True)
     cost_price = Column(Float, nullable=True)
+    markup = Column(Float, nullable=True)
     current_stock = Column(Integer, default=0)
     min_stock = Column(Integer, default=0)
     unit_id = Column(Integer, ForeignKey("units.id"), nullable=True)
