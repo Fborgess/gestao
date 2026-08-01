@@ -20,3 +20,8 @@ Thumbs.db
 
 # Planilhas de dados
 *.xlsx
+
+# Backups
+backups/
+backup.env
+
