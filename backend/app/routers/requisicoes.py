@@ -12,6 +12,7 @@ from app.models.role import Role
 from app.schemas.requisicao import (
     RequisicaoCreate, RequisicaoUpdate, RequisicaoResponse,
     RequisicaoItemResponse, RequisicaoApprove, RequisicaoFulfill, RequisicaoReceive,
+    RequisicaoCorrecao,
 )
 from app.utils.security import get_current_user, require_module
 from app.utils.helpers import product_label
@@ -239,6 +240,41 @@ def update_requisicao(
                     unit_price=it.unit_price,
                 ))
 
+    db.commit()
+    db.refresh(req)
+    req = db.query(Requisicao).options(
+        joinedload(Requisicao.requester),
+        joinedload(Requisicao.approver),
+        joinedload(Requisicao.deposit_requesting),
+        joinedload(Requisicao.deposit_fulfilling),
+        joinedload(Requisicao.items).joinedload(RequisicaoItem.product),
+    ).filter(Requisicao.id == req.id).first()
+    return _req_to_response(req)
+
+
+@router.put("/{requisicao_id}/corrigir", response_model=RequisicaoResponse)
+def corrigir_requisicao(
+    requisicao_id: int,
+    data: RequisicaoCorrecao,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    _=Depends(require_module("requisicoes", "edit")),
+):
+    req = db.query(Requisicao).options(
+        joinedload(Requisicao.items),
+    ).filter(Requisicao.id == requisicao_id).first()
+    if not req:
+        raise HTTPException(404, "Requisição não encontrada")
+    if not _is_admin(db, current_user):
+        raise HTTPException(403, "Apenas administradores podem corrigir quantidades")
+    for it in data.items:
+        item = next((i for i in req.items if i.product_id == it.product_id), None)
+        if not item:
+            raise HTTPException(404, f"Item do produto {it.product_id} não encontrado na requisição")
+        if it.quantity_requested is not None:
+            item.quantity_requested = it.quantity_requested
+        if it.quantity_approved is not None:
+            item.quantity_approved = it.quantity_approved
     db.commit()
     db.refresh(req)
     req = db.query(Requisicao).options(
