@@ -2,6 +2,12 @@ import { useState, useEffect, useMemo } from 'react';
 import api from '../services/api';
 import { Plus, Edit, Trash2, Search, User, Building } from 'lucide-react';
 
+const SEGMENTS = [
+  'Restaurante', 'Supermercado', 'Mercado', 'Mercearia', 'Padaria', 'Confeitaria',
+  'Pizzaria', 'Lanchonete', 'Sorveteria', 'Açaí', 'Adega', 'Farmácia', 'Perfumaria',
+  'Distribuidora', 'Academia', 'Pet Shop', 'Outro',
+];
+
 export default function Contacts() {
   const [contacts, setContacts] = useState([]);
   const [search, setSearch] = useState('');
@@ -9,9 +15,11 @@ export default function Contacts() {
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
   const [priceTables, setPriceTables] = useState([]);
+  const [lookupLoading, setLookupLoading] = useState(false);
+  const [cepLoading, setCepLoading] = useState(false);
   const [form, setForm] = useState({
-    name: '', contact_type: 'cliente', cpf_cnpj: '', email: '',
-    phone: '', address: '', city: '', state: '', notes: '', price_table_id: '',
+    name: '', contact_type: 'cliente', cpf_cnpj: '', segment: '', email: '',
+    phone: '', address: '', cep: '', city: '', state: '', notes: '', price_table_id: '',
   });
 
   const loadContacts = () => {
@@ -50,9 +58,9 @@ export default function Contacts() {
   const handleEdit = (c) => {
     setEditing(c);
     setForm({
-      name: c.name, contact_type: c.contact_type, cpf_cnpj: c.cpf_cnpj || '',
+      name: c.name, contact_type: c.contact_type, cpf_cnpj: c.cpf_cnpj || '', segment: c.segment || '',
       email: c.email || '', phone: c.phone || '', address: c.address || '',
-      city: c.city || '', state: c.state || '', notes: c.notes || '',
+      cep: c.cep || '', city: c.city || '', state: c.state || '', notes: c.notes || '',
       price_table_id: c.price_table_id || '',
     });
     setShowModal(true);
@@ -65,7 +73,54 @@ export default function Contacts() {
   };
 
   const resetForm = () => {
-    setForm({ name: '', contact_type: 'cliente', cpf_cnpj: '', email: '', phone: '', address: '', city: '', state: '', notes: '', price_table_id: '' });
+    setForm({ name: '', contact_type: 'cliente', cpf_cnpj: '', segment: '', email: '', phone: '', address: '', cep: '', city: '', state: '', notes: '', price_table_id: '' });
+  };
+
+  const lookupCnpj = async () => {
+    const cnpj = form.cpf_cnpj.replace(/\D/g, '');
+    if (cnpj.length !== 14) { alert('Informe um CNPJ válido (14 dígitos)'); return; }
+    setLookupLoading(true);
+    try {
+      const res = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`);
+      if (!res.ok) throw new Error('CNPJ não encontrado');
+      const d = await res.json();
+      const address = [d.logradouro, d.numero, d.complemento].filter(Boolean).join(', ');
+      setForm(f => ({
+        ...f,
+        name: (d.fantasia || '').trim() || (d.nome || '').trim(),
+        email: d.email || f.email,
+        phone: d.telefone || f.phone,
+        address: (address || f.address) && (address ? [address, d.bairro].filter(Boolean).join(' - ') : f.address),
+        cep: d.cep ? d.cep.replace(/\D/g, '').replace(/(\d{5})(\d{3})/, '$1-$2') : f.cep,
+        city: d.municipio || f.city,
+        state: d.uf || f.state,
+      }));
+    } catch (err) {
+      alert(err.message || 'Erro ao buscar CNPJ');
+    } finally {
+      setLookupLoading(false);
+    }
+  };
+
+  const lookupCep = async () => {
+    const cep = form.cep.replace(/\D/g, '');
+    if (cep.length !== 8) { alert('Informe um CEP válido (8 dígitos)'); return; }
+    setCepLoading(true);
+    try {
+      const res = await fetch(`https://brasilapi.com.br/api/cep/v2/${cep}`);
+      if (!res.ok) throw new Error('CEP não encontrado');
+      const d = await res.json();
+      setForm(f => ({
+        ...f,
+        address: f.address ? f.address : [d.street, d.neighborhood].filter(Boolean).join(' - '),
+        city: d.city || f.city,
+        state: d.state || f.state,
+      }));
+    } catch (err) {
+      alert(err.message || 'Erro ao buscar CEP');
+    } finally {
+      setCepLoading(false);
+    }
   };
 
   const typeLabels = { cliente: 'Cliente', fornecedor: 'Fornecedor', both: 'Cliente/Fornecedor' };
@@ -105,6 +160,7 @@ export default function Contacts() {
               <div className="flex items-center gap-2">
                 {c.contact_type === 'fornecedor' ? <Building size={20} className="text-purple-600" /> : <User size={20} className="text-blue-600" />}
                 <span className="font-semibold">{c.name}</span>
+                {c.segment && <span className="text-xs text-gray-400">· {c.segment}</span>}
               </div>
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${typeColors[c.contact_type]}`}>
                 {typeLabels[c.contact_type]}
@@ -139,15 +195,41 @@ export default function Contacts() {
                   <option value="fornecedor">Fornecedor</option>
                   <option value="both">Cliente/Fornecedor</option>
                 </select>
-                <input placeholder="CPF/CNPJ" value={form.cpf_cnpj}
-                  onChange={e => setForm({...form, cpf_cnpj: e.target.value})}
-                  className="px-3 py-2 border rounded-lg text-sm" />
+                <div className="flex gap-1">
+                  <input placeholder="CPF/CNPJ" value={form.cpf_cnpj}
+                    onChange={e => setForm({...form, cpf_cnpj: e.target.value})}
+                    className="flex-1 min-w-0 px-3 py-2 border rounded-lg text-sm" />
+                  {form.cpf_cnpj.replace(/\D/g, '').length === 14 && (
+                    <button type="button" onClick={lookupCnpj} title="Buscar dados pelo CNPJ"
+                      className="px-3 py-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200">
+                      {lookupLoading ? '...' : <Search size={16} />}
+                    </button>
+                  )}
+                </div>
+                <select value={form.segment} onChange={e => setForm({...form, segment: e.target.value})}
+                  className="px-3 py-2 border rounded-lg text-sm">
+                  <option value="">Seguimento...</option>
+                  {SEGMENTS.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
                 <input placeholder="Email" type="email" value={form.email}
                   onChange={e => setForm({...form, email: e.target.value})}
                   className="px-3 py-2 border rounded-lg text-sm" />
-                <input placeholder="Telefone" value={form.phone}
-                  onChange={e => setForm({...form, phone: e.target.value})}
-                  className="px-3 py-2 border rounded-lg text-sm" />
+                <div className="flex gap-1">
+                  <input placeholder="Telefone" value={form.phone}
+                    onChange={e => setForm({...form, phone: e.target.value})}
+                    className="flex-1 min-w-0 px-3 py-2 border rounded-lg text-sm" />
+                </div>
+                <div className="flex gap-1">
+                  <input placeholder="CEP" inputMode="numeric" value={form.cep}
+                    onChange={e => setForm({...form, cep: e.target.value})}
+                    className="flex-1 min-w-0 px-3 py-2 border rounded-lg text-sm" />
+                  {form.cep.replace(/\D/g, '').length === 8 && (
+                    <button type="button" onClick={lookupCep} title="Buscar endereço pelo CEP"
+                      className="px-3 py-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200">
+                      {cepLoading ? '...' : <Search size={16} />}
+                    </button>
+                  )}
+                </div>
                 <input placeholder="Endereço" value={form.address}
                   onChange={e => setForm({...form, address: e.target.value})}
                   className="col-span-2 px-3 py-2 border rounded-lg text-sm" />

@@ -53,6 +53,11 @@ if DATABASE_URL.startswith("sqlite"):
         ct_cols = [row[1] for row in c.fetchall()]
         if "price_table_id" not in ct_cols:
             c.execute("ALTER TABLE contacts ADD COLUMN price_table_id INTEGER")
+        if "segment" not in ct_cols:
+            c.execute("ALTER TABLE contacts ADD COLUMN segment TEXT")
+        if "cep" not in ct_cols:
+            c.execute("ALTER TABLE contacts ADD COLUMN cep TEXT")
+        conn.commit()
         c.execute("PRAGMA table_info(transactions)")
         tx_cols = [row[1] for row in c.fetchall()]
         if "recurrence_frequency" not in tx_cols:
@@ -135,6 +140,15 @@ if not DATABASE_URL.startswith("sqlite"):
             conn.execute(text(
                 "ALTER TABLE contacts ADD COLUMN price_table_id INTEGER REFERENCES price_tables(id)"
             ))
+        conn.commit()
+        cols2 = conn.execute(text(
+            "SELECT column_name FROM information_schema.columns WHERE table_name = 'contacts'"
+        )).fetchall()
+        ct_names = {row[0] for row in cols2}
+        if "segment" not in ct_names:
+            conn.execute(text("ALTER TABLE contacts ADD COLUMN segment VARCHAR(50)"))
+        if "cep" not in ct_names:
+            conn.execute(text("ALTER TABLE contacts ADD COLUMN cep VARCHAR(10)"))
         conn.commit()
 
 # Migração: movimentações de requisição só são gravadas após o recebimento.

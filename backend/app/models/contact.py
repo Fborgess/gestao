@@ -10,9 +10,11 @@ class Contact(Base):
     name = Column(String(255), nullable=False)
     contact_type = Column(String(20), nullable=False)  # "cliente", "fornecedor" ou "both"
     cpf_cnpj = Column(String(20))
+    segment = Column(String(50))
     email = Column(String(255))
     phone = Column(String(20))
     address = Column(Text)
+    cep = Column(String(10))
     city = Column(String(100))
     state = Column(String(2))
     price_table_id = Column(Integer, ForeignKey("price_tables.id"), nullable=True)
