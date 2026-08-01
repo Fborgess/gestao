@@ -14,27 +14,63 @@ const PERCENT_LABELS = {
 const DEFAULTS = {
   acquisition_price: '',
   lote: 1,
-  avarias_pct: 6, comissao_pct: 0, frete_pct: 5, outros_custos_pct: 0,
-  recursos_humanos_pct: 5, taxa_cartao_pct: 0, taxas_antecipacao_pct: 0,
-  margem_alvo: 20, impostos_pct: 6,
+  avarias_pct: '6', comissao_pct: '0', frete_pct: '5', outros_custos_pct: '0',
+  recursos_humanos_pct: '5', taxa_cartao_pct: '0', taxas_antecipacao_pct: '0',
+  margem_alvo: '20', impostos_pct: '6',
 };
 
 const fmtMoney = (n) => n == null ? '-' : Number(n).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtPct = (n) => n == null ? '-' : (Number(n) * 100).toFixed(2).replace('.', ',') + '%';
 
+const currencyToDigits = (str) => (str || '').toString().replace(/\D/g, '');
+
+function formatDigitsToCurrency(digits) {
+  if (!digits) return '';
+  let d = String(digits);
+  while (d.length < 3) d = '0' + d;
+  const cents = d.slice(-2);
+  const whole = (d.slice(0, -2).replace(/^0+/, '') || '0').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return `${whole},${cents}`;
+}
+
+const parseCurrencyToNumber = (str) => {
+  const digits = currencyToDigits(str);
+  return digits ? parseFloat(digits) / 100 : 0;
+};
+
+function maskPercentInput(raw) {
+  let out = '';
+  let hasSep = false;
+  for (const ch of String(raw ?? '')) {
+    if (ch === ',' || ch === '.') {
+      if (hasSep) continue;
+      hasSep = true;
+      out += ',';
+    } else if (ch >= '0' && ch <= '9') {
+      out += ch;
+    }
+  }
+  const [whole, dec] = out.split(',');
+  return dec !== undefined ? whole + ',' + dec.slice(0, 2) : out;
+}
+
+const parsePercent = (v) => parseFloat(String(v ?? '0').replace(',', '.')) || 0;
+
 function toPayload(f) {
-  const p = { acquisition_price: parseFloat(f.acquisition_price) || 0, lote: parseFloat(f.lote) || 1 };
-  PERCENT_FIELDS.forEach(k => { p[k] = (parseFloat(f[k]) || 0) / 100; });
+  const p = { acquisition_price: parseCurrencyToNumber(f.acquisition_price), lote: parseFloat(f.lote) || 1 };
+  PERCENT_FIELDS.forEach(k => { p[k] = parsePercent(f[k]) / 100; });
   return p;
 }
 
 function fromConfig(obj) {
   const f = { ...DEFAULTS };
   PERCENT_FIELDS.forEach(k => {
-    if (obj && obj[k] !== undefined && obj[k] !== null) f[k] = Math.round(obj[k] * 10000) / 100;
+    if (obj && obj[k] !== undefined && obj[k] !== null) f[k] = String(Math.round(obj[k] * 10000) / 100).replace('.', ',');
   });
   if (obj) {
-    if (obj.acquisition_price !== undefined && obj.acquisition_price !== null) f.acquisition_price = obj.acquisition_price;
+    if (obj.acquisition_price !== undefined && obj.acquisition_price !== null) {
+      f.acquisition_price = formatDigitsToCurrency(String(Math.round(obj.acquisition_price * 100)));
+    }
     if (obj.lote !== undefined && obj.lote !== null) f.lote = obj.lote;
   }
   return f;
@@ -74,7 +110,8 @@ export default function Pricing() {
       setForm(fromConfig(config));
     } else {
       const f = { ...DEFAULTS };
-      if (p.cost_price != null || p.price != null) f.acquisition_price = p.cost_price ?? p.price ?? '';
+      const cost = p.cost_price ?? p.price ?? 0;
+      if (cost) f.acquisition_price = formatDigitsToCurrency(String(Math.round(cost * 100)));
       setForm(f);
     }
     setMsg(null);
@@ -88,7 +125,7 @@ export default function Pricing() {
   };
 
   useEffect(() => {
-    const acquisition = parseFloat(form.acquisition_price);
+    const acquisition = parseCurrencyToNumber(form.acquisition_price);
     if (!acquisition || acquisition <= 0) { setResult(null); return; }
     setCalcLoading(true);
     clearTimeout(timer.current);
@@ -132,6 +169,14 @@ export default function Pricing() {
     if (v === '') { setForm(f => ({ ...f, [k]: '' })); return; }
     const n = Number(v);
     if (!isNaN(n)) setForm(f => ({ ...f, [k]: n }));
+  };
+
+  const setCurrency = (e) => {
+    setForm(f => ({ ...f, acquisition_price: formatDigitsToCurrency(currencyToDigits(e.target.value)) }));
+  };
+
+  const setPercent = (k) => (e) => {
+    setForm(f => ({ ...f, [k]: maskPercentInput(e.target.value) }));
   };
 
   const inputCls = 'w-full px-3 py-2 border border-gray-200 rounded-lg text-sm';
@@ -196,7 +241,7 @@ export default function Pricing() {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className={labelCls}>Preço de Aquisição / Matéria-Prima (R$)</label>
-              <input type="number" step="0.01" min="0" value={form.acquisition_price} onChange={setNum('acquisition_price')} className={inputCls} placeholder="0,00" />
+              <input type="text" inputMode="decimal" value={form.acquisition_price} onChange={setCurrency} className={inputCls} placeholder="0,00" />
             </div>
             <div>
               <label className={labelCls}>Lote (quantidade)</label>
@@ -206,7 +251,7 @@ export default function Pricing() {
               <div key={k}>
                 <label className={labelCls}>{PERCENT_LABELS[k]} (%)</label>
                 <div className="relative">
-                  <input type="number" step="0.1" min="0" value={form[k]} onChange={setNum(k)} className={inputCls + ' pr-7'} />
+                  <input type="text" inputMode="decimal" value={form[k]} onChange={setPercent(k)} className={inputCls + ' pr-7'} />
                   <Percent size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400" />
                 </div>
               </div>
@@ -222,7 +267,7 @@ export default function Pricing() {
                 <div key={k}>
                   <label className={labelCls}>{PERCENT_LABELS[k]} (%)</label>
                   <div className="relative">
-                    <input type="number" step="0.1" min="0" value={form[k]} onChange={setNum(k)} className={inputCls + ' pr-7'} />
+                    <input type="text" inputMode="decimal" value={form[k]} onChange={setPercent(k)} className={inputCls + ' pr-7'} />
                     <Percent size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400" />
                   </div>
                 </div>
