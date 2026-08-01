@@ -40,19 +40,19 @@ def calculate(data: PricingInput) -> PricingResult:
     markup_multiplicador = preco_venda / custo_unitario if custo_unitario else 0
 
     return PricingResult(
-        custo_unitario=round(custo_unitario, 2),
+        custo_unitario=round(custo_unitario, 6),
         total_deducoes_pct=round(total_deducoes, 4),
-        custos_variaveis=round(custos_variaveis, 2),
-        total_custos=round(total_custos, 2),
-        preco_venda=round(preco_venda, 2),
-        custos_diretos=round(custos_diretos, 2),
-        despesas_variaveis=round(despesas_variaveis, 2),
-        impostos_rs=round(impostos_rs, 2),
-        total_custos_rs=round(total_custos_rs, 2),
-        margem_rs=round(margem_rs, 2),
+        custos_variaveis=round(custos_variaveis, 6),
+        total_custos=round(total_custos, 6),
+        preco_venda=round(preco_venda, 6),
+        custos_diretos=round(custos_diretos, 6),
+        despesas_variaveis=round(despesas_variaveis, 6),
+        impostos_rs=round(impostos_rs, 6),
+        total_custos_rs=round(total_custos_rs, 6),
+        margem_rs=round(margem_rs, 6),
         margem_pct=round(margem_pct, 4),
         markup_multiplicador=round(markup_multiplicador, 4),
-        markup_resultado=round(preco_venda, 2),
+        markup_resultado=round(preco_venda, 6),
     )
 
 
@@ -94,9 +94,10 @@ def _update_product_from_pricing(product, result: PricingResult):
     """Atualiza Preço de Custo, Markup e Preço de Venda no cadastro do produto."""
     if not product or result.custo_unitario <= 0:
         return
-    product.cost_price = round(result.custo_unitario, _unit_decimals(product))
+    d = _unit_decimals(product)
+    product.cost_price = round(result.custo_unitario, d)
     product.markup = round(result.markup_multiplicador, 4)
-    product.price = round(result.preco_venda, 2)
+    product.price = round(result.preco_venda, d)
 
 
 @router.post("/calculate", response_model=PricingResult)

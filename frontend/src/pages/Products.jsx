@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
 import api from '../services/api';
-import { formatCurrency } from '../services/format';
 import { Plus, Edit, Trash2, Search, Upload } from 'lucide-react';
 import SearchableSelect from '../components/SearchableSelect';
 import SortableHeader from '../components/SortableHeader';
@@ -151,6 +150,19 @@ export default function Products() {
 
   const getProductName = (p) => p.display_name || (p.unit?.abbreviation ? `${p.name} ${p.unit.abbreviation}` : p.name);
 
+  const isWeightUnit = (u) => !!u && (
+    ['kg', 'g', 'mg', 'cg', 'dg', 'hg', 't', 'ton'].includes((u.abbreviation || '').toLowerCase().replace('.', ''))
+    || /\b(quilo|grama|tonelada)\b/.test((u.name || '').toLowerCase())
+  );
+
+  const fmtVal = (n, u) => n == null ? '-' : Number(n).toLocaleString('pt-BR', {
+    minimumFractionDigits: isWeightUnit(u) ? 3 : 2,
+    maximumFractionDigits: isWeightUnit(u) ? 3 : 2,
+  });
+
+  const formUnit = units.find(u => u.id === parseInt(form.unit_id));
+  const formDecimals = isWeightUnit(formUnit) ? 3 : 2;
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -194,9 +206,9 @@ export default function Products() {
                 <td className="p-3 font-medium">{getProductName(p)}</td>
                 <td className="p-3 text-gray-500">{p.sku}</td>
                 <td className="p-3 text-gray-500 text-xs">{getCategoryName(p)}</td>
-                <td className="p-3 text-right">{p.price != null ? formatCurrency(p.price) : '-'}</td>
+                <td className="p-3 text-right">{fmtVal(p.price, p.unit)}</td>
                 <td className="p-3 text-right">{p.markup != null ? Number(p.markup).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 4 }) : '-'}</td>
-                <td className="p-3 text-right">{p.cost_price != null ? formatCurrency(p.cost_price) : '-'}</td>
+                <td className="p-3 text-right">{fmtVal(p.cost_price, p.unit)}</td>
                 <td className="p-3 text-center">
                   <button onClick={() => handleEdit(p)} className="text-blue-600 hover:text-blue-800 mr-2"><Edit size={16} /></button>
                   <button onClick={() => handleDelete(p.id)} className="text-red-600 hover:text-red-800"><Trash2 size={16} /></button>
@@ -257,13 +269,13 @@ export default function Products() {
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs text-gray-500 mb-1">Preço de Venda</label>
-                  <input type="number" step="0.01" placeholder="R$ 0,00" value={form.price}
+                  <input type="number" step={formDecimals === 3 ? '0.001' : '0.01'} placeholder="R$ 0,00" value={form.price}
                     onChange={e => handlePriceChange(e.target.value)}
                     className="w-full px-3 py-2 border rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="block text-xs text-gray-500 mb-1">Preço de Custo</label>
-                  <input type="number" step="0.01" placeholder="R$ 0,00" value={form.cost_price}
+                  <input type="number" step={formDecimals === 3 ? '0.001' : '0.01'} placeholder="R$ 0,00" value={form.cost_price}
                     onChange={e => handleCostChange(e.target.value)}
                     className="w-full px-3 py-2 border rounded-lg text-sm" />
                 </div>
