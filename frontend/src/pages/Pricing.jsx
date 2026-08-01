@@ -24,19 +24,34 @@ const fmtPct = (n) => n == null ? '-' : (Number(n) * 100).toFixed(2).replace('.'
 
 const currencyToDigits = (str) => (str || '').toString().replace(/\D/g, '');
 
-function formatDigitsToCurrency(digits) {
+const WEIGHT_ABBR = ['kg', 'g', 'mg', 'cg', 'dg', 'hg', 't', 'ton'];
+const isWeightUnit = (unit) => {
+  const abbr = (unit?.abbreviation || '').toLowerCase().replace('.', '');
+  const name = (unit?.name || '').toLowerCase();
+  return WEIGHT_ABBR.includes(abbr) || /\b(quilo|grama|tonelada)\b/.test(name);
+};
+
+function formatDigitsToCurrency(digits, decimals = 2) {
   if (!digits) return '';
   let d = String(digits);
-  while (d.length < 3) d = '0' + d;
-  const cents = d.slice(-2);
-  const whole = (d.slice(0, -2).replace(/^0+/, '') || '0').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-  return `${whole},${cents}`;
+  while (d.length <= decimals) d = '0' + d;
+  const frac = d.slice(-decimals);
+  const whole = (d.slice(0, -decimals).replace(/^0+/, '') || '0').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return `${whole},${frac}`;
 }
 
-const parseCurrencyToNumber = (str) => {
+const parseCurrencyToNumber = (str, decimals = 2) => {
   const digits = currencyToDigits(str);
-  return digits ? parseFloat(digits) / 100 : 0;
+  return digits ? parseFloat(digits) / Math.pow(10, decimals) : 0;
 };
+
+const formatNumberToCurrency = (num, decimals = 2) => {
+  if (num == null || isNaN(num)) return '';
+  return formatDigitsToCurrency(String(Math.round(Number(num) * Math.pow(10, decimals))), decimals);
+};
+
+const formatValue = (num, decimals = 2) =>
+  num == null ? '-' : Number(num).toLocaleString('pt-BR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
 
 function maskPercentInput(raw) {
   let out = '';
@@ -56,25 +71,27 @@ function maskPercentInput(raw) {
 
 const parsePercent = (v) => parseFloat(String(v ?? '0').replace(',', '.')) || 0;
 
-function toPayload(f) {
-  const p = { acquisition_price: parseCurrencyToNumber(f.acquisition_price), lote: parseFloat(f.lote) || 1 };
+function toPayload(f, decimals = 2) {
+  const p = { acquisition_price: parseCurrencyToNumber(f.acquisition_price, decimals), lote: parseFloat(f.lote) || 1 };
   PERCENT_FIELDS.forEach(k => { p[k] = parsePercent(f[k]) / 100; });
   return p;
 }
 
-function fromConfig(obj) {
+function fromConfig(obj, decimals = 2) {
   const f = { ...DEFAULTS };
   PERCENT_FIELDS.forEach(k => {
     if (obj && obj[k] !== undefined && obj[k] !== null) f[k] = String(Math.round(obj[k] * 10000) / 100).replace('.', ',');
   });
   if (obj) {
     if (obj.acquisition_price !== undefined && obj.acquisition_price !== null) {
-      f.acquisition_price = formatDigitsToCurrency(String(Math.round(obj.acquisition_price * 100)));
+      f.acquisition_price = formatNumberToCurrency(obj.acquisition_price, decimals);
     }
     if (obj.lote !== undefined && obj.lote !== null) f.lote = obj.lote;
   }
   return f;
 }
+
+const unitDecimals = (unit) => (isWeightUnit(unit) ? 3 : 2);
 
 export default function Pricing() {
   const [products, setProducts] = useState([]);
@@ -83,6 +100,7 @@ export default function Pricing() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState('');
   const [form, setForm] = useState({ ...DEFAULTS });
+  const [decimals, setDecimals] = useState(2);
   const [result, setResult] = useState(null);
   const [calcLoading, setCalcLoading] = useState(false);
   const [msg, setMsg] = useState(null);
@@ -105,13 +123,14 @@ export default function Pricing() {
     setSelectedProductId(String(p.id));
     setSearch(p.display_name || p.name);
     setShowDropdown(false);
+    setDecimals(unitDecimals(p.unit));
     const config = pricings.find(c => String(c.product_id) === String(p.id));
     if (config) {
-      setForm(fromConfig(config));
+      setForm(fromConfig(config, unitDecimals(p.unit)));
     } else {
       const f = { ...DEFAULTS };
       const cost = p.cost_price ?? p.price ?? 0;
-      if (cost) f.acquisition_price = formatDigitsToCurrency(String(Math.round(cost * 100)));
+      if (cost) f.acquisition_price = formatNumberToCurrency(cost, unitDecimals(p.unit));
       setForm(f);
     }
     setMsg(null);
@@ -121,28 +140,35 @@ export default function Pricing() {
     setSelectedProductId('');
     setSearch('');
     setShowDropdown(false);
+    setDecimals(2);
     setMsg(null);
   };
 
+  const handleDecimalsChange = (e) => {
+    const n = Number(e.target.value);
+    setForm(f => ({ ...f, acquisition_price: formatNumberToCurrency(parseCurrencyToNumber(f.acquisition_price, decimals), n) }));
+    setDecimals(n);
+  };
+
   useEffect(() => {
-    const acquisition = parseCurrencyToNumber(form.acquisition_price);
+    const acquisition = parseCurrencyToNumber(form.acquisition_price, decimals);
     if (!acquisition || acquisition <= 0) { setResult(null); return; }
     setCalcLoading(true);
     clearTimeout(timer.current);
     timer.current = setTimeout(async () => {
       try {
-        const res = await api.post('/pricing/calculate', toPayload(form));
+        const res = await api.post('/pricing/calculate', toPayload(form, decimals));
         setResult(res.data);
       } catch (e) { setResult(null); }
       finally { setCalcLoading(false); }
     }, 300);
     return () => clearTimeout(timer.current);
-  }, [form]);
+  }, [form, decimals]);
 
   const handleSave = async () => {
     if (!selectedProductId) { alert('Selecione um produto'); return; }
     try {
-      const payload = toPayload(form);
+      const payload = toPayload(form, decimals);
       payload.product_id = parseInt(selectedProductId, 10);
       await api.post('/pricing/', payload);
       loadPricings();
@@ -158,7 +184,10 @@ export default function Pricing() {
   const handleEdit = (p) => {
     setSelectedProductId(String(p.product_id));
     setSearch(p.display_name || p.product_name || '');
-    setForm(fromConfig(p));
+    const prod = products.find(x => String(x.id) === String(p.product_id));
+    const d = prod ? unitDecimals(prod.unit) : 2;
+    setDecimals(d);
+    setForm(fromConfig(p, d));
     setResult(null);
     setShowDropdown(false);
     setMsg(null);
@@ -172,7 +201,7 @@ export default function Pricing() {
   };
 
   const setCurrency = (e) => {
-    setForm(f => ({ ...f, acquisition_price: formatDigitsToCurrency(currencyToDigits(e.target.value)) }));
+    setForm(f => ({ ...f, acquisition_price: formatDigitsToCurrency(currencyToDigits(e.target.value), decimals) }));
   };
 
   const setPercent = (k) => (e) => {
@@ -241,7 +270,19 @@ export default function Pricing() {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className={labelCls}>Preço de Aquisição / Matéria-Prima (R$)</label>
-              <input type="text" inputMode="decimal" value={form.acquisition_price} onChange={setCurrency} className={inputCls} placeholder="0,00" />
+              <div className="flex gap-2">
+                <input type="text" inputMode="decimal" value={form.acquisition_price} onChange={setCurrency} className={inputCls} placeholder={decimals === 3 ? '0,000' : '0,00'} />
+                <select
+                  value={decimals}
+                  onChange={handleDecimalsChange}
+                  disabled={!!selectedProductId}
+                  title={selected ? `Precisão do ${selected.unit ? selected.unit.name.toLowerCase() : 'produto'}: sempre ${unitDecimals(selected.unit)} casas decimais` : 'Precisão (sem produto selecionado)'}
+                  className="px-2 py-2 border border-gray-200 rounded-lg text-sm bg-white"
+                >
+                  <option value={2}>2 casas (unidade)</option>
+                  <option value={3}>3 casas (peso)</option>
+                </select>
+              </div>
             </div>
             <div>
               <label className={labelCls}>Lote (quantidade)</label>
@@ -336,7 +377,7 @@ export default function Pricing() {
             {pricings.map(p => (
               <tr key={p.id} className="border-t hover:bg-gray-50">
                 <td className="p-3 font-medium">{p.display_name || p.product_name}</td>
-                <td className="p-3 text-right">R$ {fmtMoney(p.acquisition_price)}</td>
+                <td className="p-3 text-right">R$ {formatValue(p.acquisition_price, unitDecimals(products.find(x => String(x.id) === String(p.product_id))?.unit))}</td>
                 <td className="p-3 text-center">{p.lote}</td>
                 <td className="p-3 text-center">{fmtPct(p.margem_alvo)}</td>
                 <td className="p-3 text-right">{p.price != null ? `R$ ${fmtMoney(p.price)}` : '-'}</td>
