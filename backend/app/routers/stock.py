@@ -303,6 +303,21 @@ def transfer_stock(
         if it.quantity <= 0:
             raise HTTPException(400, f"Quantidade inválida para produto {it.product_id}")
 
+        available = db.query(func.coalesce(func.sum(
+            case(
+                (StockMovement.movement_type == "entrada", StockMovement.quantity),
+                else_=-StockMovement.quantity,
+            )
+        ), 0)).filter(
+            StockMovement.product_id == it.product_id,
+            StockMovement.deposit_id == data.source_deposit_id,
+        ).scalar()
+        if it.quantity > available:
+            raise HTTPException(
+                400,
+                f"Saldo insuficiente de {product.name} no depósito {src.name}: disponível {available}",
+            )
+
         unit_price = it.unit_price or product.cost_price or product.price or 0
 
         # Saída da origem
