@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { Plus, Trash2, Save, X } from 'lucide-react';
 import SearchableSelect from '../components/SearchableSelect';
-import { qtyStep, roundQty } from '../services/masks';
+import { qtyStep, roundQty, currencyToDigits, formatDigitsToCurrency, parseCurrencyToNumber, formatNumberToCurrency } from '../services/masks';
 
 export default function SaleNew() {
   const navigate = useNavigate();
@@ -40,7 +40,7 @@ export default function SaleNew() {
     setTablePrices(map);
   }, [contactId, contacts, priceTables]);
 
-  const total = items.reduce((sum, it) => sum + it.quantity * it.unitPrice, 0);
+  const total = items.reduce((sum, it) => sum + it.quantity * parseCurrencyToNumber(it.unitPrice, 2), 0);
 
   const prodLabel = (p) => p.unit?.abbreviation ? `${p.name} ${p.unit.abbreviation}` : p.name;
 
@@ -55,7 +55,7 @@ export default function SaleNew() {
         sku: product.sku,
         quantity: 1,
         unitAbbr: product.unit?.abbreviation || '',
-        unitPrice: (tablePrices[product.id] ?? product.price) || 0,
+        unitPrice: formatNumberToCurrency((tablePrices[product.id] ?? product.price) || 0, 2),
       }]);
     }
     setShowProductSearch(false);
@@ -90,7 +90,7 @@ export default function SaleNew() {
         items: items.map(it => ({
           product_id: it.productId,
           quantity: roundQty(it.quantity, it.unitAbbr),
-          unit_price: parseFloat(it.unitPrice),
+          unit_price: parseCurrencyToNumber(it.unitPrice, 2),
         })),
       });
       navigate('/sales');
@@ -191,11 +191,11 @@ export default function SaleNew() {
                         className="w-16 px-2 py-1 border rounded text-sm text-center" />
                     </td>
                     <td className="p-2">
-                      <input type="number" min="0" step="0.01" value={it.unitPrice}
-                        onChange={e => updateItem(it.productId, 'unitPrice', parseFloat(e.target.value) || 0)}
+                      <input type="text" inputMode="decimal" value={it.unitPrice}
+                        onChange={e => updateItem(it.productId, 'unitPrice', formatDigitsToCurrency(currencyToDigits(e.target.value), 2))}
                         className="w-24 px-2 py-1 border rounded text-sm text-right" />
                     </td>
-                    <td className="p-2 text-right font-medium">R$ {(it.quantity * it.unitPrice).toFixed(2)}</td>
+                    <td className="p-2 text-right font-medium">R$ {(it.quantity * parseCurrencyToNumber(it.unitPrice, 2)).toFixed(2)}</td>
                     <td className="p-2 text-center">
                       <button type="button" onClick={() => removeItem(it.productId)}
                         className="text-red-500 hover:text-red-700"><Trash2 size={16} /></button>

@@ -80,6 +80,7 @@ export default function Pricing() {
   const [calcLoading, setCalcLoading] = useState(false);
   const [msg, setMsg] = useState(null);
   const timer = useRef(null);
+  const priceRef = useRef(null);
 
   const loadPricings = () => api.get('/pricing/').then(res => setPricings(res.data)).catch(() => {});
   const loadProducts = () => api.get('/products/').then(res => setProducts(res.data)).catch(() => {});
@@ -110,6 +111,7 @@ export default function Pricing() {
       setForm(f);
     }
     setMsg(null);
+    setTimeout(() => priceRef.current?.focus(), 50);
   };
 
   const handleClearSelection = () => {
@@ -162,6 +164,7 @@ export default function Pricing() {
     setResult(null);
     setShowDropdown(false);
     setMsg(null);
+    setTimeout(() => priceRef.current?.focus(), 50);
   };
 
   const setNum = (k) => (e) => {
@@ -245,7 +248,7 @@ export default function Pricing() {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className={labelCls}>Preço de Aquisição / Matéria-Prima (R$)</label>
-              <input type="text" inputMode="decimal" value={form.acquisition_price} onChange={setCurrency} className={inputCls} placeholder={decimals === 3 ? '0,000' : '0,00'} />
+              <input ref={priceRef} type="text" inputMode="decimal" value={form.acquisition_price} onChange={setCurrency} className={inputCls} placeholder={decimals === 3 ? '0,000' : '0,00'} />
             </div>
             <div>
               <label className={labelCls}>Lote (quantidade)</label>

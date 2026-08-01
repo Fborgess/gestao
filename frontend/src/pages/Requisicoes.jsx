@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Plus, ClipboardList, CheckCircle, XCircle, Truck, Printer, Edit, Trash2, ArrowUpCircle } from 'lucide-react';
 import PrintPreview from '../components/PrintPreview';
-import { qtyStep, qtyMin, roundQty } from '../services/masks';
+import { qtyStep, qtyMin, roundQty, currencyToDigits, formatDigitsToCurrency, parseCurrencyToNumber, formatNumberToCurrency } from '../services/masks';
 
 const statusLabels = {
   pendente: 'Pendente',
@@ -79,6 +79,16 @@ export default function Requisicoes() {
     items: [],
   });
   const searchRef = useRef(null);
+  const [focusQtyId, setFocusQtyId] = useState(null);
+  const qtyRefs = useRef({});
+
+  useEffect(() => {
+    if (focusQtyId != null && qtyRefs.current[focusQtyId]) {
+      qtyRefs.current[focusQtyId].focus();
+      qtyRefs.current[focusQtyId].select();
+      setFocusQtyId(null);
+    }
+  }, [focusQtyId, form.items]);
 
   const load = () => {
     setLoading(true);
@@ -118,7 +128,8 @@ export default function Requisicoes() {
 
   const addItem = (product) => {
     if (form.items.find(it => it.product_id === product.id)) return;
-    setForm(f => ({ ...f, items: [...f.items, { product_id: product.id, product_name: prodLabel(product), quantity_requested: 1, unit_abbr: product.unit?.abbreviation || '', unit_price: product.price || '' }] }));
+    setForm(f => ({ ...f, items: [...f.items, { product_id: product.id, product_name: prodLabel(product), quantity_requested: 1, unit_abbr: product.unit?.abbreviation || '', unit_price: formatNumberToCurrency(product.price || 0, 2) }] }));
+    setFocusQtyId(product.id);
   };
 
   const removeItem = (pid) => setForm(f => ({ ...f, items: f.items.filter(it => it.product_id !== pid) }));
@@ -140,7 +151,7 @@ export default function Requisicoes() {
         product_id: it.product_id,
         product_name: it.product_name,
         quantity_requested: it.quantity_requested,
-        unit_price: it.unit_price || '',
+        unit_price: it.unit_price ? formatNumberToCurrency(it.unit_price, 2) : '',
       })),
     });
     setShowModal(true);
@@ -310,7 +321,7 @@ export default function Requisicoes() {
           return {
             product_id: it.product_id,
             quantity_requested: q > 0 ? q : qtyMin(u),
-            unit_price: it.unit_price ? parseFloat(it.unit_price) : null,
+            unit_price: it.unit_price ? parseCurrencyToNumber(it.unit_price, 2) : null,
           };
         }),
       };
@@ -456,6 +467,7 @@ export default function Requisicoes() {
                             <button type="button" onClick={() => updateItem(it.product_id, 'quantity_requested', Math.max(qtyMin(unitOf(it)), roundQty((it.quantity_requested || qtyMin(unitOf(it))) - qtyStep(unitOf(it)), unitOf(it))))}
                               className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">−</button>
                             <input type="number" min={qtyMin(unitOf(it))} step={qtyStep(unitOf(it))} value={it.quantity_requested}
+                              ref={el => { qtyRefs.current[it.product_id] = el; }}
                               onChange={e => {
                                 if (e.target.value === '') return;
                                 const n = parseFloat(e.target.value);
@@ -467,8 +479,8 @@ export default function Requisicoes() {
                               className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">+</button>
                             <span className="text-gray-300 mx-1">|</span>
                             <span className="text-xs text-gray-500">R$</span>
-                            <input type="number" step="0.01" min="0" value={it.unit_price}
-                              onChange={e => updateItem(it.product_id, 'unit_price', e.target.value)}
+                            <input type="text" inputMode="decimal" value={it.unit_price}
+                              onChange={e => updateItem(it.product_id, 'unit_price', formatDigitsToCurrency(currencyToDigits(e.target.value), 2))}
                               className="w-16 px-1 py-1 border rounded text-sm text-right" />
                             <button type="button" onClick={() => removeItem(it.product_id)}
                               className="ml-1 text-red-400 hover:text-red-600"><Trash2 size={15} /></button>

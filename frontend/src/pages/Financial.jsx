@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import api from '../services/api';
 import { formatCurrency, getTodayLocal } from '../services/format';
+import { currencyToDigits, formatDigitsToCurrency, parseCurrencyToNumber, formatNumberToCurrency } from '../services/masks';
 import { Plus, Edit, Trash2, TrendingUp, TrendingDown, Repeat, Calendar, Landmark, Wallet, CreditCard, AlertTriangle, Clock } from 'lucide-react';
 import SortableHeader from '../components/SortableHeader';
 import SearchableSelect from '../components/SearchableSelect';
@@ -112,7 +113,7 @@ export default function Financial() {
   const showInstallments = selectedPaymentType?.requires_installments;
   const installmentCount = parseInt(form.installments) || 1;
   const startInstallment = parseInt(form.current_installment) || 1;
-  const installmentValue = form.amount && installmentCount > 1 ? (parseFloat(form.amount) / installmentCount) : null;
+  const installmentValue = form.amount && installmentCount > 1 ? (parseCurrencyToNumber(form.amount, 2) / installmentCount) : null;
   const installmentDates = (form.recurrence_frequency && effectiveDueDate && installmentCount > 1)
     ? calcInstallmentDates(effectiveDueDate, installmentCount, form.recurrence_frequency, startInstallment)
     : [];
@@ -219,7 +220,7 @@ const dueDaysInfo = (t) => {
       const data = {
         type: form.type,
         description: form.description,
-        amount: parseFloat(form.amount),
+        amount: parseCurrencyToNumber(form.amount, 2),
         date: new Date(form.date + 'T12:00:00').toISOString(),
         due_date: effectiveDueDate ? new Date(effectiveDueDate + 'T12:00:00').toISOString() : null,
         financial_category_id: catId ? parseInt(catId) : null,
@@ -246,7 +247,7 @@ const dueDaysInfo = (t) => {
     const remaining = t.amount - totalPaid;
     setPayingTransaction(t);
     setPaymentForm({
-      amount: remaining.toFixed(2),
+      amount: formatNumberToCurrency(remaining, 2),
       interest: '',
       payment_date: getTodayLocal(),
       notes: '',
@@ -259,8 +260,8 @@ const dueDaysInfo = (t) => {
     try {
       const data = {
         transaction_id: payingTransaction.id,
-        amount: parseFloat(paymentForm.amount),
-        interest: parseFloat(paymentForm.interest) || 0,
+        amount: parseCurrencyToNumber(paymentForm.amount, 2),
+        interest: parseCurrencyToNumber(paymentForm.interest, 2),
         payment_date: new Date(paymentForm.payment_date + 'T12:00:00').toISOString(),
         notes: paymentForm.notes || null,
       };
@@ -280,7 +281,7 @@ const dueDaysInfo = (t) => {
       type: t.type,
       financial_category_id: isSub ? String(cat.parent_id) : (t.financial_category_id || ''),
       subcategory_id: isSub ? String(t.financial_category_id) : '',
-      description: t.description, amount: t.amount,
+      description: t.description, amount: formatNumberToCurrency(t.amount, 2),
       date: t.date?.split('T')[0] || '',
       due_date: t.due_date?.split('T')[0] || '',
       payment_type_id: t.payment_type_id || '', account_id: t.account_id || '',
@@ -500,8 +501,8 @@ const dueDaysInfo = (t) => {
 
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1">Valor (R$) *</label>
-                <input type="number" step="0.01" min="0.01" placeholder="0,00" value={form.amount}
-                  onChange={e => setForm({...form, amount: e.target.value})}
+                <input type="text" inputMode="decimal" placeholder="0,00" value={form.amount}
+                  onChange={e => setForm({...form, amount: formatDigitsToCurrency(currencyToDigits(e.target.value), 2)})}
                   className="w-full px-3 py-2 border rounded-lg text-sm" required />
               </div>
 
@@ -628,7 +629,7 @@ const dueDaysInfo = (t) => {
                     <div className="bg-white rounded-lg p-3 space-y-2">
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-500">Valor total:</span>
-                        <span className="font-medium">{formatCurrency(form.amount)}</span>
+                        <span className="font-medium">{formatCurrency(parseCurrencyToNumber(form.amount, 2))}</span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-500">Valor da parcela:</span>
@@ -699,9 +700,9 @@ const dueDaysInfo = (t) => {
             <form onSubmit={handlePaymentSubmit} className="space-y-3">
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1">Valor a pagar *</label>
-                <input type="number" step="0.01" min="0.01"
+                <input type="text" inputMode="decimal" min="0.01"
                   value={paymentForm.amount}
-                  onChange={e => setPaymentForm({...paymentForm, amount: e.target.value})}
+                  onChange={e => setPaymentForm({...paymentForm, amount: formatDigitsToCurrency(currencyToDigits(e.target.value), 2)})}
                   className="w-full px-3 py-2 border rounded-lg text-sm" required />
               </div>
               <div>
@@ -713,9 +714,9 @@ const dueDaysInfo = (t) => {
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1">Juros / Multa</label>
-                <input type="number" step="0.01" min="0" placeholder="0.00"
+                <input type="text" inputMode="decimal" placeholder="0,00"
                   value={paymentForm.interest}
-                  onChange={e => setPaymentForm({...paymentForm, interest: e.target.value})}
+                  onChange={e => setPaymentForm({...paymentForm, interest: formatDigitsToCurrency(currencyToDigits(e.target.value), 2)})}
                   className="w-full px-3 py-2 border rounded-lg text-sm" />
               </div>
               <div>

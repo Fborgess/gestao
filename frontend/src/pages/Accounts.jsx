@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import api from '../services/api';
 import { formatCurrency } from '../services/format';
+import { currencyToDigits, formatDigitsToCurrency, parseCurrencyToNumber, formatNumberToCurrency } from '../services/masks';
 import { Plus, Edit, Trash2, CreditCard, Landmark, Wallet } from 'lucide-react';
 
 const typeConfig = {
@@ -39,11 +40,11 @@ export default function Accounts() {
     try {
       const data = {
         ...form,
-        balance: parseFloat(form.balance) || 0,
+        balance: parseCurrencyToNumber(form.balance, 2),
         closing_day: form.closing_day ? parseInt(form.closing_day) : null,
         due_day: form.due_day ? parseInt(form.due_day) : null,
         best_purchase_day: form.best_purchase_day ? parseInt(form.best_purchase_day) : null,
-        credit_limit: form.credit_limit ? parseFloat(form.credit_limit) : null,
+        credit_limit: form.credit_limit ? parseCurrencyToNumber(form.credit_limit, 2) : null,
         flag: form.flag || null,
       };
       if (editing) { await api.put(`/accounts/${editing.id}`, data); }
@@ -58,9 +59,9 @@ export default function Accounts() {
     setEditing(a);
     setForm({
       name: a.name, account_type: a.account_type, bank_name: a.bank_name || '',
-      agency: a.agency || '', account_number: a.account_number || '', balance: a.balance ?? '',
+      agency: a.agency || '', account_number: a.account_number || '', balance: a.balance != null ? formatNumberToCurrency(a.balance, 2) : '',
       flag: a.flag || '', closing_day: a.closing_day ?? '', due_day: a.due_day ?? '',
-      best_purchase_day: a.best_purchase_day ?? '', credit_limit: a.credit_limit ?? '',
+      best_purchase_day: a.best_purchase_day ?? '', credit_limit: a.credit_limit != null ? formatNumberToCurrency(a.credit_limit, 2) : '',
     });
     setShowModal(true);
   };
@@ -234,8 +235,8 @@ export default function Accounts() {
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-500 mb-1">Saldo Inicial</label>
-                    <input type="number" step="0.01" placeholder="0,00" value={form.balance}
-                      onChange={e => setForm({...form, balance: e.target.value})}
+                    <input type="text" inputMode="decimal" placeholder="0,00" value={form.balance}
+                      onChange={e => setForm({...form, balance: formatDigitsToCurrency(currencyToDigits(e.target.value), 2)})}
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" />
                   </div>
                 </div>
@@ -277,8 +278,8 @@ export default function Accounts() {
                       </div>
                       <div>
                         <label className="block text-xs font-medium text-gray-500 mb-1">Limite Disponível (R$)</label>
-                        <input type="number" step="0.01" placeholder="0,00" value={form.credit_limit}
-                          onChange={e => setForm({...form, credit_limit: e.target.value})}
+                        <input type="text" inputMode="decimal" placeholder="0,00" value={form.credit_limit}
+                          onChange={e => setForm({...form, credit_limit: formatDigitsToCurrency(currencyToDigits(e.target.value), 2)})}
                           className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none" />
                       </div>
                     </div>

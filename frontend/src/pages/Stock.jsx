@@ -1,7 +1,7 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import api from '../services/api';
 import { formatCurrency, getTodayLocal } from '../services/format';
-import { qtyStep, qtyMin, roundQty } from '../services/masks';
+import { qtyStep, qtyMin, roundQty, currencyToDigits, formatDigitsToCurrency, parseCurrencyToNumber, formatNumberToCurrency } from '../services/masks';
 import { ArrowDownCircle, ArrowUpCircle, Package, ClipboardList, Edit, Trash2 } from 'lucide-react';
 import SearchableSelect from '../components/SearchableSelect';
 import SortableHeader from '../components/SortableHeader';
@@ -19,6 +19,11 @@ export default function Stock() {
     product_id: '', deposit_id: '',     movement_date: getTodayLocal(),
     quantity: '', unit_price: '', reason: '', notes: '',
   });
+  const qtyRef = useRef(null);
+
+  useEffect(() => {
+    if (form.product_id && showModal) qtyRef.current?.focus();
+  }, [form.product_id, showModal]);
 
   const loadMovements = () => {
     setLoading(true);
@@ -74,7 +79,7 @@ export default function Stock() {
       deposit_id: String(m.deposit_id),
       movement_date: m.movement_date ? m.movement_date.split('T')[0] : '',
       quantity: String(m.quantity),
-      unit_price: m.unit_price || '',
+      unit_price: m.unit_price ? formatNumberToCurrency(m.unit_price, 2) : '',
       reason: m.reason || '',
       notes: m.notes || '',
     });
@@ -98,7 +103,7 @@ export default function Stock() {
         product_id: parseInt(form.product_id), deposit_id: parseInt(form.deposit_id),
         movement_type: activeTab, movement_date: form.movement_date,
         quantity: roundQty(form.quantity, selectedUnit) || qtyMin(selectedUnit),
-        unit_price: activeTab === 'entrada' ? (parseFloat(form.unit_price) || 0) : 0,
+        unit_price: activeTab === 'entrada' ? parseCurrencyToNumber(form.unit_price, 2) : 0,
         reason: activeTab === 'saida' ? form.reason : (form.reason || null),
         notes: form.notes || null,
       };
@@ -220,14 +225,15 @@ export default function Stock() {
                 <div>
                   <label className="block text-xs text-gray-500 mb-1">Quantidade *</label>
                   <input placeholder="0" type="number" min={qtyMin(selectedUnit)} step={qtyStep(selectedUnit)} value={form.quantity}
+                    ref={qtyRef}
                     onChange={e => setForm({...form, quantity: e.target.value})}
                     className="w-full px-3 py-2 border rounded-lg text-sm" required />
                 </div>
                 {activeTab === 'entrada' && (
                   <div>
                     <label className="block text-xs text-gray-500 mb-1">Preço Unitário</label>
-                    <input placeholder="R$ 0,00" type="number" step="0.01" value={form.unit_price}
-                      onChange={e => setForm({...form, unit_price: e.target.value})}
+                    <input placeholder="R$ 0,00" type="text" inputMode="decimal" value={form.unit_price}
+                      onChange={e => setForm({...form, unit_price: formatDigitsToCurrency(currencyToDigits(e.target.value), 2)})}
                       className="w-full px-3 py-2 border rounded-lg text-sm" />
                   </div>
                 )}

@@ -3,7 +3,7 @@ import api from '../services/api';
 import { Plus, Edit, Trash2, Warehouse, ChevronDown, ChevronRight, ArrowRightLeft, AlertTriangle, BarChart3, Package, X, Search, MinusCircle, ClipboardCheck, ArrowDownCircle, ArrowUpCircle, Save } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { qtyStep, qtyMin, roundQty } from '../services/masks';
+import { qtyStep, qtyMin, roundQty, currencyToDigits, formatDigitsToCurrency, parseCurrencyToNumber, formatNumberToCurrency } from '../services/masks';
 
 const statusColors = {
   maintained: 'bg-blue-100 text-blue-700 border-blue-200',
@@ -411,7 +411,7 @@ function MovementsModal({ deposit, products, deposits, onClose }) {
     setEditMov(m);
     setEditForm({
       quantity: String(m.quantity),
-      unit_price: m.unit_price || '',
+      unit_price: m.unit_price ? formatNumberToCurrency(m.unit_price, 2) : '',
       reason: m.reason || '',
       notes: m.notes || '',
     });
@@ -422,7 +422,7 @@ function MovementsModal({ deposit, products, deposits, onClose }) {
     try {
       await api.put(`/stock/movements/${editMov.id}`, {
         quantity: roundQty(editForm.quantity, editUnit) || qtyMin(editUnit),
-        unit_price: parseFloat(editForm.unit_price) || 0,
+        unit_price: parseCurrencyToNumber(editForm.unit_price, 2),
         reason: editForm.reason || null,
         notes: editForm.notes || null,
       });
@@ -492,7 +492,7 @@ function MovementsModal({ deposit, products, deposits, onClose }) {
                             className="w-16 px-1 py-1 border rounded text-sm text-center" />
                         </td>
                         <td className="p-3 text-center">
-                          <input type="number" step="0.01" value={editForm.unit_price} onChange={e => setEditForm({...editForm, unit_price: e.target.value})}
+                          <input type="text" inputMode="decimal" value={editForm.unit_price} onChange={e => setEditForm({...editForm, unit_price: formatDigitsToCurrency(currencyToDigits(e.target.value), 2)})}
                             className="w-20 px-1 py-1 border rounded text-sm text-right" />
                         </td>
                         <td className="p-3">

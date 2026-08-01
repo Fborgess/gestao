@@ -5,7 +5,7 @@ import { Plus, Trash2, Save, X, Printer, Share2 } from 'lucide-react';
 import SearchableSelect from '../components/SearchableSelect';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { qtyStep, roundQty } from '../services/masks';
+import { qtyStep, roundQty, currencyToDigits, formatDigitsToCurrency, parseCurrencyToNumber, formatNumberToCurrency } from '../services/masks';
 
 export default function SaleDetail() {
   const { id } = useParams();
@@ -44,7 +44,7 @@ export default function SaleDetail() {
         productId: it.product_id,
         productName: it.product_name,
         quantity: it.quantity,
-        unitPrice: it.unit_price,
+        unitPrice: formatNumberToCurrency(it.unit_price, 2),
       })));
     }).catch(() => {}) : Promise.resolve();
     Promise.all([c1, c2, c3, c4, c5]).finally(() => setLoading(false));
@@ -61,14 +61,14 @@ export default function SaleDetail() {
     setTablePrices(map);
   }, [contactId, contacts, priceTables]);
 
-  const total = items.reduce((sum, it) => sum + it.quantity * it.unitPrice, 0);
+  const total = items.reduce((sum, it) => sum + it.quantity * parseCurrencyToNumber(it.unitPrice, 2), 0);
 
   const addItem = (product) => {
     const existing = items.find(it => it.productId === product.id);
     if (existing) {
       setItems(items.map(it => it.productId === product.id ? { ...it, quantity: it.quantity + 1 } : it));
     } else {
-      setItems([...items, { productId: product.id, productName: prodLabel(product), quantity: 1, unitAbbr: product.unit?.abbreviation || '', unitPrice: (tablePrices[product.id] ?? product.price) || 0 }]);
+      setItems([...items, { productId: product.id, productName: prodLabel(product), quantity: 1, unitAbbr: product.unit?.abbreviation || '', unitPrice: formatNumberToCurrency((tablePrices[product.id] ?? product.price) || 0, 2) }]);
     }
     setShowProductSearch(false);
     setProductSearch('');
@@ -96,7 +96,7 @@ export default function SaleDetail() {
       contact_id: parseInt(contactId),
       sale_type_id: parseInt(saleTypeId),
       notes: notes || null,
-      items: items.map(it => ({ product_id: it.productId, quantity: roundQty(it.quantity, unitOf(it)), unit_price: parseFloat(it.unitPrice) })),
+      items: items.map(it => ({ product_id: it.productId, quantity: roundQty(it.quantity, unitOf(it)), unit_price: parseCurrencyToNumber(it.unitPrice, 2) })),
     };
     try {
       if (isNew) {
@@ -123,7 +123,7 @@ export default function SaleDetail() {
       doc.text(`Cliente: ${sale.contact_name || '-'}`, 14, 35);
       doc.text(`Tipo: ${sale.sale_type_name || '-'}`, 14, 42);
       doc.text(`Status: ${sale.status}`, 14, 49);
-      const rows = sale.items.map(it => [it.productName, it.quantity, `R$ ${it.unitPrice.toFixed(2)}`, `R$ ${(it.quantity * it.unitPrice).toFixed(2)}`]);
+      const rows = sale.items.map(it => [it.productName, it.quantity, `R$ ${parseCurrencyToNumber(it.unitPrice, 2).toFixed(2)}`, `R$ ${(it.quantity * parseCurrencyToNumber(it.unitPrice, 2)).toFixed(2)}`]);
       autoTable(doc, { startY: 56, head: [['Produto', 'Qtd', 'Valor Unit.', 'Total']], body: rows, foot: [['', '', 'Total:', `R$ ${sale.total_amount.toFixed(2)}`]], footStyles: { fontStyle: 'bold' }, styles: { fontSize: 9 }, headStyles: { fillColor: [59, 130, 246] } });
       if (sale.notes) {
         const finalY = doc.lastAutoTable.finalY || 100;
@@ -220,8 +220,8 @@ export default function SaleDetail() {
                   <tr key={it.productId} className="border-t">
                     <td className="p-2 font-medium">{it.productName}</td>
                     <td className="p-2"><input type="number" min={qtyStep(unitOf(it))} step={qtyStep(unitOf(it))} value={it.quantity} ref={el => { qtyRefs.current[it.productId] = el; }} onChange={e => updateItem(it.productId, 'quantity', roundQty(e.target.value, unitOf(it)))} className="w-16 px-2 py-1 border rounded text-sm text-center" /></td>
-                    <td className="p-2"><input type="number" min="0" step="0.01" value={it.unitPrice} onChange={e => updateItem(it.productId, 'unitPrice', parseFloat(e.target.value) || 0)} className="w-24 px-2 py-1 border rounded text-sm text-right" /></td>
-                    <td className="p-2 text-right font-medium">R$ {(it.quantity * it.unitPrice).toFixed(2)}</td>
+                    <td className="p-2"><input type="text" inputMode="decimal" value={it.unitPrice} onChange={e => updateItem(it.productId, 'unitPrice', formatDigitsToCurrency(currencyToDigits(e.target.value), 2))} className="w-24 px-2 py-1 border rounded text-sm text-right" /></td>
+                    <td className="p-2 text-right font-medium">R$ {(it.quantity * parseCurrencyToNumber(it.unitPrice, 2)).toFixed(2)}</td>
                     <td className="p-2 text-center"><button type="button" onClick={() => removeItem(it.productId)} className="text-red-500"><Trash2 size={16} /></button></td>
                   </tr>
                 ))}
