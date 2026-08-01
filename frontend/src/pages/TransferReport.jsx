@@ -33,6 +33,8 @@ export default function TransferReport() {
     } finally { setLoading(false); }
   };
 
+  useEffect(() => { loadReport(); }, [filterDeposit]);
+
   const summaries = useMemo(() => {
     const byDeposit = {};
     report.forEach(r => {
