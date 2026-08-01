@@ -3,13 +3,29 @@ import api from '../services/api';
 import { BarChart3, ArrowRightLeft, AlertTriangle, TrendingUp, Printer } from 'lucide-react';
 import PrintPreview from '../components/PrintPreview';
 
+const localDateStr = (d) => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+};
+
+const toUTC = (dateStr, endOfDay) => {
+  if (!dateStr) return undefined;
+  const d = endOfDay ? new Date(`${dateStr}T23:59:59.999`) : new Date(`${dateStr}T00:00:00`);
+  return d.toISOString();
+};
+
 export default function TransferReport() {
   const [deposits, setDeposits] = useState([]);
   const [report, setReport] = useState([]);
   const [loading, setLoading] = useState(false);
   const [filterDeposit, setFilterDeposit] = useState('');
-  const [startDate, setStartDate] = useState(() => new Date().toISOString().slice(0, 10));
-  const [endDate, setEndDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [startDate, setStartDate] = useState(() => {
+    const now = new Date();
+    return localDateStr(new Date(now.getFullYear(), now.getMonth(), 1));
+  });
+  const [endDate, setEndDate] = useState(() => localDateStr(new Date()));
   const [printing, setPrinting] = useState(null);
 
   useEffect(() => {
@@ -24,8 +40,10 @@ export default function TransferReport() {
     try {
       const params = {};
       if (filterDeposit) params.deposit_id = filterDeposit;
-      if (startDate) params.start_date = startDate;
-      if (endDate) params.end_date = endDate;
+      const startUTC = toUTC(startDate, false);
+      const endUTC = toUTC(endDate, true);
+      if (startUTC) params.start_date = startUTC;
+      if (endUTC) params.end_date = endUTC;
       const res = await api.get('/stock/transfer-report/', { params });
       setReport(res.data);
     } catch (err) {

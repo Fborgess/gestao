@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import func, case
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from app.database import get_db
 from app.models.stock import StockMovement
 from app.models.product import Product
@@ -16,6 +16,15 @@ from app.utils.security import get_current_user, require_module, require_any_mod
 from app.utils.helpers import product_label
 
 router = APIRouter(prefix="/api/stock", tags=["Estoque"])
+
+
+def parse_utc(s: str) -> datetime:
+    """Converte string ISO (com ou sem timezone/offset) em datetime naive UTC."""
+    s = s.strip().replace("Z", "+00:00")
+    dt = datetime.fromisoformat(s)
+    if dt.tzinfo is not None:
+        dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
+    return dt
 
 
 def recalculate_product_stock(db: Session, product_id: int):
@@ -464,9 +473,9 @@ def transfer_report(
 
     def apply_dates(q):
         if start_date:
-            q = q.filter(StockMovement.movement_date >= datetime.fromisoformat(start_date))
+            q = q.filter(StockMovement.movement_date >= parse_utc(start_date))
         if end_date:
-            q = q.filter(StockMovement.movement_date <= datetime.fromisoformat(end_date + "T23:59:59"))
+            q = q.filter(StockMovement.movement_date <= parse_utc(end_date))
         return q
 
     result = []
