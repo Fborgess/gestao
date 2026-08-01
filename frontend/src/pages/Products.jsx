@@ -217,9 +217,9 @@ export default function Products() {
               <SortableHeader label="Nome" sortKey="name" currentSort={sortConfig} onSort={handleSort} />
               <SortableHeader label="SKU" sortKey="sku" currentSort={sortConfig} onSort={handleSort} />
               <SortableHeader label="Categoria" sortKey="category_id" currentSort={sortConfig} onSort={handleSort} />
-              <SortableHeader label="Preço Venda" sortKey="price" currentSort={sortConfig} onSort={handleSort} align="right" />
-              <SortableHeader label="Markup" sortKey="markup" currentSort={sortConfig} onSort={handleSort} align="right" />
               <SortableHeader label="Preço Custo" sortKey="cost_price" currentSort={sortConfig} onSort={handleSort} align="right" />
+              <SortableHeader label="Markup" sortKey="markup" currentSort={sortConfig} onSort={handleSort} align="right" />
+              <SortableHeader label="Preço Venda" sortKey="price" currentSort={sortConfig} onSort={handleSort} align="right" />
               <th className="text-center p-3">Ações</th>
             </tr>
           </thead>
@@ -229,9 +229,9 @@ export default function Products() {
                 <td className="p-3 font-medium">{getProductName(p)}</td>
                 <td className="p-3 text-gray-500">{p.sku}</td>
                 <td className="p-3 text-gray-500 text-xs">{getCategoryName(p)}</td>
-                <td className="p-3 text-right">{fmtVal(p.price, p.unit)}</td>
-                <td className="p-3 text-right">{p.markup != null ? Number(p.markup).toLocaleString('pt-BR', { minimumFractionDigits: 4, maximumFractionDigits: 4 }) : '-'}</td>
                 <td className="p-3 text-right">{fmtVal(p.cost_price, p.unit)}</td>
+                <td className="p-3 text-right">{p.markup != null ? Number(p.markup).toLocaleString('pt-BR', { minimumFractionDigits: 4, maximumFractionDigits: 4 }) : '-'}</td>
+                <td className="p-3 text-right">{fmtVal(p.price, p.unit)}</td>
                 <td className="p-3 text-center">
                   <button onClick={() => handleEdit(p)} className="text-blue-600 hover:text-blue-800 mr-2"><Edit size={16} /></button>
                   <button onClick={() => handleDelete(p.id)} className="text-red-600 hover:text-red-800"><Trash2 size={16} /></button>
