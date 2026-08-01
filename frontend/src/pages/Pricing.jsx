@@ -322,7 +322,7 @@ export default function Pricing() {
                   <div className="flex justify-between"><span className="text-gray-500">(-) Total custos</span><span className="font-medium">R$ {fmtMoney(result.total_custos_rs)}</span></div>
                   <div className="flex justify-between"><span className="text-gray-500 font-medium">(=) Margem R$</span><span className="font-bold text-green-600">R$ {fmtMoney(result.margem_rs)}</span></div>
                   <div className="flex justify-between"><span className="text-gray-500 font-medium">(=) % Margem</span><span className="font-bold text-green-600">{fmtPct(result.margem_pct)}</span></div>
-                  <div className="flex justify-between"><span className="text-gray-500">Markup multiplicador</span><span className="font-medium">{result.markup_multiplicador.toFixed(2).replace('.', ',')}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-500">Markup multiplicador</span><span className="font-medium">{result.markup_multiplicador.toFixed(4).replace('.', ',')}</span></div>
                   <div className="flex justify-between"><span className="text-gray-500">Markup resultado</span><span className="font-medium">R$ {fmtMoney(result.markup_resultado)}</span></div>
                 </div>
               </div>
