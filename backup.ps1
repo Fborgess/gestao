@@ -11,12 +11,17 @@
 param(
     [int]$Keep = 10,
     [string]$BackupRoot = (Join-Path $env:USERPROFILE 'gestao-backups'),
-    [string]$EnvDir = (Split-Path -Parent $MyInvocation.MyCommand.Path)
+    [string]$EnvDir = (Split-Path -Parent $MyInvocation.MyCommand.Path),
+    [string]$PgDump18 = ''
 )
 
 $ErrorActionPreference = 'Stop'
 
 $pgDump = (Get-Command pg_dump -ErrorAction Stop).Source
+# Producao Render roda PostgreSQL 18; o pg_dump do sistema (16) nao suporta.
+# Se um pg_dump 18 estiver disponivel (tools\pg18), usa-se ele para a producao.
+$toolsPgDump18 = Join-Path $BackupRoot 'tools\pg18\pgsql\bin\pg_dump.exe'
+if (-not $PgDump18 -and (Test-Path -LiteralPath $toolsPgDump18)) { $PgDump18 = $toolsPgDump18 }
 $localDir = Join-Path $BackupRoot 'local'
 $prodDir = Join-Path $BackupRoot 'prod'
 $logFile = Join-Path $BackupRoot 'backup.log'
@@ -35,9 +40,9 @@ function Get-EnvValue([string]$file, [string]$key) {
     return ($line -replace "^$key=", '').Trim().Trim('"', "'")
 }
 
-function Invoke-Dump([string]$url, [string]$outFile, [string]$label) {
+function Invoke-Dump([string]$exe, [string]$url, [string]$outFile, [string]$label) {
     if (-not $url) { return $false }
-    & $pgDump -d $url -Fc -f $outFile --no-owner 2>&1 | Out-Null
+    & $exe -d $url -Fc -f $outFile --no-owner 2>&1 | Out-Null
     if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $outFile)) {
         Write-Log "ERRO no dump $label (pg_dump exit $LASTEXITCODE)"
         return $false
@@ -63,7 +68,7 @@ $localUrl = Get-EnvValue (Join-Path $EnvDir 'backend\.env') 'DATABASE_URL'
 if (-not $localUrl) {
     Write-Log "AVISO: DATABASE_URL local nao encontrado em backend\.env; backup local ignorado"
 } else {
-    $ok = Invoke-Dump $localUrl (Join-Path $localDir "gestao-local-$stamp.dump") 'local'
+    $ok = Invoke-Dump $pgDump $localUrl (Join-Path $localDir "gestao-local-$stamp.dump") 'local'
     if ($ok) { Invoke-Rotation $localDir }
 }
 
@@ -72,7 +77,11 @@ $prodUrl = Get-EnvValue (Join-Path $EnvDir 'backup.env') 'PROD_DATABASE_URL'
 if (-not $prodUrl) {
     Write-Log "INFO: PROD_DATABASE_URL nao configurado em backup.env; backup de producao ignorado"
 } else {
-    $ok = Invoke-Dump $prodUrl (Join-Path $prodDir "gestao-prod-$stamp.dump") 'producao'
+    $prodDump = if ($PgDump18) { $PgDump18 } else {
+        Write-Log "AVISO: pg_dump 18 nao encontrado em $toolsPgDump18; tentando pg_dump do sistema (pode falhar com PostgreSQL 18)"
+        $pgDump
+    }
+    $ok = Invoke-Dump $prodDump $prodUrl (Join-Path $prodDir "gestao-prod-$stamp.dump") 'producao'
     if ($ok) { Invoke-Rotation $prodDir }
 }
 
