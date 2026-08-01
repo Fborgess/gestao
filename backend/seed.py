@@ -35,11 +35,11 @@ def seed():
         db.add_all(roles)
         db.flush()
 
-        gerente_modules = [m for m in ALL_MODULES if m not in ("users", "roles")]
+        gerente_modules = [m for m in ALL_MODULES if m not in ("users", "roles", "precificacao")]
         for m in gerente_modules:
             db.add(RoleModule(role_id=roles[1].id, module=m, access_level="edit"))
 
-        operador_modules = ["contacts", "deposits", "products", "stock_movements", "stock_reports", "requisicoes", "categories", "units", "precificacao"]
+        operador_modules = ["contacts", "deposits", "products", "stock_movements", "stock_reports", "requisicoes", "categories", "units"]
         for m in operador_modules:
             db.add(RoleModule(role_id=roles[2].id, module=m, access_level="edit"))
 

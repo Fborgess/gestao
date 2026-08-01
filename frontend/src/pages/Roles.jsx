@@ -13,6 +13,7 @@ const ALL_MODULES = [
     { key: 'products', label: 'Produtos' },
     { key: 'stock_reports', label: 'Relatórios Estoque' },
     { key: 'requisicoes', label: 'Requisições' },
+    { key: 'precificacao', label: 'Precificação' },
     { key: 'categories', label: 'Categorias' },
     { key: 'units', label: 'Unidades' },
     { key: 'stock_movements', label: 'Movimentações' },
