@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import api from '../services/api';
-import { Calculator, Save, Trash2, CheckCircle, Package, Percent, Edit, Tag } from 'lucide-react';
+import { Calculator, Save, Trash2, Package, Percent, Edit, Tag } from 'lucide-react';
 
 const PERCENT_FIELDS = ['avarias_pct', 'comissao_pct', 'frete_pct', 'outros_custos_pct', 'recursos_humanos_pct', 'taxa_cartao_pct', 'taxas_antecipacao_pct', 'margem_alvo', 'impostos_pct'];
 
@@ -105,17 +105,6 @@ export default function Pricing() {
       loadPricings();
       setMsg('Precificação salva.');
     } catch (err) { alert(err.response?.data?.detail || 'Erro ao salvar'); }
-  };
-
-  const handleApply = async () => {
-    if (!selectedProductId) { alert('Selecione um produto'); return; }
-    try {
-      const payload = toPayload(form);
-      const res = await api.post(`/pricing/${selectedProductId}/apply`, payload);
-      setResult(res.data.result);
-      loadPricings();
-      setMsg(`Preço aplicado ao produto: R$ ${fmtMoney(res.data.result.preco_venda)}`);
-    } catch (err) { alert(err.response?.data?.detail || 'Erro ao aplicar preço'); }
   };
 
   const handleDelete = async (pid) => {
@@ -246,10 +235,6 @@ export default function Pricing() {
               <button onClick={handleSave}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 flex items-center gap-2">
                 <Save size={16} /> Salvar Precificação
-              </button>
-              <button onClick={handleApply}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 flex items-center gap-2">
-                <CheckCircle size={16} /> Aplicar Preço ao Produto
               </button>
             </div>
             {msg && <p className="mt-3 text-sm text-green-600">{msg}</p>}
