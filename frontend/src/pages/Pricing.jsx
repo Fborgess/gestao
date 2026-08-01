@@ -120,12 +120,6 @@ export default function Pricing() {
     setMsg(null);
   };
 
-  const handleDecimalsChange = (e) => {
-    const n = Number(e.target.value);
-    setForm(f => ({ ...f, acquisition_price: formatNumberToCurrency(parseCurrencyToNumber(f.acquisition_price, decimals), n) }));
-    setDecimals(n);
-  };
-
   useEffect(() => {
     const acquisition = parseCurrencyToNumber(form.acquisition_price, decimals);
     if (!acquisition || acquisition <= 0) { setResult(null); return; }
@@ -251,19 +245,7 @@ export default function Pricing() {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className={labelCls}>Preço de Aquisição / Matéria-Prima (R$)</label>
-              <div className="flex gap-2">
-                <input type="text" inputMode="decimal" value={form.acquisition_price} onChange={setCurrency} className={inputCls} placeholder={decimals === 3 ? '0,000' : '0,00'} />
-                <select
-                  value={decimals}
-                  onChange={handleDecimalsChange}
-                  disabled={!!selectedProductId}
-                  title={selected ? `Precisão do ${selected.unit ? selected.unit.name.toLowerCase() : 'produto'}: sempre ${unitDecimals(selected.unit)} casas decimais` : 'Precisão (sem produto selecionado)'}
-                  className="px-2 py-2 border border-gray-200 rounded-lg text-sm bg-white"
-                >
-                  <option value={2}>2 casas (unidade)</option>
-                  <option value={3}>3 casas (peso)</option>
-                </select>
-              </div>
+              <input type="text" inputMode="decimal" value={form.acquisition_price} onChange={setCurrency} className={inputCls} placeholder={decimals === 3 ? '0,000' : '0,00'} />
             </div>
             <div>
               <label className={labelCls}>Lote (quantidade)</label>
