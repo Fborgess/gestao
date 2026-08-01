@@ -65,7 +65,7 @@ export default function Products() {
       const nf = { ...f, price: formatDigitsToCurrency(currencyToDigits(v), formDecimals) };
       const cost = parseCurrencyToNumber(nf.cost_price, formDecimals);
       const price = parseCurrencyToNumber(nf.price, formDecimals);
-      if (cost > 0 && price > 0) nf.markup = formatDecimal(price / cost, 4);
+      if (cost > 0 && price > 0) nf.markup = formatDecimal(price / cost);
       return nf;
     });
     setLastEdited('price');
@@ -92,20 +92,24 @@ export default function Products() {
         if (lastEdited === 'markup' && markup > 0) {
           nf.price = formatNumberToCurrency(cost * markup, formDecimals);
         } else if (lastEdited === 'price' && price > 0) {
-          nf.markup = formatDecimal(price / cost, 4);
+          nf.markup = formatDecimal(price / cost);
         } else if (markup > 0) {
           nf.price = formatNumberToCurrency(cost * markup, formDecimals);
         } else if (price > 0) {
-          nf.markup = formatDecimal(price / cost, 4);
+          nf.markup = formatDecimal(price / cost);
         }
       }
       return nf;
     });
   };
 
-  const formatDecimal = (num, maxDecimals = 4) => {
+  const formatDecimal = (num) => {
     if (num == null || isNaN(num)) return '';
-    return String(parseFloat(Number(num).toFixed(maxDecimals))).replace('.', ',');
+    return Number(num).toFixed(4).replace('.', ',');
+  };
+
+  const handleMarkupBlur = () => {
+    setForm(f => ({ ...f, markup: f.markup ? formatDecimal(parseDecimal(f.markup)) : '' }));
   };
 
   const handleUnitChange = (v) => {
@@ -146,7 +150,7 @@ export default function Products() {
       name: p.name, sku: p.sku, description: p.description || '',
       price: p.price != null ? formatNumberToCurrency(p.price, formDecimals) : '',
       cost_price: p.cost_price != null ? formatNumberToCurrency(p.cost_price, formDecimals) : '',
-      markup: p.markup != null ? formatDecimal(p.markup, 4) : '',
+      markup: p.markup != null ? formatDecimal(p.markup) : '',
       unit_id: p.unit_id || '', category_id: parentCat ? parentCat.id : (cat ? cat.id : ''),
       subcategory_id: cat?.parent_id ? cat.id : '', barcode: p.barcode || '', deposit_id: p.deposit_id || '',
     });
@@ -226,7 +230,7 @@ export default function Products() {
                 <td className="p-3 text-gray-500">{p.sku}</td>
                 <td className="p-3 text-gray-500 text-xs">{getCategoryName(p)}</td>
                 <td className="p-3 text-right">{fmtVal(p.price, p.unit)}</td>
-                <td className="p-3 text-right">{p.markup != null ? Number(p.markup).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 4 }) : '-'}</td>
+                <td className="p-3 text-right">{p.markup != null ? Number(p.markup).toLocaleString('pt-BR', { minimumFractionDigits: 4, maximumFractionDigits: 4 }) : '-'}</td>
                 <td className="p-3 text-right">{fmtVal(p.cost_price, p.unit)}</td>
                 <td className="p-3 text-center">
                   <button onClick={() => handleEdit(p)} className="text-blue-600 hover:text-blue-800 mr-2"><Edit size={16} /></button>
@@ -294,8 +298,9 @@ export default function Products() {
                 </div>
                 <div>
                   <label className="block text-xs text-gray-500 mb-1">Markup</label>
-                  <input type="text" inputMode="decimal" placeholder="Ex.: 1,50" value={form.markup}
+                  <input type="text" inputMode="decimal" placeholder="Ex.: 1,5000" value={form.markup}
                     onChange={e => handleMarkupChange(e.target.value)}
+                    onBlur={handleMarkupBlur}
                     className="w-full px-3 py-2 border rounded-lg text-sm" />
                 </div>
                 <div>
@@ -308,7 +313,7 @@ export default function Products() {
               {form.cost_price && (form.markup || form.price) && (
                 <p className="text-xs text-gray-400">
                   {form.markup && form.cost_price ? `Preço de venda = custo × markup → R$ ${formatNumberToCurrency(parseCurrencyToNumber(form.cost_price, formDecimals) * parseDecimal(form.markup), formDecimals)}` : ''}
-                  {form.price && form.cost_price && !form.markup ? `Markup = venda ÷ custo → ${formatDecimal(parseCurrencyToNumber(form.price, formDecimals) / parseCurrencyToNumber(form.cost_price, formDecimals), 4)}` : ''}
+                  {form.price && form.cost_price && !form.markup ? `Markup = venda ÷ custo → ${formatDecimal(parseCurrencyToNumber(form.price, formDecimals) / parseCurrencyToNumber(form.cost_price, formDecimals))}` : ''}
                 </p>
               )}
               <textarea placeholder="Descrição do produto" value={form.description} rows={4}
