@@ -268,12 +268,6 @@ export default function Products() {
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">Preço de Venda</label>
-                  <input type="number" step={formDecimals === 3 ? '0.001' : '0.01'} placeholder="R$ 0,00" value={form.price}
-                    onChange={e => handlePriceChange(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg text-sm" />
-                </div>
-                <div>
                   <label className="block text-xs text-gray-500 mb-1">Preço de Custo</label>
                   <input type="number" step={formDecimals === 3 ? '0.001' : '0.01'} placeholder="R$ 0,00" value={form.cost_price}
                     onChange={e => handleCostChange(e.target.value)}
@@ -283,6 +277,12 @@ export default function Products() {
                   <label className="block text-xs text-gray-500 mb-1">Markup</label>
                   <input type="number" step="0.0001" placeholder="Ex.: 1,50" value={form.markup}
                     onChange={e => handleMarkupChange(e.target.value)}
+                    className="w-full px-3 py-2 border rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Preço de Venda</label>
+                  <input type="number" step={formDecimals === 3 ? '0.001' : '0.01'} placeholder="R$ 0,00" value={form.price}
+                    onChange={e => handlePriceChange(e.target.value)}
                     className="w-full px-3 py-2 border rounded-lg text-sm" />
                 </div>
               </div>
