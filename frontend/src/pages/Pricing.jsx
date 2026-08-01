@@ -19,6 +19,28 @@ const DEFAULTS = {
   margem_alvo: '20', impostos_pct: '6',
 };
 
+const PERCENT_STORAGE_KEY = 'pricing_base_percents_v1';
+
+const loadBasePercents = () => {
+  try {
+    const raw = localStorage.getItem(PERCENT_STORAGE_KEY);
+    if (!raw) return null;
+    const obj = JSON.parse(raw);
+    if (typeof obj !== 'object' || obj === null) return null;
+    return obj;
+  } catch { return null; }
+};
+
+const saveBasePercents = (form) => {
+  try {
+    const obj = {};
+    PERCENT_FIELDS.forEach(k => { obj[k] = form[k]; });
+    localStorage.setItem(PERCENT_STORAGE_KEY, JSON.stringify(obj));
+  } catch {}
+};
+
+const defaultForm = () => ({ ...DEFAULTS, ...loadBasePercents() });
+
 const fmtMoney = (n) => n == null ? '-' : Number(n).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtPct = (n) => n == null ? '-' : (Number(n) * 100).toFixed(2).replace('.', ',') + '%';
 
@@ -99,7 +121,7 @@ export default function Pricing() {
   const [search, setSearch] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState('');
-  const [form, setForm] = useState({ ...DEFAULTS });
+  const [form, setForm] = useState(defaultForm);
   const [decimals, setDecimals] = useState(2);
   const [result, setResult] = useState(null);
   const [calcLoading, setCalcLoading] = useState(false);
@@ -128,7 +150,7 @@ export default function Pricing() {
     if (config) {
       setForm(fromConfig(config, unitDecimals(p.unit)));
     } else {
-      const f = { ...DEFAULTS };
+      const f = defaultForm();
       const cost = p.cost_price ?? p.price ?? 0;
       if (cost) f.acquisition_price = formatNumberToCurrency(cost, unitDecimals(p.unit));
       setForm(f);
@@ -205,7 +227,11 @@ export default function Pricing() {
   };
 
   const setPercent = (k) => (e) => {
-    setForm(f => ({ ...f, [k]: maskPercentInput(e.target.value) }));
+    setForm(f => {
+      const nf = { ...f, [k]: maskPercentInput(e.target.value) };
+      saveBasePercents(nf);
+      return nf;
+    });
   };
 
   const inputCls = 'w-full px-3 py-2 border border-gray-200 rounded-lg text-sm';
