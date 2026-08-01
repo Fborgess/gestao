@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import api from '../services/api';
 import { formatCurrency, getTodayLocal } from '../services/format';
+import { qtyStep, qtyMin, roundQty } from '../services/masks';
 import { ArrowDownCircle, ArrowUpCircle, Package, ClipboardList, Edit, Trash2 } from 'lucide-react';
 import SearchableSelect from '../components/SearchableSelect';
 import SortableHeader from '../components/SortableHeader';
@@ -96,7 +97,7 @@ export default function Stock() {
       const data = {
         product_id: parseInt(form.product_id), deposit_id: parseInt(form.deposit_id),
         movement_type: activeTab, movement_date: form.movement_date,
-        quantity: parseInt(form.quantity),
+        quantity: roundQty(form.quantity, selectedUnit) || qtyMin(selectedUnit),
         unit_price: activeTab === 'entrada' ? (parseFloat(form.unit_price) || 0) : 0,
         reason: activeTab === 'saida' ? form.reason : (form.reason || null),
         notes: form.notes || null,
@@ -114,6 +115,8 @@ export default function Stock() {
 
   const productOptions = products.map(p => ({ value: p.id, label: getProductName(p.id) }));
   const depositOptions = deposits.map(d => ({ value: d.id, label: d.name }));
+  const selectedProduct = products.find(p => p.id === parseInt(form.product_id));
+  const selectedUnit = selectedProduct?.unit?.abbreviation || '';
 
   return (
     <div>
@@ -216,7 +219,7 @@ export default function Stock() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs text-gray-500 mb-1">Quantidade *</label>
-                  <input placeholder="0" type="number" min="1" value={form.quantity}
+                  <input placeholder="0" type="number" min={qtyMin(selectedUnit)} step={qtyStep(selectedUnit)} value={form.quantity}
                     onChange={e => setForm({...form, quantity: e.target.value})}
                     className="w-full px-3 py-2 border rounded-lg text-sm" required />
                 </div>

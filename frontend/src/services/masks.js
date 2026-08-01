@@ -8,7 +8,26 @@ export const isWeightUnit = (unit) => {
   return WEIGHT_ABBR.includes(abbr) || /\b(quilo|grama|tonelada)\b/.test(name);
 };
 
+export const isWeightAbbr = (abbr) => {
+  const a = String(abbr ?? '').toLowerCase().replace('.', '').trim();
+  return WEIGHT_ABBR.includes(a);
+};
+
 export const unitDecimals = (unit) => (isWeightUnit(unit) ? 3 : 2);
+
+export const qtyDecimals = (unit) => (typeof unit === 'object' && unit ? (isWeightUnit(unit) ? 3 : 0) : (isWeightAbbr(unit) ? 3 : 0));
+
+export const qtyStep = (unit) => (qtyDecimals(unit) > 0 ? 0.001 : 1);
+
+export const qtyMin = (unit) => (qtyDecimals(unit) > 0 ? 0.001 : 1);
+
+export const roundQty = (v, unit) => {
+  const n = parseFloat(String(v ?? '').replace(',', '.'));
+  if (isNaN(n)) return 0;
+  return qtyDecimals(unit) > 0 ? Math.round(n * 1000) / 1000 : Math.round(n);
+};
+
+export const parseQty = (v) => parseFloat(String(v ?? '').replace(',', '.')) || 0;
 
 export function formatDigitsToCurrency(digits, decimals = 2) {
   if (!digits) return '';

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { Plus, Trash2, Save, X } from 'lucide-react';
 import SearchableSelect from '../components/SearchableSelect';
+import { qtyStep, roundQty } from '../services/masks';
 
 export default function SaleNew() {
   const navigate = useNavigate();
@@ -37,6 +38,7 @@ export default function SaleNew() {
         productName: prodLabel(product),
         sku: product.sku,
         quantity: 1,
+        unitAbbr: product.unit?.abbreviation || '',
         unitPrice: product.price || 0,
       }]);
     }
@@ -62,7 +64,7 @@ export default function SaleNew() {
         notes: notes || null,
         items: items.map(it => ({
           product_id: it.productId,
-          quantity: it.quantity,
+          quantity: roundQty(it.quantity, it.unitAbbr),
           unit_price: parseFloat(it.unitPrice),
         })),
       });
@@ -158,8 +160,8 @@ export default function SaleNew() {
                   <tr key={it.productId} className="border-t">
                     <td className="p-2 font-medium">{it.productName}</td>
                     <td className="p-2">
-                      <input type="number" min="0.01" step="0.01" value={it.quantity}
-                        onChange={e => updateItem(it.productId, 'quantity', parseFloat(e.target.value) || 0)}
+                      <input type="number" min={qtyStep(it.unitAbbr)} step={qtyStep(it.unitAbbr)} value={it.quantity}
+                        onChange={e => updateItem(it.productId, 'quantity', roundQty(e.target.value, it.unitAbbr))}
                         className="w-16 px-2 py-1 border rounded text-sm text-center" />
                     </td>
                     <td className="p-2">

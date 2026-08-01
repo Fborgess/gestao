@@ -1,18 +1,18 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime
 
 
 class RequisicaoItemCreate(BaseModel):
     product_id: int
-    quantity_requested: int
+    quantity_requested: float = Field(gt=0)
     unit_price: Optional[float] = None
 
 
 class RequisicaoItemUpdate(BaseModel):
     product_id: Optional[int] = None
-    quantity_requested: Optional[int] = None
-    quantity_approved: Optional[int] = None
+    quantity_requested: Optional[float] = None
+    quantity_approved: Optional[float] = None
     unit_price: Optional[float] = None
 
 
@@ -21,10 +21,10 @@ class RequisicaoItemResponse(BaseModel):
     requisicao_id: int
     product_id: int
     product_name: Optional[str] = None
-    quantity_requested: int
-    quantity_approved: Optional[int] = None
-    quantity_fulfilled: int = 0
-    quantity_received: int = 0
+    quantity_requested: float
+    quantity_approved: Optional[float] = None
+    quantity_fulfilled: float = 0
+    quantity_received: float = 0
     unit_price: Optional[float] = None
 
     class Config:
@@ -54,7 +54,7 @@ class RequisicaoApprove(BaseModel):
 
 class RequisicaoItemFulfill(BaseModel):
     product_id: int
-    quantity_fulfilled: int
+    quantity_fulfilled: float = Field(gt=0)
 
 
 class RequisicaoFulfill(BaseModel):
@@ -63,7 +63,7 @@ class RequisicaoFulfill(BaseModel):
 
 class RequisicaoItemReceive(BaseModel):
     product_id: int
-    quantity_received: int
+    quantity_received: float = Field(gt=0)
 
 
 class RequisicaoReceive(BaseModel):

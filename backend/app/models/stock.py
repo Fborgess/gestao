@@ -12,7 +12,7 @@ class StockMovement(Base):
     deposit_id = Column(Integer, ForeignKey("deposits.id"), nullable=False)
     movement_type = Column(String(20), nullable=False)
     movement_date = Column(DateTime, nullable=False, server_default=func.now())
-    quantity = Column(Integer, nullable=False)
+    quantity = Column(Float, nullable=False)
     unit_price = Column(Float, default=0)
     total_value = Column(Float, default=0)
     reason = Column(String(255))

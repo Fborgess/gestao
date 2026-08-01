@@ -3,6 +3,7 @@ import api from '../services/api';
 import { Plus, Edit, Trash2, Warehouse, ChevronDown, ChevronRight, ArrowRightLeft, AlertTriangle, BarChart3, Package, X, Search, MinusCircle, ClipboardCheck, ArrowDownCircle, ArrowUpCircle, Save } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { qtyStep, qtyMin, roundQty } from '../services/masks';
 
 const statusColors = {
   maintained: 'bg-blue-100 text-blue-700 border-blue-200',
@@ -80,22 +81,22 @@ function TransferModal({ type, deposit, deposits, onClose, onDone }) {
 
   const addItem = (p) => {
     if (items.find(it => it.product_id === p.product_id)) return;
-    setItems(i => [...i, { product_id: p.product_id, product_name: p.product_name, quantity: 1 }]);
+    setItems(i => [...i, { product_id: p.product_id, product_name: p.product_name, quantity: 1, unit_abbr: p.unit_abbr || '' }]);
     setSearchQ('');
     setTimeout(() => searchRef.current?.focus(), 50);
   };
   const changeQty = (pid, delta) => setItems(i => i.map(it => {
     if (it.product_id !== pid) return it;
     const max = balOf(pid);
-    const next = it.quantity + delta;
-    return { ...it, quantity: Math.max(1, max != null ? Math.min(next, max) : next) };
+    const next = roundQty(it.quantity + delta, it.unit_abbr);
+    return { ...it, quantity: Math.max(qtyMin(it.unit_abbr), max != null ? Math.min(next, max) : next) };
   }));
   const updateQty = (pid, value) => {
     if (value === '') return;
-    const n = parseInt(value, 10);
+    const n = parseFloat(value);
     if (isNaN(n)) return;
     const max = balOf(pid);
-    setItems(i => i.map(it => it.product_id === pid ? { ...it, quantity: Math.max(1, max != null ? Math.min(n, max) : n) } : it));
+    setItems(i => i.map(it => it.product_id === pid ? { ...it, quantity: Math.max(qtyMin(it.unit_abbr), max != null ? Math.min(n, max) : roundQty(n, it.unit_abbr)) } : it));
   };
   const removeItem = (pid) => setItems(i => i.filter(it => it.product_id !== pid));
 
@@ -115,7 +116,7 @@ function TransferModal({ type, deposit, deposits, onClose, onDone }) {
         source_deposit_id: srcId,
         destination_deposit_id: dstId,
         transfer_type: type,
-        items: items.map(it => ({ product_id: it.product_id, quantity: it.quantity })),
+        items: items.map(it => ({ product_id: it.product_id, quantity: roundQty(it.quantity, it.unit_abbr) })),
       });
       alert(`${side.label} realizado com sucesso!`);
       onDone();
@@ -184,9 +185,9 @@ function TransferModal({ type, deposit, deposits, onClose, onDone }) {
                       <div className="flex items-center gap-2">
                         <button type="button" onClick={() => changeQty(it.product_id, -1)}
                           className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">−</button>
-                        <input type="number" min="1" max={bal != null ? bal : ''} value={it.quantity}
+                        <input type="number" min={qtyMin(it.unit_abbr)} step={qtyStep(it.unit_abbr)} max={bal != null ? bal : ''} value={it.quantity}
                           onChange={e => updateQty(it.product_id, e.target.value)}
-                          className="w-14 text-center font-bold text-sm border border-gray-200 rounded-lg py-1" />
+                          className="w-16 text-center font-bold text-sm border border-gray-200 rounded-lg py-1" />
                         <button type="button" onClick={() => changeQty(it.product_id, 1)}
                           className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">+</button>
                         <button type="button" onClick={() => removeItem(it.product_id)}
@@ -246,22 +247,22 @@ function AvariaModal({ deposit, deposits, onClose, onDone }) {
 
   const addItem = (p) => {
     if (form.items.find(it => it.product_id === p.product_id)) return;
-    setForm(f => ({ ...f, items: [...f.items, { product_id: p.product_id, product_name: p.product_name, quantity: 1 }] }));
+    setForm(f => ({ ...f, items: [...f.items, { product_id: p.product_id, product_name: p.product_name, quantity: 1, unit_abbr: p.unit_abbr || '' }] }));
     setSearchQ('');
     setTimeout(() => searchRef.current?.focus(), 50);
   };
   const changeQty = (pid, delta) => setForm(f => ({ ...f, items: f.items.map(it => {
     if (it.product_id !== pid) return it;
     const max = balOf(pid);
-    const next = it.quantity + delta;
-    return { ...it, quantity: Math.max(1, max != null ? Math.min(next, max) : next) };
+    const next = roundQty(it.quantity + delta, it.unit_abbr);
+    return { ...it, quantity: Math.max(qtyMin(it.unit_abbr), max != null ? Math.min(next, max) : next) };
   }) }));
   const updateQty = (pid, value) => {
     if (value === '') return;
-    const n = parseInt(value, 10);
+    const n = parseFloat(value);
     if (isNaN(n)) return;
     const max = balOf(pid);
-    setForm(f => ({ ...f, items: f.items.map(it => it.product_id === pid ? { ...it, quantity: Math.max(1, max != null ? Math.min(n, max) : n) } : it) }));
+    setForm(f => ({ ...f, items: f.items.map(it => it.product_id === pid ? { ...it, quantity: Math.max(qtyMin(it.unit_abbr), max != null ? Math.min(n, max) : roundQty(n, it.unit_abbr)) } : it) }));
   };
   const removeItem = (pid) => setForm(f => ({ ...f, items: f.items.filter(it => it.product_id !== pid) }));
 
@@ -282,7 +283,7 @@ function AvariaModal({ deposit, deposits, onClose, onDone }) {
       await api.post('/stock/avaria', {
         deposit_id: parseInt(form.deposit_id),
         description: form.description,
-        items: form.items.map(it => ({ product_id: it.product_id, quantity: it.quantity })),
+        items: form.items.map(it => ({ product_id: it.product_id, quantity: roundQty(it.quantity, it.unit_abbr) })),
       });
       alert('Avaria registrada com sucesso!');
       onDone();
@@ -362,9 +363,9 @@ function AvariaModal({ deposit, deposits, onClose, onDone }) {
                         <div className="flex items-center gap-2">
                           <button type="button" onClick={() => changeQty(it.product_id, -1)}
                             className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">−</button>
-                          <input type="number" min="1" max={bal != null ? bal : ''} value={it.quantity}
+                          <input type="number" min={qtyMin(it.unit_abbr)} step={qtyStep(it.unit_abbr)} max={bal != null ? bal : ''} value={it.quantity}
                             onChange={e => updateQty(it.product_id, e.target.value)}
-                            className="w-14 text-center font-bold text-sm border border-gray-200 rounded-lg py-1" />
+                            className="w-16 text-center font-bold text-sm border border-gray-200 rounded-lg py-1" />
                           <button type="button" onClick={() => changeQty(it.product_id, 1)}
                             className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">+</button>
                           <button type="button" onClick={() => removeItem(it.product_id)}
@@ -420,7 +421,7 @@ function MovementsModal({ deposit, products, deposits, onClose }) {
     if (!editMov) return;
     try {
       await api.put(`/stock/movements/${editMov.id}`, {
-        quantity: parseInt(editForm.quantity) || 1,
+        quantity: roundQty(editForm.quantity, editUnit) || qtyMin(editUnit),
         unit_price: parseFloat(editForm.unit_price) || 0,
         reason: editForm.reason || null,
         notes: editForm.notes || null,
@@ -443,6 +444,8 @@ function MovementsModal({ deposit, products, deposits, onClose }) {
   };
 
   const prodName = (id) => { const p = products.find(p => p.id === id); return p ? productLabel(p) : '-'; };
+  const editProduct = products.find(p => p.id === editMov?.product_id);
+  const editUnit = editProduct?.unit?.abbreviation || '';
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -485,7 +488,7 @@ function MovementsModal({ deposit, products, deposits, onClose }) {
                           </span>
                         </td>
                         <td className="p-3 text-center">
-                          <input type="number" min="1" value={editForm.quantity} onChange={e => setEditForm({...editForm, quantity: e.target.value})}
+                          <input type="number" min={qtyMin(editUnit)} step={qtyStep(editUnit)} value={editForm.quantity} onChange={e => setEditForm({...editForm, quantity: e.target.value})}
                             className="w-16 px-1 py-1 border rounded text-sm text-center" />
                         </td>
                         <td className="p-3 text-center">

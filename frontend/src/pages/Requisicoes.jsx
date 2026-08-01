@@ -2,8 +2,9 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Plus, ClipboardList, CheckCircle, XCircle, Truck, Printer, Edit, Trash2, Search, Eye, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
+import { Plus, ClipboardList, CheckCircle, XCircle, Truck, Printer, Edit, Trash2, ArrowUpCircle } from 'lucide-react';
 import PrintPreview from '../components/PrintPreview';
+import { qtyStep, qtyMin, roundQty } from '../services/masks';
 
 const statusLabels = {
   pendente: 'Pendente',
@@ -100,6 +101,14 @@ export default function Requisicoes() {
 
   const prodLabel = (p) => p.unit?.abbreviation ? `${p.name} ${p.unit.abbreviation}` : p.name;
 
+  const productUnitMap = useMemo(() => {
+    const m = {};
+    products.forEach(p => m[p.id] = p.unit?.abbreviation || '');
+    return m;
+  }, [products]);
+
+  const unitOf = (it) => productUnitMap[it.product_id] || it.unit_abbr || '';
+
 
   const userMap = useMemo(() => {
     const m = {};
@@ -109,7 +118,7 @@ export default function Requisicoes() {
 
   const addItem = (product) => {
     if (form.items.find(it => it.product_id === product.id)) return;
-    setForm(f => ({ ...f, items: [...f.items, { product_id: product.id, product_name: prodLabel(product), quantity_requested: 1, unit_price: product.price || '' }] }));
+    setForm(f => ({ ...f, items: [...f.items, { product_id: product.id, product_name: prodLabel(product), quantity_requested: 1, unit_abbr: product.unit?.abbreviation || '', unit_price: product.price || '' }] }));
   };
 
   const removeItem = (pid) => setForm(f => ({ ...f, items: f.items.filter(it => it.product_id !== pid) }));
@@ -172,9 +181,9 @@ export default function Requisicoes() {
   const handleFulfill = async () => {
     const r = fulfilling;
     if (!r) return;
-    const items = Object.entries(fulfillQty).map(([pid, q]) => ({
-      product_id: parseInt(pid, 10),
-      quantity_fulfilled: parseInt(q, 10) || 0,
+    const items = r.items.map(it => ({
+      product_id: it.product_id,
+      quantity_fulfilled: roundQty(fulfillQty[it.product_id] ?? 0, unitOf(it)),
     }));
     const exceed = r.items.filter(it => (fulfillQty[it.product_id] || 0) > (it.quantity_approved || it.quantity_requested));
     if (exceed.length > 0) {
@@ -200,9 +209,9 @@ export default function Requisicoes() {
   const handleReceive = async () => {
     const r = receiving;
     if (!r) return;
-    const items = Object.entries(receiveQty).map(([pid, q]) => ({
-      product_id: parseInt(pid, 10),
-      quantity_received: parseInt(q, 10) || 0,
+    const items = r.items.map(it => ({
+      product_id: it.product_id,
+      quantity_received: roundQty(receiveQty[it.product_id] ?? 0, unitOf(it)),
     }));
     if (!confirm(`Confirmar recebimento da requisição #${r.id} no depósito? Isso criará movimentações de entrada no estoque.`)) return;
     try {
@@ -295,11 +304,15 @@ export default function Requisicoes() {
         deposit_fulfilling_id: parseInt(form.deposit_fulfilling_id),
         reason: form.reason || null,
         notes: form.notes || null,
-        items: form.items.map(it => ({
-          product_id: it.product_id,
-          quantity_requested: parseInt(it.quantity_requested) || 1,
-          unit_price: it.unit_price ? parseFloat(it.unit_price) : null,
-        })),
+        items: form.items.map(it => {
+          const u = unitOf(it);
+          const q = roundQty(it.quantity_requested, u);
+          return {
+            product_id: it.product_id,
+            quantity_requested: q > 0 ? q : qtyMin(u),
+            unit_price: it.unit_price ? parseFloat(it.unit_price) : null,
+          };
+        }),
       };
       if (editing) {
         await api.put(`/requisicoes/${editing.id}`, data);
@@ -440,17 +453,17 @@ export default function Requisicoes() {
                         <div key={it.product_id} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
                           <span className="text-sm font-medium flex-1">{it.product_name}</span>
                           <div className="flex items-center gap-1.5">
-                            <button type="button" onClick={() => updateItem(it.product_id, 'quantity_requested', Math.max(1, (it.quantity_requested || 1) - 1))}
+                            <button type="button" onClick={() => updateItem(it.product_id, 'quantity_requested', Math.max(qtyMin(unitOf(it)), roundQty((it.quantity_requested || qtyMin(unitOf(it))) - qtyStep(unitOf(it)), unitOf(it))))}
                               className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">−</button>
-                            <input type="number" min="1" value={it.quantity_requested}
+                            <input type="number" min={qtyMin(unitOf(it))} step={qtyStep(unitOf(it))} value={it.quantity_requested}
                               onChange={e => {
                                 if (e.target.value === '') return;
-                                const n = parseInt(e.target.value, 10);
+                                const n = parseFloat(e.target.value);
                                 if (isNaN(n)) return;
-                                updateItem(it.product_id, 'quantity_requested', Math.max(1, n));
+                                updateItem(it.product_id, 'quantity_requested', Math.max(qtyMin(unitOf(it)), roundQty(n, unitOf(it))));
                               }}
-                              className="w-14 text-center font-bold text-sm border border-gray-200 rounded-lg py-1" />
-                            <button type="button" onClick={() => updateItem(it.product_id, 'quantity_requested', (it.quantity_requested || 1) + 1)}
+                              className="w-16 text-center font-bold text-sm border border-gray-200 rounded-lg py-1" />
+                            <button type="button" onClick={() => updateItem(it.product_id, 'quantity_requested', roundQty((it.quantity_requested || qtyMin(unitOf(it))) + qtyStep(unitOf(it)), unitOf(it)))}
                               className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">+</button>
                             <span className="text-gray-300 mx-1">|</span>
                             <span className="text-xs text-gray-500">R$</span>
@@ -505,6 +518,7 @@ export default function Requisicoes() {
             <div className="px-6 py-4 space-y-2">
               <p className="text-sm text-gray-500 mb-3">Informe a quantidade entregue de cada item (parcial ou completa). Se informar mais que o solicitado, será pedida uma confirmação.</p>
               {fulfilling.items.map(it => {
+                const u = unitOf(it);
                 const approved = it.quantity_approved || it.quantity_requested;
                 const bal = parentBalance[it.product_id];
                 const balLabel = bal === undefined ? null : Math.max(0, bal);
@@ -521,18 +535,18 @@ export default function Requisicoes() {
                         {over && <div className="text-xs text-red-600 mt-0.5">Atenção: quantidade maior que o saldo no depósito pai ({bal})</div>}
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <button type="button" onClick={() => setFulfillQty(q => ({ ...q, [it.product_id]: Math.max(0, (q[it.product_id] || 0) - 1) }))}
+                        <button type="button" onClick={() => setFulfillQty(q => ({ ...q, [it.product_id]: Math.max(0, roundQty((q[it.product_id] || 0) - qtyStep(u), u)) }))}
                           className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">−</button>
-                        <input type="number" min="0" value={fulfillQty[it.product_id] ?? 0}
+                        <input type="number" min="0" step={qtyStep(u)} value={fulfillQty[it.product_id] ?? 0}
                           onChange={e => {
                             if (e.target.value === '') return;
-                            const n = parseInt(e.target.value, 10);
+                            const n = parseFloat(e.target.value);
                             if (isNaN(n)) return;
                             const max = bal > 0 ? bal : approved;
-                            setFulfillQty(q => ({ ...q, [it.product_id]: Math.max(0, Math.min(max, n)) }));
+                            setFulfillQty(q => ({ ...q, [it.product_id]: Math.max(0, Math.min(max, roundQty(n, u))) }));
                           }}
-                          className="w-14 text-center font-bold text-sm border border-gray-200 rounded-lg py-1" />
-                        <button type="button" onClick={() => setFulfillQty(q => ({ ...q, [it.product_id]: Math.min(bal > 0 ? bal : approved, (q[it.product_id] || 0) + 1) }))}
+                          className="w-16 text-center font-bold text-sm border border-gray-200 rounded-lg py-1" />
+                        <button type="button" onClick={() => setFulfillQty(q => ({ ...q, [it.product_id]: Math.min(bal > 0 ? bal : approved, roundQty((q[it.product_id] || 0) + qtyStep(u), u)) }))}
                           className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">+</button>
                       </div>
                     </div>
@@ -563,23 +577,24 @@ export default function Requisicoes() {
             <div className="px-6 py-4 space-y-2">
               <p className="text-sm text-gray-500 mb-3">Confira a quantidade enviada e informe a quantidade realmente recebida de cada item.</p>
               {receiving.items.map(it => {
+                const u = unitOf(it);
                 const sent = it.quantity_fulfilled || it.quantity_approved || it.quantity_requested || 0;
                 return (
                   <div key={it.product_id} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
                     <span className="text-sm font-medium flex-1">{it.product_name}</span>
                     <span className="text-xs text-gray-500 mr-2">Enviado: {sent}</span>
                     <div className="flex items-center gap-1.5">
-                      <button type="button" onClick={() => setReceiveQty(q => ({ ...q, [it.product_id]: Math.max(0, (q[it.product_id] ?? 0) - 1) }))}
+                      <button type="button" onClick={() => setReceiveQty(q => ({ ...q, [it.product_id]: Math.max(0, roundQty((q[it.product_id] ?? 0) - qtyStep(u), u)) }))}
                         className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">−</button>
-                      <input type="number" min="0" max={sent} value={receiveQty[it.product_id] ?? 0}
+                      <input type="number" min="0" max={sent} step={qtyStep(u)} value={receiveQty[it.product_id] ?? 0}
                         onChange={e => {
                           if (e.target.value === '') return;
-                          const n = parseInt(e.target.value, 10);
+                          const n = parseFloat(e.target.value);
                           if (isNaN(n)) return;
-                          setReceiveQty(q => ({ ...q, [it.product_id]: Math.max(0, Math.min(sent, n)) }));
+                          setReceiveQty(q => ({ ...q, [it.product_id]: Math.max(0, Math.min(sent, roundQty(n, u))) }));
                         }}
-                        className="w-14 text-center font-bold text-sm border border-gray-200 rounded-lg py-1" />
-                      <button type="button" onClick={() => setReceiveQty(q => ({ ...q, [it.product_id]: Math.min(sent, (q[it.product_id] ?? 0) + 1) }))}
+                        className="w-16 text-center font-bold text-sm border border-gray-200 rounded-lg py-1" />
+                      <button type="button" onClick={() => setReceiveQty(q => ({ ...q, [it.product_id]: Math.min(sent, roundQty((q[it.product_id] ?? 0) + qtyStep(u), u)) }))}
                         className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">+</button>
                     </div>
                   </div>

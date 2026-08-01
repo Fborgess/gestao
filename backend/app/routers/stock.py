@@ -209,6 +209,7 @@ def stock_balance(
             products[pid] = {
                 "product_id": pid,
                 "product_name": product_label(movement.product),
+                "unit_abbr": movement.product.unit.abbreviation if movement.product.unit else "",
                 "quantity_entries": 0,
                 "quantity_exits": 0,
                 "total_value_entries": 0.0,
@@ -234,6 +235,7 @@ def stock_balance(
         StockBalanceItem(
             product_id=p["product_id"],
             product_name=p["product_name"],
+            unit_abbr=p["unit_abbr"],
             quantity_entries=p["quantity_entries"],
             quantity_exits=p["quantity_exits"],
             balance=p["quantity_entries"] - p["quantity_exits"],

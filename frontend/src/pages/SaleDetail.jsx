@@ -5,6 +5,7 @@ import { Plus, Trash2, Save, X, Printer, Share2 } from 'lucide-react';
 import SearchableSelect from '../components/SearchableSelect';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { qtyStep, roundQty } from '../services/masks';
 
 export default function SaleDetail() {
   const { id } = useParams();
@@ -51,7 +52,7 @@ export default function SaleDetail() {
     if (existing) {
       setItems(items.map(it => it.productId === product.id ? { ...it, quantity: it.quantity + 1 } : it));
     } else {
-      setItems([...items, { productId: product.id, productName: prodLabel(product), quantity: 1, unitPrice: product.price || 0 }]);
+      setItems([...items, { productId: product.id, productName: prodLabel(product), quantity: 1, unitAbbr: product.unit?.abbreviation || '', unitPrice: product.price || 0 }]);
     }
     setShowProductSearch(false);
     setProductSearch('');
@@ -59,6 +60,7 @@ export default function SaleDetail() {
 
   const removeItem = (pid) => setItems(items.filter(it => it.productId !== pid));
   const updateItem = (pid, field, value) => setItems(items.map(it => it.productId === pid ? { ...it, [field]: value } : it));
+  const unitOf = (it) => it.unitAbbr || products.find(p => p.id === it.productId)?.unit?.abbreviation || '';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -69,7 +71,7 @@ export default function SaleDetail() {
       contact_id: parseInt(contactId),
       sale_type_id: parseInt(saleTypeId),
       notes: notes || null,
-      items: items.map(it => ({ product_id: it.productId, quantity: it.quantity, unit_price: parseFloat(it.unitPrice) })),
+      items: items.map(it => ({ product_id: it.productId, quantity: roundQty(it.quantity, unitOf(it)), unit_price: parseFloat(it.unitPrice) })),
     };
     try {
       if (isNew) {
@@ -192,7 +194,7 @@ export default function SaleDetail() {
                 {items.map(it => (
                   <tr key={it.productId} className="border-t">
                     <td className="p-2 font-medium">{it.productName}</td>
-                    <td className="p-2"><input type="number" min="0.01" step="0.01" value={it.quantity} onChange={e => updateItem(it.productId, 'quantity', parseFloat(e.target.value) || 0)} className="w-16 px-2 py-1 border rounded text-sm text-center" /></td>
+                    <td className="p-2"><input type="number" min={qtyStep(unitOf(it))} step={qtyStep(unitOf(it))} value={it.quantity} onChange={e => updateItem(it.productId, 'quantity', roundQty(e.target.value, unitOf(it)))} className="w-16 px-2 py-1 border rounded text-sm text-center" /></td>
                     <td className="p-2"><input type="number" min="0" step="0.01" value={it.unitPrice} onChange={e => updateItem(it.productId, 'unitPrice', parseFloat(e.target.value) || 0)} className="w-24 px-2 py-1 border rounded text-sm text-right" /></td>
                     <td className="p-2 text-right font-medium">R$ {(it.quantity * it.unitPrice).toFixed(2)}</td>
                     <td className="p-2 text-center"><button type="button" onClick={() => removeItem(it.productId)} className="text-red-500"><Trash2 size={16} /></button></td>

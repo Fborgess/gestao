@@ -105,6 +105,24 @@ if not DATABASE_URL.startswith("sqlite"):
             conn.execute(text(
                 "ALTER TABLE products ADD COLUMN markup DOUBLE PRECISION"
             ))
+        for table, columns in {
+            "stock_movements": ["quantity"],
+            "requisicao_items": ["quantity_requested", "quantity_approved", "quantity_fulfilled", "quantity_received"],
+            "products": ["current_stock", "min_stock"],
+        }.items():
+            existing = {row[0] for row in conn.execute(text(
+                "SELECT column_name FROM information_schema.columns WHERE table_name = :t"
+            ).bindparams(t=table)).fetchall()}
+            for col in columns:
+                if col not in existing:
+                    continue
+                dtype = conn.execute(text(
+                    "SELECT data_type FROM information_schema.columns WHERE table_name = :t AND column_name = :c"
+                ).bindparams(t=table, c=col)).fetchone()[0]
+                if dtype in ("integer", "smallint", "bigint"):
+                    conn.execute(text(
+                        f"ALTER TABLE {table} ALTER COLUMN {col} TYPE DOUBLE PRECISION"
+                    ))
         conn.commit()
 
 # Migração: movimentações de requisição só são gravadas após o recebimento.
@@ -177,7 +195,7 @@ app = FastAPI(title="Sistema de Gestão", version="1.0.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )

@@ -258,8 +258,8 @@ def import_products_excel(
                 if has_stock:
                     sc = ci + 3  # stock current
                     sm = ci + 4  # stock min
-                    data["current_stock"] = int(row[sc]) if len(row) > sc and row[sc] is not None else 0
-                    data["min_stock"] = int(row[sm]) if len(row) > sm and row[sm] is not None else 0
+                    data["current_stock"] = float(row[sc]) if len(row) > sc and row[sc] is not None else 0
+                    data["min_stock"] = float(row[sm]) if len(row) > sm and row[sm] is not None else 0
                 db.add(Product(**data))
 
             imported += 1

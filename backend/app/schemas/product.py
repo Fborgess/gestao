@@ -72,8 +72,8 @@ class ProductResponse(BaseModel):
     price: Optional[float] = None
     cost_price: Optional[float] = None
     markup: Optional[float] = None
-    current_stock: int
-    min_stock: int
+    current_stock: float
+    min_stock: float
     unit_id: Optional[int] = None
     category_id: Optional[int] = None
     deposit_id: Optional[int] = None

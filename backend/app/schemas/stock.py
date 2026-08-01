@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime
 
@@ -8,7 +8,7 @@ class StockMovementCreate(BaseModel):
     deposit_id: int
     movement_type: str
     movement_date: Optional[str] = None
-    quantity: int
+    quantity: float = Field(gt=0)
     unit_price: Optional[float] = 0
     reason: Optional[str] = None
     notes: Optional[str] = None
@@ -19,7 +19,7 @@ class StockMovementUpdate(BaseModel):
     deposit_id: Optional[int] = None
     movement_type: Optional[str] = None
     movement_date: Optional[str] = None
-    quantity: Optional[int] = None
+    quantity: Optional[float] = Field(default=None, gt=0)
     unit_price: Optional[float] = None
     reason: Optional[str] = None
     notes: Optional[str] = None
@@ -33,7 +33,7 @@ class StockMovementResponse(BaseModel):
     deposit_name: Optional[str] = None
     movement_type: str
     movement_date: Optional[datetime] = None
-    quantity: int
+    quantity: float
     unit_price: float
     total_value: float
     reason: Optional[str] = None
@@ -48,7 +48,7 @@ class StockMovementResponse(BaseModel):
 
 class StockTransferItem(BaseModel):
     product_id: int
-    quantity: int
+    quantity: float = Field(gt=0)
     unit_price: Optional[float] = 0
 
 
@@ -68,9 +68,10 @@ class StockAvariaCreate(BaseModel):
 class StockBalanceItem(BaseModel):
     product_id: int
     product_name: str
-    quantity_entries: int
-    quantity_exits: int
-    balance: int
+    unit_abbr: Optional[str] = None
+    quantity_entries: float
+    quantity_exits: float
+    balance: float
     total_value_entries: float
     total_value_exits: float
 
@@ -83,7 +84,7 @@ class StockMovementReportItem(BaseModel):
     deposit_name: str
     movement_type: str
     movement_date: Optional[datetime] = None
-    quantity: int
+    quantity: float
     unit_price: float
     total_value: float
     reason: Optional[str] = None
@@ -95,9 +96,9 @@ class TransferReportItem(BaseModel):
     deposit_name: str
     product_id: int
     product_name: str
-    abastecimento_qty: int
-    devolucao_qty: int
-    avaria_qty: int
-    venda_qty: int
+    abastecimento_qty: float
+    devolucao_qty: float
+    avaria_qty: float
+    venda_qty: float
     unit_price: float
     venda_total: float
