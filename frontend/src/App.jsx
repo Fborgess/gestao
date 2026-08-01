@@ -24,6 +24,7 @@ import SaleDetail from './pages/SaleDetail';
 import SalePrint from './pages/SalePrint';
 import Requisicoes from './pages/Requisicoes';
 import TransferReport from './pages/TransferReport';
+import Pricing from './pages/Pricing';
 import Layout, { MODULE_MAP, DEFAULT_ROUTE_ORDER } from './components/Layout';
 
 function Home() {
@@ -69,6 +70,7 @@ function App() {
               <Route path="/deposits" element={<Deposits />} />
               <Route path="/requisicoes" element={<Requisicoes />} />
               <Route path="/transfer-report" element={<TransferReport />} />
+              <Route path="/pricing" element={<Pricing />} />
               <Route path="/financial" element={<Financial />} />
               <Route path="/financial-categories" element={<FinancialCategories />} />
               <Route path="/accounts" element={<Accounts />} />

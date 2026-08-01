@@ -5,7 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from app.database import engine, Base
 from app.routers import auth, products, stock, financial, contacts, reports, payments
 from app.routers import categories, financial_categories, deposits, accounts, payment_types, units, recurrence_frequencies
-from app.routers import requisicoes, roles
+from app.routers import requisicoes, roles, pricing
 from app.routers.sales import sale_type_router, sale_router
 
 import traceback
@@ -156,6 +156,20 @@ with Session(engine) as session:
         if changed:
             session.commit()
 
+# Garante que o perfil gerente tenha acesso ao módulo de precificação
+from app.models.role import Role, RoleModule
+
+with Session(engine) as session:
+    gerente = session.query(Role).filter(Role.name == "gerente").first()
+    if gerente:
+        exists = session.query(RoleModule).filter(
+            RoleModule.role_id == gerente.id,
+            RoleModule.module == "precificacao",
+        ).first()
+        if not exists:
+            session.add(RoleModule(role_id=gerente.id, module="precificacao", access_level="edit"))
+            session.commit()
+
 from seed import seed, seed_frequencies
 seed()
 seed_frequencies()
@@ -206,6 +220,7 @@ app.include_router(sale_type_router)
 app.include_router(sale_router)
 app.include_router(requisicoes.router)
 app.include_router(roles.router)
+app.include_router(pricing.router)
 
 FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "frontend", "dist")
 if os.path.isdir(FRONTEND_DIR):

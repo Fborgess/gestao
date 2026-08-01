@@ -48,16 +48,6 @@ class RequisicaoUpdate(BaseModel):
     items: Optional[List[RequisicaoItemUpdate]] = None
 
 
-class RequisicaoItemCorrecao(BaseModel):
-    product_id: int
-    quantity_requested: Optional[int] = None
-    quantity_approved: Optional[int] = None
-
-
-class RequisicaoCorrecao(BaseModel):
-    items: List[RequisicaoItemCorrecao]
-
-
 class RequisicaoApprove(BaseModel):
     items: List[RequisicaoItemUpdate]
 

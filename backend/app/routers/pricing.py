@@ -1,0 +1,172 @@
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from typing import List
+from app.database import get_db
+from app.models.pricing import ProductPricing
+from app.models.product import Product
+from app.schemas.pricing import PricingInput, PricingResult, PricingResponse, ApplyResult
+from app.utils.security import require_module
+
+router = APIRouter(prefix="/api/pricing", tags=["Precificação de Produtos"])
+
+FIELDS = [
+    "acquisition_price", "lote", "avarias_pct", "comissao_pct", "frete_pct",
+    "outros_custos_pct", "recursos_humanos_pct", "taxa_cartao_pct",
+    "taxas_antecipacao_pct", "margem_alvo", "impostos_pct",
+]
+
+
+def calculate(data: PricingInput) -> PricingResult:
+    lote = data.lote if data.lote else 1
+    custo_unitario = data.acquisition_price / lote
+    total_deducoes = (
+        data.avarias_pct + data.comissao_pct + data.frete_pct
+        + data.outros_custos_pct + data.recursos_humanos_pct
+        + data.taxa_cartao_pct + data.taxas_antecipacao_pct
+    )
+    custos_variaveis = custo_unitario * total_deducoes
+    total_custos = custo_unitario + custos_variaveis
+    divisor = 1 - data.margem_alvo - data.impostos_pct
+    if divisor <= 0:
+        raise HTTPException(400, "A soma da margem alvo e impostos deve ser menor que 100%")
+    preco_venda = total_custos / divisor
+
+    custos_diretos = custo_unitario
+    despesas_variaveis = custos_variaveis
+    impostos_rs = preco_venda * data.impostos_pct
+    total_custos_rs = custos_diretos + despesas_variaveis + impostos_rs
+    margem_rs = preco_venda - total_custos_rs
+    margem_pct = margem_rs / preco_venda if preco_venda else 0
+    markup_multiplicador = preco_venda / custo_unitario if custo_unitario else 0
+
+    return PricingResult(
+        custo_unitario=round(custo_unitario, 2),
+        total_deducoes_pct=round(total_deducoes, 4),
+        custos_variaveis=round(custos_variaveis, 2),
+        total_custos=round(total_custos, 2),
+        preco_venda=round(preco_venda, 2),
+        custos_diretos=round(custos_diretos, 2),
+        despesas_variaveis=round(despesas_variaveis, 2),
+        impostos_rs=round(impostos_rs, 2),
+        total_custos_rs=round(total_custos_rs, 2),
+        margem_rs=round(margem_rs, 2),
+        margem_pct=round(margem_pct, 4),
+        markup_multiplicador=round(markup_multiplicador, 4),
+        markup_resultado=round(preco_venda, 2),
+    )
+
+
+def _to_response(p: ProductPricing) -> PricingResponse:
+    product = p.product
+    return PricingResponse(
+        id=p.id,
+        product_id=p.product_id,
+        acquisition_price=p.acquisition_price,
+        lote=p.lote,
+        avarias_pct=p.avarias_pct,
+        comissao_pct=p.comissao_pct,
+        frete_pct=p.frete_pct,
+        outros_custos_pct=p.outros_custos_pct,
+        recursos_humanos_pct=p.recursos_humanos_pct,
+        taxa_cartao_pct=p.taxa_cartao_pct,
+        taxas_antecipacao_pct=p.taxas_antecipacao_pct,
+        margem_alvo=p.margem_alvo,
+        impostos_pct=p.impostos_pct,
+        product_name=product.name if product else None,
+        display_name=product.display_name if product else None,
+        cost_price=product.cost_price if product else None,
+        price=product.price if product else None,
+        created_at=p.created_at,
+        updated_at=p.updated_at,
+    )
+
+
+@router.post("/calculate", response_model=PricingResult)
+def calculate_pricing(
+    data: PricingInput,
+    _=Depends(require_module("precificacao")),
+):
+    return calculate(data)
+
+
+@router.get("/", response_model=List[PricingResponse])
+def list_pricings(
+    db: Session = Depends(get_db),
+    _=Depends(require_module("precificacao")),
+):
+    return [_to_response(p) for p in db.query(ProductPricing).all()]
+
+
+@router.get("/{product_id}", response_model=PricingResponse)
+def get_pricing(
+    product_id: int,
+    db: Session = Depends(get_db),
+    _=Depends(require_module("precificacao")),
+):
+    p = db.query(ProductPricing).filter(ProductPricing.product_id == product_id).first()
+    if not p:
+        raise HTTPException(404, "Precificação não encontrada para este produto")
+    return _to_response(p)
+
+
+@router.post("/", response_model=PricingResponse, status_code=201)
+def save_pricing(
+    data: PricingInput,
+    db: Session = Depends(get_db),
+    _=Depends(require_module("precificacao", "edit")),
+):
+    if not data.product_id:
+        raise HTTPException(400, "Informe o produto")
+    if not db.query(Product).filter(Product.id == data.product_id).first():
+        raise HTTPException(404, "Produto não encontrado")
+    existing = db.query(ProductPricing).filter(ProductPricing.product_id == data.product_id).first()
+    if existing:
+        for field in FIELDS:
+            setattr(existing, field, getattr(data, field))
+        db.commit()
+        db.refresh(existing)
+        return _to_response(existing)
+    p = ProductPricing(product_id=data.product_id, **data.model_dump(exclude={"product_id"}))
+    db.add(p)
+    db.commit()
+    db.refresh(p)
+    return _to_response(p)
+
+
+@router.delete("/{product_id}")
+def delete_pricing(
+    product_id: int,
+    db: Session = Depends(get_db),
+    _=Depends(require_module("precificacao", "edit")),
+):
+    p = db.query(ProductPricing).filter(ProductPricing.product_id == product_id).first()
+    if not p:
+        raise HTTPException(404, "Precificação não encontrada")
+    db.delete(p)
+    db.commit()
+    return {"message": "Precificação removida"}
+
+
+@router.post("/{product_id}/apply", response_model=ApplyResult)
+def apply_price(
+    product_id: int,
+    data: PricingInput,
+    db: Session = Depends(get_db),
+    _=Depends(require_module("precificacao", "edit")),
+):
+    product = db.query(Product).filter(Product.id == product_id).first()
+    if not product:
+        raise HTTPException(404, "Produto não encontrado")
+    result = calculate(data)
+    product.price = result.preco_venda
+    db.commit()
+    db.refresh(product)
+    return ApplyResult(
+        result=result,
+        product={
+            "id": product.id,
+            "name": product.name,
+            "display_name": product.display_name,
+            "price": product.price,
+        },
+    )

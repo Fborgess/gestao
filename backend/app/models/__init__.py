@@ -12,6 +12,7 @@ from app.models.unit import Unit
 from app.models.payment import Payment
 from app.models.recurrence_frequency import RecurrenceFrequency
 from app.models.role import Role, RoleModule
+from app.models.pricing import ProductPricing
 
 __all__ = [
     "User", "user_deposits", "Product", "Category", "StockMovement",
@@ -20,4 +21,5 @@ __all__ = [
     "Deposit", "Account", "PaymentType", "Unit", "Payment",
     "RecurrenceFrequency",
     "Role", "RoleModule",
+    "ProductPricing",
 ]

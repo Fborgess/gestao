@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Package, ArrowRightLeft, DollarSign, Users, LogOut,
     Tag, Building, Wallet, CreditCard, Banknote, ChevronDown, ChevronRight,
     ChevronLeft, Warehouse, Ruler, BarChart3, Menu, UserCog, Clock, FileText,
-    ShoppingCart, ClipboardList, Shield, X
+     ShoppingCart, ClipboardList, Shield, X, Calculator
 } from 'lucide-react';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import InactivityWarning from './InactivityWarning';
@@ -28,6 +28,7 @@ const menuSections = [
       { path: '/products', label: 'Produtos', icon: Package },
       { path: '/stock-reports', label: 'Relatórios', icon: BarChart3 },
       { path: '/requisicoes', label: 'Requisições', icon: ClipboardList },
+      { path: '/pricing', label: 'Precificação', icon: Calculator },
       { path: '/categories', label: 'Categorias', icon: Tag },
       { path: '/units', label: 'Unidades', icon: Ruler },
       { path: '/stock', label: 'Movimentações', icon: ArrowRightLeft },
@@ -64,7 +65,7 @@ const menuSections = [
 export const MODULE_MAP = {
   '/contacts': 'contacts',
   '/deposits': 'deposits', '/products': 'products', '/stock-reports': 'stock_reports',
-  '/requisicoes': 'requisicoes', '/categories': 'categories', '/units': 'units', '/stock': 'stock_movements',
+  '/requisicoes': 'requisicoes', '/pricing': 'precificacao', '/categories': 'categories', '/units': 'units', '/stock': 'stock_movements',
   '/accounts': 'accounts', '/financial': 'financial', '/financial-categories': 'financial_categories',
   '/payment-types': 'payment_types', '/recurrence-frequencies': 'recurrence_frequencies', '/financial-reports': 'financial_reports',
   '/sale-types': 'sale_types', '/sales': 'sales',
@@ -75,7 +76,7 @@ export const MODULE_MAP = {
 
 export const DEFAULT_ROUTE_ORDER = [
   '/', '/contacts', '/deposits', '/products', '/stock-reports', '/requisicoes',
-  '/categories', '/units', '/stock', '/accounts', '/financial',
+  '/pricing', '/categories', '/units', '/stock', '/accounts', '/financial',
   '/financial-categories', '/payment-types', '/recurrence-frequencies',
   '/financial-reports', '/sale-types', '/sales', '/users', '/roles',
 ];

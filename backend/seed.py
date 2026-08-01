@@ -15,7 +15,7 @@ from app.models.recurrence_frequency import RecurrenceFrequency
 from app.models.role import Role, RoleModule
 from app.utils.security import get_password_hash
 
-ALL_MODULES = ["dashboard", "contacts", "deposits", "deposits_manage", "products", "stock_reports", "requisicoes", "categories", "units", "stock_movements", "accounts", "financial", "financial_categories", "payment_types", "recurrence_frequencies", "financial_reports", "sale_types", "sales", "users", "roles"]
+ALL_MODULES = ["dashboard", "contacts", "deposits", "deposits_manage", "products", "stock_reports", "requisicoes", "categories", "units", "stock_movements", "accounts", "financial", "financial_categories", "payment_types", "recurrence_frequencies", "financial_reports", "sale_types", "sales", "users", "roles", "precificacao"]
 
 def seed():
     db = SessionLocal()
