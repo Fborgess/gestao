@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import api from '../services/api';
-import { BarChart3, ArrowRightLeft, AlertTriangle, TrendingUp, Search } from 'lucide-react';
+import { BarChart3, ArrowRightLeft, AlertTriangle, TrendingUp, Search, Printer } from 'lucide-react';
+import PrintPreview from '../components/PrintPreview';
 
 export default function TransferReport() {
   const [deposits, setDeposits] = useState([]);
@@ -9,6 +10,7 @@ export default function TransferReport() {
   const [filterDeposit, setFilterDeposit] = useState('');
   const [startDate, setStartDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [endDate, setEndDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [printing, setPrinting] = useState(null);
 
   useEffect(() => {
     api.get('/deposits/mine').then(res => setDeposits(res.data)).catch(() => {});
@@ -47,6 +49,75 @@ export default function TransferReport() {
     return Object.values(byDeposit);
   }, [report]);
 
+  const formatDate = (d) => d ? new Date(d + 'T00:00:00').toLocaleDateString('pt-BR') : '-';
+
+  const handlePrint = () => {
+    const filterLabel = subDeposits.find(d => String(d.id) === String(filterDeposit))?.name || 'Todos';
+    setPrinting({
+      title: 'Relatório de Abastecimento x Devolução x Vendas',
+      content: (
+        <div>
+          <div className="mb-4 text-sm">
+            <p>Sub-depósito: <span className="font-medium">{filterLabel}</span></p>
+            <p>Período: <span className="font-medium">{formatDate(startDate)} a {formatDate(endDate)}</span></p>
+          </div>
+          {summaries.length > 0 && (
+            <table className="w-full text-sm border-collapse mb-6">
+              <thead>
+                <tr className="bg-gray-50">
+                  <th className="p-3 text-left">Sub-depósito</th>
+                  <th className="p-3 text-right">Abastecimento</th>
+                  <th className="p-3 text-right">Devolução</th>
+                  <th className="p-3 text-right">Avaria</th>
+                  <th className="p-3 text-right">Venda</th>
+                  <th className="p-3 text-right">Total R$</th>
+                </tr>
+              </thead>
+              <tbody>
+                {summaries.map(s => (
+                  <tr key={s.deposit_name} className="border-t">
+                    <td className="p-3">{s.deposit_name}</td>
+                    <td className="p-3 text-right">{s.abastecimento_qty}</td>
+                    <td className="p-3 text-right">{s.devolucao_qty}</td>
+                    <td className="p-3 text-right">{s.avaria_qty}</td>
+                    <td className="p-3 text-right font-bold">{s.venda_qty}</td>
+                    <td className="p-3 text-right">R$ {s.venda_total.toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="bg-gray-50">
+                <th className="p-3 text-left">Sub-depósito</th>
+                <th className="p-3 text-left">Produto</th>
+                <th className="p-3 text-center">Abast.</th>
+                <th className="p-3 text-center">Devol.</th>
+                <th className="p-3 text-center">Avaria</th>
+                <th className="p-3 text-center">Venda</th>
+                <th className="p-3 text-right">Total R$</th>
+              </tr>
+            </thead>
+            <tbody>
+              {report.map((r, i) => (
+                <tr key={`${r.deposit_id}-${r.product_id}-${i}`} className="border-t">
+                  <td className="p-3">{r.deposit_name}</td>
+                  <td className="p-3">{r.product_name}</td>
+                  <td className="p-3 text-center">{r.abastecimento_qty}</td>
+                  <td className="p-3 text-center">{r.devolucao_qty}</td>
+                  <td className="p-3 text-center">{r.avaria_qty}</td>
+                  <td className="p-3 text-center font-bold">{r.venda_qty}</td>
+                  <td className="p-3 text-right">R$ {r.venda_total.toFixed(2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ),
+    });
+  };
+
   return (
     <div>
       <div className="flex items-center gap-3 mb-6">
@@ -78,6 +149,12 @@ export default function TransferReport() {
             className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 flex items-center gap-2">
             <Search size={16} /> {loading ? 'Carregando...' : 'Gerar Relatório'}
           </button>
+          {report.length > 0 && (
+            <button onClick={handlePrint}
+              className="px-4 py-2 bg-gray-600 text-white rounded-lg text-sm hover:bg-gray-700 flex items-center gap-2">
+              <Printer size={16} /> Imprimir
+            </button>
+          )}
         </div>
       </div>
 
@@ -143,6 +220,11 @@ export default function TransferReport() {
           </tbody>
         </table>
       </div>
+      {printing && (
+        <PrintPreview title={printing.title} onClose={() => setPrinting(null)} autoPrint>
+          {printing.content}
+        </PrintPreview>
+      )}
     </div>
   );
 }
