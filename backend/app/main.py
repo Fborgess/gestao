@@ -7,6 +7,7 @@ from app.routers import auth, products, stock, financial, contacts, reports, pay
 from app.routers import categories, financial_categories, deposits, accounts, payment_types, units, recurrence_frequencies
 from app.routers import requisicoes, roles, pricing
 from app.routers import price_tables
+from app.routers import contact_segments
 from app.routers.sales import sale_type_router, sale_router
 
 import traceback
@@ -243,6 +244,19 @@ from seed import seed, seed_frequencies
 seed()
 seed_frequencies()
 
+# Garante os seguimentos padrão de contatos (criados só se a tabela estiver vazia)
+from app.models.contact_segment import ContactSegment
+
+DEFAULT_SEGMENTS = [
+    "Restaurante", "Supermercado", "Mercado", "Mercearia", "Padaria", "Confeitaria",
+    "Pizzaria", "Lanchonete", "Sorveteria", "Açaí", "Adega", "Farmácia", "Perfumaria",
+    "Distribuidora", "Academia", "Pet Shop", "Outro",
+]
+with Session(engine) as session:
+    if session.query(ContactSegment).count() == 0:
+        session.add_all([ContactSegment(name=name) for name in DEFAULT_SEGMENTS])
+        session.commit()
+
 app = FastAPI(title="Sistema de Gestão", version="1.0.0")
 
 app.add_middleware(
@@ -291,6 +305,7 @@ app.include_router(requisicoes.router)
 app.include_router(roles.router)
 app.include_router(pricing.router)
 app.include_router(price_tables.router)
+app.include_router(contact_segments.router)
 
 FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "frontend", "dist")
 if os.path.isdir(FRONTEND_DIR):

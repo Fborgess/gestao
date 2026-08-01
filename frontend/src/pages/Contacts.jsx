@@ -1,15 +1,13 @@
 import { useState, useEffect, useMemo } from 'react';
 import api from '../services/api';
-import { Plus, Edit, Trash2, Search, User, Building } from 'lucide-react';
-
-const SEGMENTS = [
-  'Restaurante', 'Supermercado', 'Mercado', 'Mercearia', 'Padaria', 'Confeitaria',
-  'Pizzaria', 'Lanchonete', 'Sorveteria', 'Açaí', 'Adega', 'Farmácia', 'Perfumaria',
-  'Distribuidora', 'Academia', 'Pet Shop', 'Outro',
-];
+import { useAuth } from '../contexts/AuthContext';
+import { Plus, Edit, Trash2, Search, User, Building, Settings2, Check, X } from 'lucide-react';
 
 export default function Contacts() {
+  const { permissions } = useAuth();
+  const canManage = permissions?.['contacts'] === 'edit';
   const [contacts, setContacts] = useState([]);
+  const [segments, setSegments] = useState([]);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -17,6 +15,10 @@ export default function Contacts() {
   const [priceTables, setPriceTables] = useState([]);
   const [lookupLoading, setLookupLoading] = useState(false);
   const [cepLoading, setCepLoading] = useState(false);
+  const [showSegModal, setShowSegModal] = useState(false);
+  const [newSegment, setNewSegment] = useState('');
+  const [editSegId, setEditSegId] = useState(null);
+  const [editSegName, setEditSegName] = useState('');
   const [form, setForm] = useState({
     name: '', contact_type: 'cliente', cpf_cnpj: '', segment: '', email: '',
     phone: '', address: '', cep: '', city: '', state: '', notes: '', price_table_id: '',
@@ -34,6 +36,46 @@ export default function Contacts() {
   useEffect(() => {
     api.get('/price-tables/').then(res => setPriceTables(res.data)).catch(() => {});
   }, []);
+
+  const loadSegments = () => {
+    api.get('/contact-segments/').then(res => setSegments(res.data)).catch(() => {});
+  };
+
+  useEffect(() => { loadSegments(); }, []);
+
+  const addSegment = async () => {
+    const name = newSegment.trim();
+    if (!name) { alert('Informe um nome para o seguimento'); return; }
+    try {
+      await api.post('/contact-segments/', { name });
+      setNewSegment('');
+      loadSegments();
+    } catch (err) {
+      alert(err.response?.data?.detail || 'Erro ao adicionar seguimento');
+    }
+  };
+
+  const saveSegmentEdit = async (id) => {
+    const name = editSegName.trim();
+    if (!name) return;
+    try {
+      await api.put(`/contact-segments/${id}`, { name });
+      setEditSegId(null);
+      loadSegments();
+    } catch (err) {
+      alert(err.response?.data?.detail || 'Erro ao salvar seguimento');
+    }
+  };
+
+  const deleteSegment = async (id) => {
+    if (!confirm('Remover este seguimento?')) return;
+    try {
+      await api.delete(`/contact-segments/${id}`);
+      loadSegments();
+    } catch (err) {
+      alert(err.response?.data?.detail || 'Erro ao remover seguimento');
+    }
+  };
 
   const sortedContacts = useMemo(() =>
     [...contacts].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR')),
@@ -137,10 +179,18 @@ export default function Contacts() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Clientes e Fornecedores</h1>
-        <button onClick={() => { resetForm(); setEditing(null); setShowModal(true); }}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700">
-          <Plus size={18} /> Novo Contato
-        </button>
+        <div className="flex gap-2">
+          {canManage && (
+            <button onClick={() => setShowSegModal(true)}
+              className="px-4 py-2 rounded-lg border flex items-center gap-2 hover:bg-gray-50">
+              <Settings2 size={18} /> Seguimentos
+            </button>
+          )}
+          <button onClick={() => { resetForm(); setEditing(null); setShowModal(true); }}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700">
+            <Plus size={18} /> Novo Contato
+          </button>
+        </div>
       </div>
 
       <div className="flex gap-2 mb-4">
@@ -216,7 +266,7 @@ export default function Contacts() {
                 <select value={form.segment} onChange={e => setForm({...form, segment: e.target.value})}
                   className="px-3 py-2 border rounded-lg text-sm">
                   <option value="">Seguimento...</option>
-                  {SEGMENTS.map(s => <option key={s} value={s}>{s}</option>)}
+                  {segments.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
                 </select>
                 <input placeholder="Email" type="email" value={form.email}
                   onChange={e => setForm({...form, email: e.target.value})}
@@ -264,6 +314,45 @@ export default function Contacts() {
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">Salvar</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showSegModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-bold">Seguimentos</h2>
+              <button onClick={() => setShowSegModal(false)} className="text-gray-500 hover:text-gray-700"><X size={20} /></button>
+            </div>
+            <div className="flex gap-2 mb-4">
+              <input placeholder="Novo seguimento..." value={newSegment}
+                onChange={e => setNewSegment(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSegment(); } }}
+                className="flex-1 px-3 py-2 border rounded-lg text-sm" />
+              <button onClick={addSegment} className="px-3 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">Adicionar</button>
+            </div>
+            <ul className="space-y-2">
+              {segments.map(s => (
+                <li key={s.id} className="flex items-center gap-2">
+                  {editSegId === s.id ? (
+                    <>
+                      <input value={editSegName} onChange={e => setEditSegName(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); saveSegmentEdit(s.id); } }}
+                        className="flex-1 px-2 py-1 border rounded-lg text-sm" autoFocus />
+                      <button onClick={() => saveSegmentEdit(s.id)} className="text-green-600 hover:text-green-800"><Check size={16} /></button>
+                      <button onClick={() => setEditSegId(null)} className="text-gray-500 hover:text-gray-700"><X size={16} /></button>
+                    </>
+                  ) : (
+                    <>
+                      <span className="flex-1 text-sm">{s.name}</span>
+                      <button onClick={() => { setEditSegId(s.id); setEditSegName(s.name); }} className="text-blue-600 hover:text-blue-800"><Edit size={16} /></button>
+                      <button onClick={() => deleteSegment(s.id)} className="text-red-600 hover:text-red-800"><Trash2 size={16} /></button>
+                    </>
+                  )}
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       )}

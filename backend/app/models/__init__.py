@@ -13,6 +13,7 @@ from app.models.payment import Payment
 from app.models.recurrence_frequency import RecurrenceFrequency
 from app.models.role import Role, RoleModule
 from app.models.pricing import ProductPricing
+from app.models.contact_segment import ContactSegment
 
 __all__ = [
     "User", "user_deposits", "Product", "Category", "StockMovement",
@@ -22,4 +23,5 @@ __all__ = [
     "RecurrenceFrequency",
     "Role", "RoleModule",
     "ProductPricing",
+    "ContactSegment",
 ]
