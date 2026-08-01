@@ -385,25 +385,23 @@ def receive_requisicao(
         StockMovement.reason.like(f"Requisição #{req.id}:%"),
     ).all()}
     for it in req.items:
-        expected = it.quantity_approved or it.quantity_requested or it.quantity_fulfilled or 0
-        sent = it.quantity_fulfilled or expected
+        sent = it.quantity_fulfilled or it.quantity_approved or it.quantity_requested or 0
         received = rcv_map.get(it.product_id)
         if received is None:
-            received = expected
+            received = sent
         if received < 0:
             raise HTTPException(400, "Quantidade recebida não pode ser negativa")
-        if received > expected:
-            raise HTTPException(400, f"Quantidade recebida não pode exceder a solicitada ({expected})")
+        if received > sent:
+            raise HTTPException(400, "Quantidade recebida não pode exceder a enviada")
         it.quantity_received = received
         if sent > 0 and it.product_id not in existing_saida:
             # create stock exit movement from deposit_fulfilling (recorded at receipt)
-            out_qty = max(sent, received)
-            total_val = out_qty * (it.unit_price or 0)
+            total_val = sent * (it.unit_price or 0)
             mov = StockMovement(
                 product_id=it.product_id,
                 deposit_id=req.deposit_fulfilling_id,
                 movement_type="saida",
-                quantity=out_qty,
+                quantity=sent,
                 unit_price=it.unit_price or 0,
                 total_value=total_val,
                 reason=f"Requisição #{req.id}: {req.reason or ''}",
