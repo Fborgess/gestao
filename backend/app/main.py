@@ -138,6 +138,20 @@ with Session(engine) as session:
         product.current_stock = entrada - saida
     session.commit()
 
+# Garante que o perfil operador tenha acesso aos relatórios de estoque
+from app.models.role import Role, RoleModule
+
+with Session(engine) as session:
+    role = session.query(Role).filter(Role.name == "operador").first()
+    if role:
+        exists = session.query(RoleModule).filter(
+            RoleModule.role_id == role.id,
+            RoleModule.module == "stock_reports",
+        ).first()
+        if not exists:
+            session.add(RoleModule(role_id=role.id, module="stock_reports", access_level="view"))
+            session.commit()
+
 from seed import seed, seed_frequencies
 seed()
 seed_frequencies()

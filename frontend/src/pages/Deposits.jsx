@@ -211,30 +211,57 @@ function TransferModal({ type, deposit, deposits, onClose, onDone }) {
   );
 }
 
-function AvariaModal({ deposit, deposits, products, onClose, onDone }) {
+function AvariaModal({ deposit, deposits, onClose, onDone }) {
   const [form, setForm] = useState({ deposit_id: deposit ? String(deposit.id) : '', description: '', items: [] });
   const [searchQ, setSearchQ] = useState('');
   const [loading, setLoading] = useState(false);
+  const [balance, setBalance] = useState(null);
+  const [balanceError, setBalanceError] = useState('');
   const searchRef = useRef(null);
 
+  const selId = parseInt(form.deposit_id, 10);
+
+  useEffect(() => {
+    if (!selId) { setBalance(null); setBalanceError(''); setForm(f => ({ ...f, items: [] })); return; }
+    let active = true;
+    setBalance(null);
+    setBalanceError('');
+    setForm(f => ({ ...f, items: [] }));
+    api.get('/stock/balance/', { params: { deposit_id: selId } })
+      .then(res => { if (active) setBalance(res.data || []); })
+      .catch(err => { if (active) setBalanceError(err.response?.data?.detail || 'Erro ao carregar o saldo do depósito'); });
+    return () => { active = false; };
+  }, [selId]);
+
+  const balOf = (pid) => {
+    const b = (balance || []).find(x => x.product_id === pid);
+    return b ? b.balance : null;
+  };
+
   const searchResults = useMemo(() => {
-    if (searchQ.length < 1) return [];
+    if (searchQ.length < 1 || !balance) return [];
     const lq = searchQ.toLowerCase();
-    return products.filter(p => p.name.toLowerCase().includes(lq) || (p.sku && p.sku.toLowerCase().includes(lq))).slice(0, 8);
-  }, [searchQ, products]);
+    return balance.filter(p => (p.product_name || '').toLowerCase().includes(lq)).slice(0, 8);
+  }, [searchQ, balance]);
 
   const addItem = (p) => {
-    if (form.items.find(it => it.product_id === p.id)) return;
-    setForm(f => ({ ...f, items: [...f.items, { product_id: p.id, product_name: productLabel(p), quantity: 1 }] }));
+    if (form.items.find(it => it.product_id === p.product_id)) return;
+    setForm(f => ({ ...f, items: [...f.items, { product_id: p.product_id, product_name: p.product_name, quantity: 1 }] }));
     setSearchQ('');
     setTimeout(() => searchRef.current?.focus(), 50);
   };
-  const changeQty = (pid, delta) => setForm(f => ({ ...f, items: f.items.map(it => it.product_id === pid ? { ...it, quantity: Math.max(1, it.quantity + delta) } : it) }));
+  const changeQty = (pid, delta) => setForm(f => ({ ...f, items: f.items.map(it => {
+    if (it.product_id !== pid) return it;
+    const max = balOf(pid);
+    const next = it.quantity + delta;
+    return { ...it, quantity: Math.max(1, max != null ? Math.min(next, max) : next) };
+  }) }));
   const updateQty = (pid, value) => {
     if (value === '') return;
     const n = parseInt(value, 10);
     if (isNaN(n)) return;
-    setForm(f => ({ ...f, items: f.items.map(it => it.product_id === pid ? { ...it, quantity: Math.max(1, n) } : it) }));
+    const max = balOf(pid);
+    setForm(f => ({ ...f, items: f.items.map(it => it.product_id === pid ? { ...it, quantity: Math.max(1, max != null ? Math.min(n, max) : n) } : it) }));
   };
   const removeItem = (pid) => setForm(f => ({ ...f, items: f.items.filter(it => it.product_id !== pid) }));
 
@@ -243,6 +270,13 @@ function AvariaModal({ deposit, deposits, products, onClose, onDone }) {
     if (!form.deposit_id) { alert('Selecione o depósito'); return; }
     if (form.items.length === 0) { alert('Adicione pelo menos um produto'); return; }
     if (!form.description) { alert('Descreva a avaria'); return; }
+    for (const it of form.items) {
+      const max = balOf(it.product_id);
+      if (max != null && it.quantity > max) {
+        alert(`${it.product_name}: quantidade (${it.quantity}) excede o saldo no depósito (${max})`);
+        return;
+      }
+    }
     setLoading(true);
     try {
       await api.post('/stock/avaria', {
@@ -285,6 +319,7 @@ function AvariaModal({ deposit, deposits, products, onClose, onDone }) {
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-2">Produtos</label>
+              {balanceError && <p className="text-xs text-red-500 mb-2">{balanceError}</p>}
               <div className="relative">
                 <input ref={searchRef} type="text" placeholder="Buscar produto..." value={searchQ} autoFocus
                   onChange={e => setSearchQ(e.target.value)}
@@ -292,35 +327,52 @@ function AvariaModal({ deposit, deposits, products, onClose, onDone }) {
                 {searchResults.length > 0 && (
                   <div className="absolute top-full left-0 right-0 mt-1 border rounded-lg bg-white shadow-lg z-10 max-h-40 overflow-y-auto">
                     {searchResults.map(p => (
-                      <button key={p.id} type="button" onClick={() => addItem(p)}
-                        className="w-full text-left px-3 py-2.5 text-sm hover:bg-blue-50 border-b last:border-0 flex justify-between">
-                        <span>{productLabel(p)}</span>
-                        <span className="text-gray-400 text-xs">{p.sku}</span>
+                      <button key={p.product_id} type="button" onClick={() => addItem(p)}
+                        className="w-full text-left px-3 py-2.5 text-sm hover:bg-blue-50 border-b last:border-0 flex justify-between items-center">
+                        <span className="flex-1">{p.product_name}</span>
+                        <span className={`text-xs font-medium ${p.balance > 0 ? 'text-green-600' : 'text-gray-400'}`}>Saldo: {p.balance}</span>
                       </button>
                     ))}
                   </div>
                 )}
               </div>
+              {!balance && !balanceError && selId && (
+                <p className="text-sm text-gray-400 text-center py-6 mt-2">Carregando produtos do depósito...</p>
+              )}
+              {balance && balance.length === 0 && !balanceError && (
+                <p className="text-sm text-gray-400 text-center py-6 mt-2">Nenhum produto com saldo neste depósito</p>
+              )}
+              {balance && searchQ && searchResults.length === 0 && (
+                <p className="text-sm text-gray-400 text-center py-2 mt-2">Nenhum produto encontrado neste depósito</p>
+              )}
               {form.items.length === 0 ? (
                 <p className="text-sm text-gray-400 text-center py-6 mt-2">Busque e adicione produtos acima</p>
               ) : (
                 <div className="space-y-2 mt-3">
-                  {form.items.map(it => (
-                    <div key={it.product_id} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
-                      <span className="text-sm font-medium flex-1">{it.product_name}</span>
-                      <div className="flex items-center gap-2">
-                        <button type="button" onClick={() => changeQty(it.product_id, -1)}
-                          className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">−</button>
-                        <input type="number" min="1" value={it.quantity}
-                          onChange={e => updateQty(it.product_id, e.target.value)}
-                          className="w-14 text-center font-bold text-sm border border-gray-200 rounded-lg py-1" />
-                        <button type="button" onClick={() => changeQty(it.product_id, 1)}
-                          className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">+</button>
-                        <button type="button" onClick={() => removeItem(it.product_id)}
-                          className="ml-2 text-red-400 hover:text-red-600"><Trash2 size={15} /></button>
+                  {form.items.map(it => {
+                    const bal = balOf(it.product_id);
+                    return (
+                      <div key={it.product_id} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
+                        <div className="flex-1 min-w-0 pr-2">
+                          <div className="text-sm font-medium truncate">{it.product_name}</div>
+                          <div className="text-xs text-gray-500">
+                            Saldo: <span className={bal > 0 ? 'text-green-600 font-medium' : 'text-gray-400'}>{bal != null ? bal : '—'}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button type="button" onClick={() => changeQty(it.product_id, -1)}
+                            className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">−</button>
+                          <input type="number" min="1" max={bal != null ? bal : ''} value={it.quantity}
+                            onChange={e => updateQty(it.product_id, e.target.value)}
+                            className="w-14 text-center font-bold text-sm border border-gray-200 rounded-lg py-1" />
+                          <button type="button" onClick={() => changeQty(it.product_id, 1)}
+                            className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">+</button>
+                          <button type="button" onClick={() => removeItem(it.product_id)}
+                            className="ml-2 text-red-400 hover:text-red-600"><Trash2 size={15} /></button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -753,7 +805,7 @@ export default function Deposits() {
       )}
 
       {showAvaria && (
-        <AvariaModal deposit={avariaDeposit} deposits={deposits} products={products}
+        <AvariaModal deposit={avariaDeposit} deposits={deposits}
           onClose={() => { setShowAvaria(false); setAvariaDeposit(null); }}
           onDone={() => { setShowAvaria(false); setAvariaDeposit(null); load(); loadProducts(); }} />
       )}

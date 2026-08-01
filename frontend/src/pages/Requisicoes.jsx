@@ -181,7 +181,7 @@ export default function Requisicoes() {
 
   const openReceive = (r) => {
     const qty = {};
-    r.items.forEach(it => { qty[it.product_id] = it.quantity_fulfilled || it.quantity_approved || it.quantity_requested || 0; });
+    r.items.forEach(it => { qty[it.product_id] = it.quantity_approved || it.quantity_requested || 0; });
     setReceiveQty(qty);
     setReceiving(r);
   };
@@ -538,25 +538,29 @@ export default function Requisicoes() {
               <span className="ml-auto text-sm text-gray-500">Enviado por {receiving.deposit_fulfilling_name || '-'}</span>
             </div>
             <div className="px-6 py-4 space-y-2">
-              <p className="text-sm text-gray-500 mb-3">Confira a quantidade enviada e informe a quantidade realmente recebida de cada item.</p>
+              <p className="text-sm text-gray-500 mb-3">Confira a quantidade recebida de cada item.</p>
               {receiving.items.map(it => {
-                const sent = it.quantity_fulfilled || it.quantity_approved || it.quantity_requested || 0;
+                const expected = it.quantity_approved || it.quantity_requested || it.quantity_fulfilled || 0;
                 return (
                   <div key={it.product_id} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
-                    <span className="text-sm font-medium flex-1">{it.product_name}</span>
-                    <span className="text-xs text-gray-500 mr-2">Enviado: {sent}</span>
+                    <div className="flex-1 min-w-0 pr-2">
+                      <div className="text-sm font-medium truncate">{it.product_name}</div>
+                      <div className="text-xs text-gray-500">
+                        Solicitado: {expected}{it.quantity_fulfilled ? ` · Enviado: ${it.quantity_fulfilled}` : ''}
+                      </div>
+                    </div>
                     <div className="flex items-center gap-1.5">
                       <button type="button" onClick={() => setReceiveQty(q => ({ ...q, [it.product_id]: Math.max(0, (q[it.product_id] ?? 0) - 1) }))}
                         className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">−</button>
-                      <input type="number" min="0" max={sent} value={receiveQty[it.product_id] ?? 0}
+                      <input type="number" min="0" max={expected} value={receiveQty[it.product_id] ?? 0}
                         onChange={e => {
                           if (e.target.value === '') return;
                           const n = parseInt(e.target.value, 10);
                           if (isNaN(n)) return;
-                          setReceiveQty(q => ({ ...q, [it.product_id]: Math.max(0, Math.min(sent, n)) }));
+                          setReceiveQty(q => ({ ...q, [it.product_id]: Math.max(0, Math.min(expected, n)) }));
                         }}
                         className="w-14 text-center font-bold text-sm border border-gray-200 rounded-lg py-1" />
-                      <button type="button" onClick={() => setReceiveQty(q => ({ ...q, [it.product_id]: Math.min(sent, (q[it.product_id] ?? 0) + 1) }))}
+                      <button type="button" onClick={() => setReceiveQty(q => ({ ...q, [it.product_id]: Math.min(expected, (q[it.product_id] ?? 0) + 1) }))}
                         className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">+</button>
                     </div>
                   </div>
