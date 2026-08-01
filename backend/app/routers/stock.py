@@ -217,15 +217,8 @@ def stock_balance(
 
         p = products[pid]
 
-        is_devolucao = movement.movement_type == "entrada" and movement.reason and "Devolução" in movement.reason
-        if is_devolucao:
-            # Devolução compensa o abastecimento: reduz as saídas, não conta como entrada
-            effective_price = movement.unit_price
-            if not effective_price or effective_price == 0:
-                effective_price = cost_price or product_price or 0
-            p["quantity_exits"] -= movement.quantity
-            p["total_value_exits"] -= movement.total_value or (movement.quantity * effective_price)
-        elif movement.movement_type == "entrada":
+        if movement.movement_type == "entrada":
+            # Devolução dos filhos entra como Entrada no PAI (espelhando a saída do filho)
             p["quantity_entries"] += movement.quantity
             effective_price = movement.unit_price
             if not effective_price or effective_price == 0:

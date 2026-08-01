@@ -1,6 +1,10 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import api from '../services/api';
 import { Calculator, Save, Trash2, Package, Percent, Edit, Tag, X } from 'lucide-react';
+import {
+  currencyToDigits, formatDigitsToCurrency, parseCurrencyToNumber, formatNumberToCurrency,
+  maskPercentInput, parsePercent, isWeightUnit, unitDecimals, formatValue,
+} from '../services/masks';
 
 const PERCENT_FIELDS = ['avarias_pct', 'comissao_pct', 'frete_pct', 'outros_custos_pct', 'recursos_humanos_pct', 'taxa_cartao_pct', 'taxas_antecipacao_pct', 'margem_alvo', 'impostos_pct'];
 
@@ -44,55 +48,6 @@ const defaultForm = () => ({ ...DEFAULTS, ...loadBasePercents() });
 const fmtMoney = (n) => n == null ? '-' : Number(n).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtPct = (n) => n == null ? '-' : (Number(n) * 100).toFixed(2).replace('.', ',') + '%';
 
-const currencyToDigits = (str) => (str || '').toString().replace(/\D/g, '');
-
-const WEIGHT_ABBR = ['kg', 'g', 'mg', 'cg', 'dg', 'hg', 't', 'ton'];
-const isWeightUnit = (unit) => {
-  const abbr = (unit?.abbreviation || '').toLowerCase().replace('.', '');
-  const name = (unit?.name || '').toLowerCase();
-  return WEIGHT_ABBR.includes(abbr) || /\b(quilo|grama|tonelada)\b/.test(name);
-};
-
-function formatDigitsToCurrency(digits, decimals = 2) {
-  if (!digits) return '';
-  let d = String(digits);
-  while (d.length <= decimals) d = '0' + d;
-  const frac = d.slice(-decimals);
-  const whole = (d.slice(0, -decimals).replace(/^0+/, '') || '0').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-  return `${whole},${frac}`;
-}
-
-const parseCurrencyToNumber = (str, decimals = 2) => {
-  const digits = currencyToDigits(str);
-  return digits ? parseFloat(digits) / Math.pow(10, decimals) : 0;
-};
-
-const formatNumberToCurrency = (num, decimals = 2) => {
-  if (num == null || isNaN(num)) return '';
-  return formatDigitsToCurrency(String(Math.round(Number(num) * Math.pow(10, decimals))), decimals);
-};
-
-const formatValue = (num, decimals = 2) =>
-  num == null ? '-' : Number(num).toLocaleString('pt-BR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
-
-function maskPercentInput(raw) {
-  let out = '';
-  let hasSep = false;
-  for (const ch of String(raw ?? '')) {
-    if (ch === ',' || ch === '.') {
-      if (hasSep) continue;
-      hasSep = true;
-      out += ',';
-    } else if (ch >= '0' && ch <= '9') {
-      out += ch;
-    }
-  }
-  const [whole, dec] = out.split(',');
-  return dec !== undefined ? whole + ',' + dec.slice(0, 2) : out;
-}
-
-const parsePercent = (v) => parseFloat(String(v ?? '0').replace(',', '.')) || 0;
-
 function toPayload(f, decimals = 2) {
   const p = { acquisition_price: parseCurrencyToNumber(f.acquisition_price, decimals), lote: parseFloat(f.lote) || 1 };
   PERCENT_FIELDS.forEach(k => { p[k] = parsePercent(f[k]) / 100; });
@@ -112,8 +67,6 @@ function fromConfig(obj, decimals = 2) {
   }
   return f;
 }
-
-const unitDecimals = (unit) => (isWeightUnit(unit) ? 3 : 2);
 
 export default function Pricing() {
   const [products, setProducts] = useState([]);

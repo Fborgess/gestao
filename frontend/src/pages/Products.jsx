@@ -4,6 +4,10 @@ import { Plus, Edit, Trash2, Search, Upload } from 'lucide-react';
 import SearchableSelect from '../components/SearchableSelect';
 import SortableHeader from '../components/SortableHeader';
 import ImportExcelModal from '../components/ImportExcelModal';
+import {
+  currencyToDigits, formatDigitsToCurrency, parseCurrencyToNumber, formatNumberToCurrency,
+  maskDecimalInput, parseDecimal, isWeightUnit, unitDecimals,
+} from '../services/masks';
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -56,44 +60,63 @@ export default function Products() {
 
   const handleSort = (key, direction) => setSortConfig({ key, direction });
 
-  const round2 = (n) => Math.round(n * 100) / 100;
-  const round4 = (n) => Math.round(n * 10000) / 10000;
-
   const handlePriceChange = (v) => {
-    const cost = parseFloat(form.cost_price);
-    setForm({
-      ...form, price: v,
-      markup: cost > 0 && parseFloat(v) > 0 ? String(round4(parseFloat(v) / cost)) : form.markup,
+    setForm(f => {
+      const nf = { ...f, price: formatDigitsToCurrency(currencyToDigits(v), formDecimals) };
+      const cost = parseCurrencyToNumber(nf.cost_price, formDecimals);
+      const price = parseCurrencyToNumber(nf.price, formDecimals);
+      if (cost > 0 && price > 0) nf.markup = formatDecimal(price / cost, 4);
+      return nf;
     });
     setLastEdited('price');
   };
 
   const handleMarkupChange = (v) => {
-    const cost = parseFloat(form.cost_price);
-    setForm({
-      ...form, markup: v,
-      price: cost > 0 && parseFloat(v) > 0 ? String(round2(cost * parseFloat(v))) : form.price,
+    setForm(f => {
+      const nf = { ...f, markup: maskDecimalInput(v, 4) };
+      const cost = parseCurrencyToNumber(nf.cost_price, formDecimals);
+      const markup = parseDecimal(nf.markup);
+      if (cost > 0 && markup > 0) nf.price = formatNumberToCurrency(cost * markup, formDecimals);
+      return nf;
     });
     setLastEdited('markup');
   };
 
   const handleCostChange = (v) => {
-    const cost = parseFloat(v);
-    const f = { ...form, cost_price: v };
-    if (cost > 0) {
-      const markup = parseFloat(f.markup);
-      const price = parseFloat(f.price);
-      if (lastEdited === 'markup' && markup > 0) {
-        f.price = String(round2(cost * markup));
-      } else if (lastEdited === 'price' && price > 0) {
-        f.markup = String(round4(price / cost));
-      } else if (markup > 0) {
-        f.price = String(round2(cost * markup));
-      } else if (price > 0) {
-        f.markup = String(round4(price / cost));
+    setForm(f => {
+      const nf = { ...f, cost_price: formatDigitsToCurrency(currencyToDigits(v), formDecimals) };
+      const cost = parseCurrencyToNumber(nf.cost_price, formDecimals);
+      if (cost > 0) {
+        const markup = parseDecimal(nf.markup);
+        const price = parseCurrencyToNumber(nf.price, formDecimals);
+        if (lastEdited === 'markup' && markup > 0) {
+          nf.price = formatNumberToCurrency(cost * markup, formDecimals);
+        } else if (lastEdited === 'price' && price > 0) {
+          nf.markup = formatDecimal(price / cost, 4);
+        } else if (markup > 0) {
+          nf.price = formatNumberToCurrency(cost * markup, formDecimals);
+        } else if (price > 0) {
+          nf.markup = formatDecimal(price / cost, 4);
+        }
       }
-    }
-    setForm(f);
+      return nf;
+    });
+  };
+
+  const formatDecimal = (num, maxDecimals = 4) => {
+    if (num == null || isNaN(num)) return '';
+    return String(parseFloat(Number(num).toFixed(maxDecimals))).replace('.', ',');
+  };
+
+  const handleUnitChange = (v) => {
+    const u = units.find(x => x.id === v);
+    const nd = isWeightUnit(u) ? 3 : 2;
+    setForm(f => ({
+      ...f,
+      unit_id: String(v),
+      cost_price: f.cost_price ? formatNumberToCurrency(parseCurrencyToNumber(f.cost_price, formDecimals), nd) : '',
+      price: f.price ? formatNumberToCurrency(parseCurrencyToNumber(f.price, formDecimals), nd) : '',
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -101,9 +124,10 @@ export default function Products() {
     setFormError('');
     const data = {
       name: form.name, sku: form.sku, description: form.description || null,
-      barcode: form.barcode || null, price: form.price ? parseFloat(form.price) : null,
-      cost_price: form.cost_price ? parseFloat(form.cost_price) : null,
-      markup: form.markup ? parseFloat(form.markup) : null,
+      barcode: form.barcode || null,
+      price: form.price ? parseCurrencyToNumber(form.price, formDecimals) : null,
+      cost_price: form.cost_price ? parseCurrencyToNumber(form.cost_price, formDecimals) : null,
+      markup: form.markup ? parseDecimal(form.markup) : null,
       unit_id: form.unit_id ? parseInt(form.unit_id) : null,
       category_id: form.subcategory_id ? parseInt(form.subcategory_id) : (form.category_id ? parseInt(form.category_id) : null),
       deposit_id: form.deposit_id ? parseInt(form.deposit_id) : null,
@@ -118,10 +142,13 @@ export default function Products() {
   const handleEdit = (p) => {
     const cat = allCategories.find(c => c.id === p.category_id);
     const parentCat = cat?.parent_id ? allCategories.find(c => c.id === cat.parent_id) : null;
+    const d = unitDecimals(p.unit);
     setEditingProduct(p);
     setForm({
       name: p.name, sku: p.sku, description: p.description || '',
-      price: p.price ?? '', cost_price: p.cost_price ?? '', markup: p.markup ?? '',
+      price: p.price != null ? formatNumberToCurrency(p.price, d) : '',
+      cost_price: p.cost_price != null ? formatNumberToCurrency(p.cost_price, d) : '',
+      markup: p.markup != null ? formatDecimal(p.markup, 4) : '',
       unit_id: p.unit_id || '', category_id: parentCat ? parentCat.id : (cat ? cat.id : ''),
       subcategory_id: cat?.parent_id ? cat.id : '', barcode: p.barcode || '', deposit_id: p.deposit_id || '',
     });
@@ -149,11 +176,6 @@ export default function Products() {
   };
 
   const getProductName = (p) => p.display_name || (p.unit?.abbreviation ? `${p.name} ${p.unit.abbreviation}` : p.name);
-
-  const isWeightUnit = (u) => !!u && (
-    ['kg', 'g', 'mg', 'cg', 'dg', 'hg', 't', 'ton'].includes((u.abbreviation || '').toLowerCase().replace('.', ''))
-    || /\b(quilo|grama|tonelada)\b/.test((u.name || '').toLowerCase())
-  );
 
   const fmtVal = (n, u) => n == null ? '-' : Number(n).toLocaleString('pt-BR', {
     minimumFractionDigits: isWeightUnit(u) ? 3 : 2,
@@ -263,33 +285,33 @@ export default function Products() {
                 <label className="block text-xs text-gray-500 mb-1">Unidade de Medida</label>
                 <SearchableSelect options={units.map(u => ({ value: u.id, label: `${u.name} (${u.abbreviation})` }))}
                   value={form.unit_id ? parseInt(form.unit_id) : ''}
-                  onChange={v => setForm({...form, unit_id: String(v)})}
+                  onChange={handleUnitChange}
                   placeholder="Selecione..." />
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs text-gray-500 mb-1">Preço de Custo</label>
-                  <input type="number" step={formDecimals === 3 ? '0.001' : '0.01'} placeholder="R$ 0,00" value={form.cost_price}
+                  <input type="text" inputMode="decimal" placeholder="R$ 0,00" value={form.cost_price}
                     onChange={e => handleCostChange(e.target.value)}
                     className="w-full px-3 py-2 border rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="block text-xs text-gray-500 mb-1">Markup</label>
-                  <input type="number" step="0.0001" placeholder="Ex.: 1,50" value={form.markup}
+                  <input type="text" inputMode="decimal" placeholder="Ex.: 1,50" value={form.markup}
                     onChange={e => handleMarkupChange(e.target.value)}
                     className="w-full px-3 py-2 border rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="block text-xs text-gray-500 mb-1">Preço de Venda</label>
-                  <input type="number" step={formDecimals === 3 ? '0.001' : '0.01'} placeholder="R$ 0,00" value={form.price}
+                  <input type="text" inputMode="decimal" placeholder="R$ 0,00" value={form.price}
                     onChange={e => handlePriceChange(e.target.value)}
                     className="w-full px-3 py-2 border rounded-lg text-sm" />
                 </div>
               </div>
               {form.cost_price && (form.markup || form.price) && (
                 <p className="text-xs text-gray-400">
-                  {form.markup && form.cost_price ? `Preço de venda = custo × markup → R$ ${(round2(parseFloat(form.cost_price) * parseFloat(form.markup))).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ''}
-                  {form.price && form.cost_price && !form.markup ? `Markup = venda ÷ custo → ${(round4(parseFloat(form.price) / parseFloat(form.cost_price))).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 4 })}` : ''}
+                  {form.markup && form.cost_price ? `Preço de venda = custo × markup → R$ ${formatNumberToCurrency(parseCurrencyToNumber(form.cost_price, formDecimals) * parseDecimal(form.markup), formDecimals)}` : ''}
+                  {form.price && form.cost_price && !form.markup ? `Markup = venda ÷ custo → ${formatDecimal(parseCurrencyToNumber(form.price, formDecimals) / parseCurrencyToNumber(form.cost_price, formDecimals), 4)}` : ''}
                 </p>
               )}
               <textarea placeholder="Descrição do produto" value={form.description} rows={4}
