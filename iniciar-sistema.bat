@@ -8,7 +8,7 @@ start "Backend" cmd /c "cd /d "C:\Users\fsbor\OneDrive\Borges\Backup 📁\Docume
 timeout /t 3 /nobreak >nul
 
 echo [2/2] Iniciando Frontend...
-start "Frontend" cmd /c "cd /d "C:\Users\fsbor\OneDrive\Borges\Backup 📁\Documentos\Default Project\frontend" && set PATH=C:\Program Files\nodejs;%PATH% && "C:\Program Files\nodejs\node.exe" node_modules/vite/bin/vite.js --port 5173 --host"
+start "Frontend" cmd /c "cd /d "C:\Users\fsbor\OneDrive\Borges\Backup 📁\Documentos\Default Project\frontend" && set PATH=C:\Program Files\nodejs;%PATH% && "C:\Program Files\nodejs\node.exe" node_modules/vite/bin/vite.js --port 5173 --host 127.0.0.1"
 
 timeout /t 3 /nobreak >nul
 

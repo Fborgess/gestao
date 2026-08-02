@@ -59,14 +59,14 @@ if __name__ == '__main__':
         f'Computador:\nhttp://localhost:5173')
 
     threading.Thread(target=run_proc, args=(
-        [PYTHON, '-m', 'uvicorn', 'app.main:app', '--host', '0.0.0.0', '--port', '8000'],
+        [PYTHON, '-m', 'uvicorn', 'app.main:app', '--host', '127.0.0.1', '--port', '8000'],
         BACKEND, 'Backend'
     ), daemon=True).start()
 
     time.sleep(4)
 
     threading.Thread(target=run_proc, args=(
-        [NODE, VITE, '--port', '5173', '--host'],
+        [NODE, VITE, '--port', '5173', '--host', '127.0.0.1'],
         FRONTEND, 'Frontend'
     ), daemon=True).start()
 

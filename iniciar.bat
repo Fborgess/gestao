@@ -16,11 +16,11 @@ echo.
 echo Iniciando servicos...
 echo.
 
-start "Backend" /MIN "C:\Python314\python.exe" -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+start "Backend" /MIN "C:\Python314\python.exe" -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 timeout /t 4 /nobreak >nul
 
 cd frontend
-start "Frontend" /MIN "C:\Program Files\nodejs\npx.cmd" vite --port 5173 --host
+start "Frontend" /MIN "C:\Program Files\nodejs\npx.cmd" vite --port 5173 --host 127.0.0.1
 cd ..
 
 echo.

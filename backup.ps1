@@ -85,4 +85,27 @@ if (-not $prodUrl) {
     if ($ok) { Invoke-Rotation $prodDir }
 }
 
+# ---- Espelho para o OneDrive (redundancia fora deste disco) ----
+$oneDrive = @($env:OneDriveConsumer, $env:OneDrive) | Where-Object { $_ } | Select-Object -First 1
+if ($oneDrive -and (Test-Path -LiteralPath $oneDrive)) {
+    $mirrorRoot = Join-Path $oneDrive 'gestao-backups-mirror'
+    $mirrorLocal = Join-Path $mirrorRoot 'local'
+    $mirrorProd = Join-Path $mirrorRoot 'prod'
+    New-Item -ItemType Directory -Force -Path $mirrorLocal, $mirrorProd | Out-Null
+    $newestLocal = Get-ChildItem -Path $localDir -Filter *.dump -File | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+    if ($newestLocal) {
+        Copy-Item -LiteralPath $newestLocal.FullName -Destination (Join-Path $mirrorLocal $newestLocal.Name) -Force
+        Write-Log "Espelho OneDrive: $($newestLocal.Name)"
+    }
+    $newestProd = Get-ChildItem -Path $prodDir -Filter *.dump -File | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+    if ($newestProd) {
+        Copy-Item -LiteralPath $newestProd.FullName -Destination (Join-Path $mirrorProd $newestProd.Name) -Force
+        Write-Log "Espelho OneDrive: $($newestProd.Name)"
+    }
+    Invoke-Rotation $mirrorLocal
+    Invoke-Rotation $mirrorProd
+} else {
+    Write-Log "AVISO: OneDrive nao encontrado; espelho ignorado"
+}
+
 Write-Log "Backup concluido."
