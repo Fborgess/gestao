@@ -25,3 +25,6 @@ Thumbs.db
 backups/
 backup.env
 
+# Logs
+startup.log
+

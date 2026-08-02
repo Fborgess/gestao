@@ -11,7 +11,7 @@ echo.
 echo IP deste computador:
 powershell -Command "(Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.InterfaceAlias -eq 'Wi-Fi' }).IPAddress"
 echo.
-echo Acesse pelo celular: http://localhost:5173
+echo Acesse pelo celular: https://gestao-iscb.onrender.com
 echo.
 echo Iniciando servicos...
 echo.
