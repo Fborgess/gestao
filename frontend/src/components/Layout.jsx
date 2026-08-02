@@ -57,13 +57,13 @@ const menuSections = [
     label: 'Geral',
     items: [
       { path: '/', label: 'Dashboard', icon: LayoutDashboard },
-      { path: '/users', label: 'Usuários', icon: UserCog },
-      { path: '/roles', label: 'Perfis de Acesso', icon: Shield },
     ],
   },
   {
     label: 'Configuração',
     items: [
+      { path: '/users', label: 'Usuários', icon: UserCog },
+      { path: '/roles', label: 'Perfis de Acesso', icon: Shield },
       { path: '/settings', label: 'Configuração de texto', icon: Settings },
     ],
   },
