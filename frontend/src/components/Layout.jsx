@@ -59,7 +59,12 @@ const menuSections = [
       { path: '/', label: 'Dashboard', icon: LayoutDashboard },
       { path: '/users', label: 'Usuários', icon: UserCog },
       { path: '/roles', label: 'Perfis de Acesso', icon: Shield },
-      { path: '/settings', label: 'Configuração', icon: Settings },
+    ],
+  },
+  {
+    label: 'Configuração',
+    items: [
+      { path: '/settings', label: 'Configuração de texto', icon: Settings },
     ],
   },
 ];
