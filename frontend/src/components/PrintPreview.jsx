@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Printer, X } from 'lucide-react';
 
-export default function PrintPreview({ title, onClose, autoPrint, children }) {
+export default function PrintPreview({ title, subtitle, onClose, autoPrint, children }) {
   useEffect(() => {
     const origTitle = document.title;
     if (title) document.title = title;
@@ -29,6 +29,7 @@ export default function PrintPreview({ title, onClose, autoPrint, children }) {
       </div>
       <div className="max-w-5xl mx-auto px-4 py-6">
         {title && <h1 className="text-2xl font-bold mb-1">{title}</h1>}
+        {subtitle && <p className="text-sm text-gray-600 mb-1">{subtitle}</p>}
         <p className="text-xs text-gray-400 mb-4">
           Gerado em {new Date().toLocaleDateString('pt-BR')} às {new Date().toLocaleTimeString('pt-BR')}
         </p>

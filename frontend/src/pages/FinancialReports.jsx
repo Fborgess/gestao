@@ -23,11 +23,11 @@ const typeColors = {
   despesa: 'text-red-600 bg-red-50',
 };
 
-function PrintAwareReport({ title, columns, data, filters, children, renderPrint }) {
+function PrintAwareReport({ title, subtitle, columns, data, filters, children, renderPrint }) {
   const [printing, setPrinting] = useState(false);
   if (printing) {
     return (
-      <PrintPreview title={title} onClose={() => setPrinting(false)} autoPrint>
+      <PrintPreview title={title} subtitle={subtitle} onClose={() => setPrinting(false)} autoPrint>
         {renderPrint ? renderPrint() : children}
       </PrintPreview>
     );
@@ -641,8 +641,8 @@ function ByContactReport({ contacts }) {
       const { txs, totalRec, totalDesp, saldo } = buildContact(contactName);
       return (
         <div key={contactName} style={showPageBreak ? { pageBreakBefore: 'always' } : undefined}>
+          <p className="text-sm text-gray-500 mb-1">Fornecedor/Cliente: <span className="font-medium text-gray-900">{contactName}</span></p>
           <h2 className="text-xl font-bold mb-1">{contactName}</h2>
-          <p className="text-sm text-gray-500 mb-2">Período: {formatPeriod()}</p>
           <div className="flex gap-4 text-sm mb-3">
             <span className="text-green-600 font-medium">Receitas: {formatCurrency(totalRec)}</span>
             <span className="text-red-600 font-medium">Despesas: {formatCurrency(totalDesp)}</span>
@@ -650,8 +650,7 @@ function ByContactReport({ contacts }) {
               Saldo: {formatCurrency(saldo)}
             </span>
           </div>
-          {expanded.has(contactName) && (
-            <table className="w-full text-sm">
+          <table className="w-full text-sm">
               <thead className="bg-gray-50">
                 <tr>
                   <th className="text-left p-3">Data Lançamento</th>
@@ -683,7 +682,6 @@ function ByContactReport({ contacts }) {
                 ))}
               </tbody>
             </table>
-          )}
         </div>
       );
     };
@@ -777,7 +775,7 @@ function ByContactReport({ contacts }) {
   };
 
   return (
-    <PrintAwareReport title="Extrato por Fornecedor/Cliente" columns={columns} data={data}
+    <PrintAwareReport title="Extrato por Fornecedor/Cliente" subtitle={`Período: ${formatPeriod()}`} columns={columns} data={data}
       renderPrint={renderPrint}
       filters={<div className="flex flex-wrap items-end gap-3">
         <ReportFilters startDate={startDate} setStartDate={setStartDate} endDate={endDate} setEndDate={setEndDate}
