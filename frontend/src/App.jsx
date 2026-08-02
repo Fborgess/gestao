@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { SettingsProvider } from './contexts/SettingsContext';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
@@ -26,6 +27,7 @@ import SalePrint from './pages/SalePrint';
 import Requisicoes from './pages/Requisicoes';
 import TransferReport from './pages/TransferReport';
 import Pricing from './pages/Pricing';
+import SettingsPage from './pages/Settings';
 import Layout, { MODULE_MAP, DEFAULT_ROUTE_ORDER } from './components/Layout';
 
 function Home() {
@@ -58,7 +60,8 @@ function PrivateRoute() {
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <SettingsProvider>
+        <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route element={<PrivateRoute />}>
@@ -80,6 +83,7 @@ function App() {
               <Route path="/contacts" element={<Contacts />} />
               <Route path="/users" element={<Users />} />
               <Route path="/roles" element={<Roles />} />
+              <Route path="/settings" element={<SettingsPage />} />
               <Route path="/recurrence-frequencies" element={<RecurrenceFrequencies />} />
               <Route path="/financial-reports" element={<FinancialReports />} />
               <Route path="/sale-types" element={<SaleTypes />} />
@@ -92,7 +96,8 @@ function App() {
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </BrowserRouter>
+        </BrowserRouter>
+      </SettingsProvider>
     </AuthProvider>
   );
 }

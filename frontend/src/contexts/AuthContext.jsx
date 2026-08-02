@@ -30,7 +30,7 @@ export function AuthProvider({ children }) {
           const perms = {};
           (role.modules || []).forEach(m => { perms[m.module] = m.access_level; });
           if (role.is_admin) {
-            const allMods = ['dashboard','contacts','deposits','deposits_manage','products','stock_reports','requisicoes','categories','units','stock_movements','accounts','financial','financial_categories','payment_types','recurrence_frequencies','financial_reports','sale_types','sales','price_tables','users','roles','precificacao'];
+            const allMods = ['dashboard','contacts','deposits','deposits_manage','products','stock_reports','requisicoes','categories','units','stock_movements','accounts','financial','financial_categories','payment_types','recurrence_frequencies','financial_reports','sale_types','sales','price_tables','users','roles','precificacao','settings'];
             allMods.forEach(mod => { perms[mod] = 'edit'; });
           }
           setPermissions(perms);

@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { CaseInput, CaseTextarea } from '../components/CaseInput';
 import { Plus, ClipboardList, CheckCircle, XCircle, Truck, Printer, Edit, Trash2, ArrowUpCircle } from 'lucide-react';
 import PrintPreview from '../components/PrintPreview';
 import { qtyStep, qtyMin, roundQty, currencyToDigits, formatDigitsToCurrency, parseCurrencyToNumber, formatNumberToCurrency } from '../services/masks';
@@ -493,13 +494,13 @@ export default function Requisicoes() {
 
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1">Motivo / Destino</label>
-                  <input placeholder="Ex: Uso interno, Transferência, Cliente" value={form.reason}
+                  <CaseInput placeholder="Ex: Uso interno, Transferência, Cliente" value={form.reason}
                     onChange={e => setForm({...form, reason: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1">Observações</label>
-                  <textarea placeholder="Observações" value={form.notes} rows={2}
+                  <CaseTextarea placeholder="Observações" value={form.notes} rows={2}
                     onChange={e => setForm({...form, notes: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
                 </div>

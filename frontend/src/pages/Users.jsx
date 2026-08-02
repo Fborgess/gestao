@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import api from '../services/api';
 import { Plus, Edit, Trash2, Users as UsersIcon, Shield, User, Lock, KeyRound, Warehouse } from 'lucide-react';
+import { CaseInput } from '../components/CaseInput';
 
 const emptyForm = { name: '', email: '', password: '', confirmPassword: '', role: '', deposit_ids: [] };
 
@@ -194,7 +195,7 @@ export default function Users() {
               <div className="px-6 py-4 space-y-4 overflow-y-auto">
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1">Nome *</label>
-                  <input placeholder="Nome completo" value={form.name}
+                  <CaseInput placeholder="Nome completo" value={form.name}
                     onChange={e => setForm({...form, name: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" required />
                 </div>

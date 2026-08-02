@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Package, ArrowRightLeft, DollarSign, Users, LogOut,
     Tag, Building, Wallet, CreditCard, Banknote, ChevronDown, ChevronRight,
     ChevronLeft, Warehouse, Ruler, BarChart3, Menu, UserCog, Clock, FileText,
-     ShoppingCart, ClipboardList, Shield, X, Calculator
+     ShoppingCart, ClipboardList, Shield, X, Calculator, Settings
 } from 'lucide-react';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import InactivityWarning from './InactivityWarning';
@@ -59,6 +59,7 @@ const menuSections = [
       { path: '/', label: 'Dashboard', icon: LayoutDashboard },
       { path: '/users', label: 'Usuários', icon: UserCog },
       { path: '/roles', label: 'Perfis de Acesso', icon: Shield },
+      { path: '/settings', label: 'Configuração', icon: Settings },
     ],
   },
 ];
@@ -73,6 +74,7 @@ export const MODULE_MAP = {
   '/': 'dashboard',
   '/users': 'users',
   '/roles': 'roles',
+  '/settings': 'settings',
 };
 
 export const DEFAULT_ROUTE_ORDER = [
@@ -80,6 +82,7 @@ export const DEFAULT_ROUTE_ORDER = [
   '/pricing', '/categories', '/units', '/stock', '/accounts', '/financial',
   '/financial-categories', '/payment-types', '/recurrence-frequencies',
   '/financial-reports', '/sale-types', '/price-tables', '/sales', '/users', '/roles',
+  '/settings',
 ];
 export default function Layout() {
   const { user, permissions, logout } = useAuth();

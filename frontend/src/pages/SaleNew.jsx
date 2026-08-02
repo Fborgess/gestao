@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { Plus, Trash2, Save, X } from 'lucide-react';
 import SearchableSelect from '../components/SearchableSelect';
+import { CaseTextarea } from '../components/CaseInput';
 import { qtyStep, roundQty, currencyToDigits, formatDigitsToCurrency, parseCurrencyToNumber, formatNumberToCurrency } from '../services/masks';
 
 export default function SaleNew() {
@@ -215,7 +216,7 @@ export default function SaleNew() {
         </div>
 
         <div className="bg-white rounded-xl p-6 shadow-sm">
-          <textarea placeholder="Observações (opcional)" value={notes} rows={3}
+          <CaseTextarea placeholder="Observações (opcional)" value={notes} rows={3}
             onChange={e => setNotes(e.target.value)}
             className="w-full px-3 py-2 border rounded-lg text-sm" />
         </div>

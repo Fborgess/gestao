@@ -8,6 +8,7 @@ from app.routers import categories, financial_categories, deposits, accounts, pa
 from app.routers import requisicoes, roles, pricing
 from app.routers import price_tables
 from app.routers import contact_segments
+from app.routers import settings
 from app.routers.sales import sale_type_router, sale_router
 
 import traceback
@@ -310,6 +311,7 @@ app.include_router(roles.router)
 app.include_router(pricing.router)
 app.include_router(price_tables.router)
 app.include_router(contact_segments.router)
+app.include_router(settings.router)
 
 FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "frontend", "dist")
 if os.path.isdir(FRONTEND_DIR):

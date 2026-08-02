@@ -1,10 +1,13 @@
 import { useState, useEffect, useMemo } from 'react';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import { useSettings } from '../contexts/SettingsContext';
+import { CaseInput, CaseTextarea } from '../components/CaseInput';
 import { Plus, Edit, Trash2, Search, User, Building, Settings2, Check, X } from 'lucide-react';
 
 export default function Contacts() {
   const { permissions } = useAuth();
+  const { normalize } = useSettings();
   const canManage = permissions?.['contacts'] === 'edit';
   const [contacts, setContacts] = useState([]);
   const [segments, setSegments] = useState([]);
@@ -136,12 +139,12 @@ export default function Contacts() {
       const address = [d.logradouro, d.numero, d.complemento].filter(Boolean).join(', ');
       setForm(f => ({
         ...f,
-        name: (d.nome_fantasia || '').trim() || (d.razao_social || '').trim(),
+        name: normalize((d.nome_fantasia || '').trim() || (d.razao_social || '').trim()),
         email: d.email || f.email,
         phone: fmtPhone(d.ddd_telefone_1) || f.phone,
-        address: (address || f.address) && (address ? [address, d.bairro].filter(Boolean).join(' - ') : f.address),
+        address: (address || f.address) && (address ? normalize([address, d.bairro].filter(Boolean).join(' - ')) : f.address),
         cep: d.cep ? d.cep.replace(/\D/g, '').replace(/(\d{5})(\d{3})/, '$1-$2') : f.cep,
-        city: d.municipio || f.city,
+        city: d.municipio ? normalize(d.municipio) : f.city,
         state: d.uf || f.state,
       }));
     } catch (err) {
@@ -161,8 +164,8 @@ export default function Contacts() {
       const d = await res.json();
       setForm(f => ({
         ...f,
-        address: f.address ? f.address : [d.street, d.neighborhood].filter(Boolean).join(' - '),
-        city: d.city || f.city,
+        address: f.address ? f.address : normalize([d.street, d.neighborhood].filter(Boolean).join(' - ')),
+        city: d.city ? normalize(d.city) : f.city,
         state: d.state || f.state,
       }));
     } catch (err) {
@@ -243,7 +246,7 @@ export default function Contacts() {
             <h2 className="text-lg font-bold mb-4">{editing ? 'Editar' : 'Novo'} Contato</h2>
             <form onSubmit={handleSubmit} className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
-                <input placeholder="Nome *" value={form.name}
+                <CaseInput placeholder="Nome *" value={form.name}
                   onChange={e => setForm({...form, name: e.target.value})}
                   className="col-span-2 px-3 py-2 border rounded-lg text-sm" required />
                 <select value={form.contact_type} onChange={e => setForm({...form, contact_type: e.target.value})}
@@ -268,7 +271,7 @@ export default function Contacts() {
                   <option value="">Seguimento...</option>
                   {segments.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
                 </select>
-                <input placeholder="Email" type="email" value={form.email}
+                <CaseInput placeholder="Email" type="email" value={form.email}
                   onChange={e => setForm({...form, email: e.target.value})}
                   className="px-3 py-2 border rounded-lg text-sm" />
                 <div className="flex gap-1">
@@ -287,10 +290,10 @@ export default function Contacts() {
                     </button>
                   )}
                 </div>
-                <input placeholder="Endereço" value={form.address}
+                <CaseInput placeholder="Endereço" value={form.address}
                   onChange={e => setForm({...form, address: e.target.value})}
                   className="col-span-2 px-3 py-2 border rounded-lg text-sm" />
-                <input placeholder="Cidade" value={form.city}
+                <CaseInput placeholder="Cidade" value={form.city}
                   onChange={e => setForm({...form, city: e.target.value})}
                   className="px-3 py-2 border rounded-lg text-sm" />
                 <input placeholder="UF" maxLength={2} value={form.state}
@@ -304,7 +307,7 @@ export default function Contacts() {
                   ))}
                 </select>
               </div>
-              <textarea placeholder="Observações" value={form.notes} rows={2}
+              <CaseTextarea placeholder="Observações" value={form.notes} rows={2}
                 onChange={e => setForm({...form, notes: e.target.value})}
                 className="w-full px-3 py-2 border rounded-lg text-sm" />
               <div className="flex justify-end gap-2 mt-4">
@@ -326,7 +329,7 @@ export default function Contacts() {
               <button onClick={() => setShowSegModal(false)} className="text-gray-500 hover:text-gray-700"><X size={20} /></button>
             </div>
             <div className="flex gap-2 mb-4">
-              <input placeholder="Novo seguimento..." value={newSegment}
+              <CaseInput placeholder="Novo seguimento..." value={newSegment}
                 onChange={e => setNewSegment(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSegment(); } }}
                 className="flex-1 px-3 py-2 border rounded-lg text-sm" />
@@ -337,7 +340,7 @@ export default function Contacts() {
                 <li key={s.id} className="flex items-center gap-2">
                   {editSegId === s.id ? (
                     <>
-                      <input value={editSegName} onChange={e => setEditSegName(e.target.value)}
+                      <CaseInput value={editSegName} onChange={e => setEditSegName(e.target.value)}
                         onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); saveSegmentEdit(s.id); } }}
                         className="flex-1 px-2 py-1 border rounded-lg text-sm" autoFocus />
                       <button onClick={() => saveSegmentEdit(s.id)} className="text-green-600 hover:text-green-800"><Check size={16} /></button>

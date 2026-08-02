@@ -3,6 +3,7 @@ import api from '../services/api';
 import { Plus, Edit, Trash2, Warehouse, ChevronDown, ChevronRight, ArrowRightLeft, AlertTriangle, BarChart3, Package, X, Search, MinusCircle, ClipboardCheck, ArrowDownCircle, ArrowUpCircle, Save } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { CaseInput, CaseTextarea } from '../components/CaseInput';
 import { qtyStep, qtyMin, roundQty, currencyToDigits, formatDigitsToCurrency, parseCurrencyToNumber, formatNumberToCurrency } from '../services/masks';
 
 const statusColors = {
@@ -314,7 +315,7 @@ function AvariaModal({ deposit, deposits, onClose, onDone }) {
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">Descrição da Avaria *</label>
-              <input placeholder="Ex: Produto danificado, vencido, quebrado..." value={form.description}
+              <CaseInput placeholder="Ex: Produto danificado, vencido, quebrado..." value={form.description}
                 onChange={e => setForm({...form, description: e.target.value})}
                 className="w-full px-3 py-2.5 border rounded-lg text-sm" required />
             </div>
@@ -496,7 +497,7 @@ function MovementsModal({ deposit, products, deposits, onClose }) {
                             className="w-20 px-1 py-1 border rounded text-sm text-right" />
                         </td>
                         <td className="p-3">
-                          <input value={editForm.reason} onChange={e => setEditForm({...editForm, reason: e.target.value})}
+                          <CaseInput value={editForm.reason} onChange={e => setEditForm({...editForm, reason: e.target.value})}
                             className="w-full px-1 py-1 border rounded text-sm" />
                         </td>
                         <td className="p-3 text-center">
@@ -772,12 +773,12 @@ export default function Deposits() {
           <div className="bg-white rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-auto">
             <h2 className="text-lg font-bold mb-4">{editing ? 'Editar' : form.parent_id ? 'Novo Sub-depósito' : 'Novo Depósito'}</h2>
             <form onSubmit={handleSubmit} className="space-y-3">
-              <input placeholder="Nome *" value={form.name} onChange={e => setForm({...form, name: e.target.value})}
+              <CaseInput placeholder="Nome *" value={form.name} onChange={e => setForm({...form, name: e.target.value})}
                 className="w-full px-3 py-2 border rounded-lg text-sm" required />
-              <textarea placeholder="Descrição" value={form.description} rows={2}
+              <CaseTextarea placeholder="Descrição" value={form.description} rows={2}
                 onChange={e => setForm({...form, description: e.target.value})}
                 className="w-full px-3 py-2 border rounded-lg text-sm" />
-              <input placeholder="Endereço" value={form.address} onChange={e => setForm({...form, address: e.target.value})}
+              <CaseInput placeholder="Endereço" value={form.address} onChange={e => setForm({...form, address: e.target.value})}
                 className="w-full px-3 py-2 border rounded-lg text-sm" />
               {!form.parent_id && (
                 <div>

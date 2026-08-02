@@ -3,6 +3,7 @@ import api from '../services/api';
 import { formatCurrency } from '../services/format';
 import { currencyToDigits, formatDigitsToCurrency, parseCurrencyToNumber, formatNumberToCurrency } from '../services/masks';
 import { Plus, Edit, Trash2, CreditCard, Landmark, Wallet } from 'lucide-react';
+import { CaseInput } from '../components/CaseInput';
 
 const typeConfig = {
   banco: { label: 'Banco', icon: Landmark, color: 'bg-blue-100 text-blue-600' },
@@ -203,7 +204,7 @@ export default function Accounts() {
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-500 mb-1">Nome *</label>
-                    <input placeholder="Ex: Itaú Corrente, Nubank..." value={form.name}
+                    <CaseInput placeholder="Ex: Itaú Corrente, Nubank..." value={form.name}
                       onChange={e => setForm({...form, name: e.target.value})}
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" required />
                   </div>
@@ -213,7 +214,7 @@ export default function Accounts() {
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="block text-xs font-medium text-gray-500 mb-1">Banco</label>
-                      <input placeholder="Ex: Itaú, Bradesco, BB..." value={form.bank_name}
+                      <CaseInput placeholder="Ex: Itaú, Bradesco, BB..." value={form.bank_name}
                         onChange={e => setForm({...form, bank_name: e.target.value})}
                         className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" />
                     </div>

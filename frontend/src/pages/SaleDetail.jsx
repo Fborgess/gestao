@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import api from '../services/api';
 import { Plus, Trash2, Save, X, Printer, Share2 } from 'lucide-react';
 import SearchableSelect from '../components/SearchableSelect';
+import { CaseTextarea } from '../components/CaseInput';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { qtyStep, roundQty, currencyToDigits, formatDigitsToCurrency, parseCurrencyToNumber, formatNumberToCurrency } from '../services/masks';
@@ -236,7 +237,7 @@ export default function SaleDetail() {
         </div>
 
         <div className="bg-white rounded-xl p-6 shadow-sm">
-          <textarea placeholder="Observações" value={notes} rows={3} onChange={e => setNotes(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" />
+          <CaseTextarea placeholder="Observações" value={notes} rows={3} onChange={e => setNotes(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" />
         </div>
 
         <div className="flex justify-end gap-2">

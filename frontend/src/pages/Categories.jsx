@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import api from '../services/api';
 import { Plus, Edit, Trash2, ChevronRight, ChevronDown } from 'lucide-react';
+import { CaseInput, CaseTextarea } from '../components/CaseInput';
 
 export default function Categories() {
   const [categories, setCategories] = useState([]);
@@ -96,9 +97,9 @@ export default function Categories() {
           <div className="bg-white rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-auto">
             <h2 className="text-lg font-bold mb-4">{editing ? 'Editar' : 'Nova'} Categoria</h2>
             <form onSubmit={handleSubmit} className="space-y-3">
-              <input placeholder="Nome *" value={form.name} onChange={e => setForm({...form, name: e.target.value})}
+              <CaseInput placeholder="Nome *" value={form.name} onChange={e => setForm({...form, name: e.target.value})}
                 className="w-full px-3 py-2 border rounded-lg text-sm" required />
-              <textarea placeholder="Descrição" value={form.description} rows={2}
+              <CaseTextarea placeholder="Descrição" value={form.description} rows={2}
                 onChange={e => setForm({...form, description: e.target.value})}
                 className="w-full px-3 py-2 border rounded-lg text-sm" />
               <select value={form.parent_id} onChange={e => setForm({...form, parent_id: e.target.value})}

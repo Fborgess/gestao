@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import api from '../services/api';
 import { Plus, Edit, Trash2, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { CaseInput } from '../components/CaseInput';
 
 export default function RecurrenceFrequencies() {
   const [frequencies, setFrequencies] = useState([]);
@@ -112,7 +113,7 @@ export default function RecurrenceFrequencies() {
             <form onSubmit={handleSubmit} className="space-y-3">
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1">Nome *</label>
-                <input placeholder="Ex: Quinzenal, Bimestral..." value={form.name}
+                <CaseInput placeholder="Ex: Quinzenal, Bimestral..." value={form.name}
                   onChange={e => setForm({...form, name: e.target.value})}
                   className="w-full px-3 py-2 border rounded-lg text-sm" required />
               </div>

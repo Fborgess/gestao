@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import api from '../services/api';
 import { Plus, Edit, Trash2, Tag, Search } from 'lucide-react';
+import { CaseInput } from '../components/CaseInput';
 import {
   currencyToDigits, formatDigitsToCurrency, parseCurrencyToNumber, formatNumberToCurrency,
 } from '../services/masks';
@@ -132,10 +133,10 @@ export default function PriceTables() {
             <h2 className="text-lg font-bold mb-4">{editing ? 'Editar' : 'Nova'} Tabela de Preços</h2>
             <form onSubmit={handleSubmit} className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
-                <input placeholder="Nome *" value={form.name}
+                <CaseInput placeholder="Nome *" value={form.name}
                   onChange={e => setForm({...form, name: e.target.value})}
                   className="col-span-2 px-3 py-2 border rounded-lg text-sm" required />
-                <input placeholder="Descrição (opcional)" value={form.description}
+                <CaseInput placeholder="Descrição (opcional)" value={form.description}
                   onChange={e => setForm({...form, description: e.target.value})}
                   className="col-span-2 px-3 py-2 border rounded-lg text-sm" />
               </div>

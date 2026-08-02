@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import api from '../services/api';
 import { Plus, Edit, Trash2, Ruler } from 'lucide-react';
 import SortableHeader from '../components/SortableHeader';
+import { CaseInput } from '../components/CaseInput';
 
 export default function Units() {
   const [units, setUnits] = useState([]);
@@ -91,7 +92,7 @@ export default function Units() {
           <div className="bg-white rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-auto">
             <h2 className="text-lg font-bold mb-4">{editing ? 'Editar' : 'Nova'} Unidade</h2>
             <form onSubmit={handleSubmit} className="space-y-3">
-              <input placeholder="Nome (ex: Quilograma)" value={form.name}
+              <CaseInput placeholder="Nome (ex: Quilograma)" value={form.name}
                 onChange={e => setForm({...form, name: e.target.value})}
                 className="w-full px-3 py-2 border rounded-lg text-sm" required />
               <input placeholder="Abreviação (ex: kg)" value={form.abbreviation}

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import api from '../services/api';
 import { Shield, Plus, Edit, Trash2, X, Save, Check } from 'lucide-react';
+import { CaseInput } from '../components/CaseInput';
 
 const ALL_MODULES = [
   { key: 'dashboard', label: 'Dashboard' },
@@ -33,6 +34,7 @@ const ALL_MODULES = [
   { section: 'Geral', items: [
     { key: 'users', label: 'Usuários' },
     { key: 'roles', label: 'Perfis de Acesso' },
+    { key: 'settings', label: 'Configuração' },
   ]},
 ];
 
@@ -182,7 +184,7 @@ export default function Roles() {
             <div className="px-5 py-4 space-y-4">
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1">Nome do Perfil</label>
-                <input value={form.name} onChange={e => setForm({...form, name: e.target.value})}
+                <CaseInput value={form.name} onChange={e => setForm({...form, name: e.target.value})}
                   className="w-full px-3 py-2.5 border rounded-lg text-sm" placeholder="Ex: Gerente" />
               </div>
               <label className="flex items-center gap-2 cursor-pointer">

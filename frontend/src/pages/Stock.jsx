@@ -5,6 +5,7 @@ import { qtyStep, qtyMin, roundQty, currencyToDigits, formatDigitsToCurrency, pa
 import { ArrowDownCircle, ArrowUpCircle, Package, ClipboardList, Edit, Trash2 } from 'lucide-react';
 import SearchableSelect from '../components/SearchableSelect';
 import SortableHeader from '../components/SortableHeader';
+import { CaseInput, CaseTextarea } from '../components/CaseInput';
 
 export default function Stock() {
   const [movements, setMovements] = useState([]);
@@ -241,21 +242,21 @@ export default function Stock() {
               {activeTab === 'saida' ? (
                 <div>
                   <label className="block text-xs text-gray-500 mb-1">Motivo / Destino *</label>
-                  <input placeholder="Ex: Uso interno, Transferência, Cliente X" value={form.reason}
+                  <CaseInput placeholder="Ex: Uso interno, Transferência, Cliente X" value={form.reason}
                     onChange={e => setForm({...form, reason: e.target.value})}
                     className="w-full px-3 py-2 border rounded-lg text-sm" required />
                 </div>
               ) : (
                 <div>
                   <label className="block text-xs text-gray-500 mb-1">Motivo</label>
-                  <input placeholder="Ex: Compra, Devolução, Ajuste" value={form.reason}
+                  <CaseInput placeholder="Ex: Compra, Devolução, Ajuste" value={form.reason}
                     onChange={e => setForm({...form, reason: e.target.value})}
                     className="w-full px-3 py-2 border rounded-lg text-sm" />
                 </div>
               )}
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Observações</label>
-                <textarea placeholder="Observações" value={form.notes} rows={2}
+                <CaseTextarea placeholder="Observações" value={form.notes} rows={2}
                   onChange={e => setForm({...form, notes: e.target.value})}
                   className="w-full px-3 py-2 border rounded-lg text-sm" />
               </div>

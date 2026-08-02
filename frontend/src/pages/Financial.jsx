@@ -5,6 +5,7 @@ import { currencyToDigits, formatDigitsToCurrency, parseCurrencyToNumber, format
 import { Plus, Edit, Trash2, TrendingUp, TrendingDown, Repeat, Calendar, Landmark, Wallet, CreditCard, AlertTriangle, Clock } from 'lucide-react';
 import SortableHeader from '../components/SortableHeader';
 import SearchableSelect from '../components/SearchableSelect';
+import { CaseInput, CaseTextarea } from '../components/CaseInput';
 
 function getEmptyForm() {
   return {
@@ -494,7 +495,7 @@ const dueDaysInfo = (t) => {
 
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1">Descrição *</label>
-                <input placeholder="Ex: Pagamento fornecedor, Venda produto..." value={form.description}
+                <CaseInput placeholder="Ex: Pagamento fornecedor, Venda produto..." value={form.description}
                   onChange={e => setForm({...form, description: e.target.value})}
                   className="w-full px-3 py-2 border rounded-lg text-sm" required />
               </div>
@@ -666,7 +667,7 @@ const dueDaysInfo = (t) => {
 
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1">Observações</label>
-                <textarea placeholder="Notas adicionais..." value={form.notes} rows={2}
+                <CaseTextarea placeholder="Notas adicionais..." value={form.notes} rows={2}
                   onChange={e => setForm({...form, notes: e.target.value})}
                   className="w-full px-3 py-2 border rounded-lg text-sm" />
               </div>
@@ -721,7 +722,7 @@ const dueDaysInfo = (t) => {
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1">Observação</label>
-                <input type="text" placeholder="Nota opcional..."
+                <CaseInput type="text" placeholder="Nota opcional..."
                   value={paymentForm.notes}
                   onChange={e => setPaymentForm({...paymentForm, notes: e.target.value})}
                   className="w-full px-3 py-2 border rounded-lg text-sm" />

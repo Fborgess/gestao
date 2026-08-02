@@ -14,6 +14,7 @@ from app.models.recurrence_frequency import RecurrenceFrequency
 from app.models.role import Role, RoleModule
 from app.models.pricing import ProductPricing
 from app.models.contact_segment import ContactSegment
+from app.models.settings import Setting
 
 __all__ = [
     "User", "user_deposits", "Product", "Category", "StockMovement",
@@ -24,4 +25,5 @@ __all__ = [
     "Role", "RoleModule",
     "ProductPricing",
     "ContactSegment",
+    "Setting",
 ]

@@ -4,6 +4,7 @@ import { Plus, Edit, Trash2, Search, Upload } from 'lucide-react';
 import SearchableSelect from '../components/SearchableSelect';
 import SortableHeader from '../components/SortableHeader';
 import ImportExcelModal from '../components/ImportExcelModal';
+import { CaseInput, CaseTextarea } from '../components/CaseInput';
 import {
   currencyToDigits, formatDigitsToCurrency, parseCurrencyToNumber, formatNumberToCurrency,
   maskDecimalInput, parseDecimal,
@@ -254,14 +255,14 @@ export default function Products() {
               {formError && (
                 <div className="bg-red-50 border border-red-300 text-red-700 text-sm px-3 py-2 rounded-lg">{formError}</div>
               )}
-              <input placeholder="Nome do produto *" value={form.name}
+              <CaseInput placeholder="Nome do produto *" value={form.name}
                 onChange={e => setForm({...form, name: e.target.value})}
                 className="w-full px-3 py-2 border rounded-lg text-sm" required />
               <div className="grid grid-cols-2 gap-3">
-                <input placeholder="SKU *" value={form.sku}
+                <CaseInput placeholder="SKU *" value={form.sku}
                   onChange={e => setForm({...form, sku: e.target.value})}
                   className="px-3 py-2 border rounded-lg text-sm" required />
-                <input placeholder="Código de barras" value={form.barcode}
+                <CaseInput placeholder="Código de barras" value={form.barcode}
                   onChange={e => setForm({...form, barcode: e.target.value})}
                   className="px-3 py-2 border rounded-lg text-sm" />
               </div>
@@ -315,7 +316,7 @@ export default function Products() {
                   {form.price && form.cost_price && !form.markup ? `Markup = venda ÷ custo → ${formatDecimal(parseCurrencyToNumber(form.price, formDecimals) / parseCurrencyToNumber(form.cost_price, formDecimals))}` : ''}
                 </p>
               )}
-              <textarea placeholder="Descrição do produto" value={form.description} rows={4}
+              <CaseTextarea placeholder="Descrição do produto" value={form.description} rows={4}
                 onChange={e => setForm({...form, description: e.target.value})}
                 className="w-full px-3 py-2 border rounded-lg text-sm" />
               <div className="flex justify-end gap-2 mt-4">

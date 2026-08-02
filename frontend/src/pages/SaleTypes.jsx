@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import api from '../services/api';
 import { Plus, Edit, Trash2, FileText } from 'lucide-react';
 import SortableHeader from '../components/SortableHeader';
+import { CaseInput, CaseTextarea } from '../components/CaseInput';
 
 export default function SaleTypes() {
   const [types, setTypes] = useState([]);
@@ -86,9 +87,9 @@ export default function SaleTypes() {
           <div className="bg-white rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-auto">
             <h2 className="text-lg font-bold mb-4">{editing ? 'Editar' : 'Novo'} Tipo de Lançamento</h2>
             <form onSubmit={handleSubmit} className="space-y-3">
-              <input placeholder="Nome *" value={form.name} onChange={e => setForm({...form, name: e.target.value})}
+              <CaseInput placeholder="Nome *" value={form.name} onChange={e => setForm({...form, name: e.target.value})}
                 className="w-full px-3 py-2 border rounded-lg text-sm" required />
-              <textarea placeholder="Descrição (opcional)" value={form.description} rows={3}
+              <CaseTextarea placeholder="Descrição (opcional)" value={form.description} rows={3}
                 onChange={e => setForm({...form, description: e.target.value})}
                 className="w-full px-3 py-2 border rounded-lg text-sm" />
               <div className="flex justify-end gap-2 mt-4">

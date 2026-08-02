@@ -15,7 +15,7 @@ from app.models.recurrence_frequency import RecurrenceFrequency
 from app.models.role import Role, RoleModule
 from app.utils.security import get_password_hash
 
-ALL_MODULES = ["dashboard", "contacts", "deposits", "deposits_manage", "products", "stock_reports", "requisicoes", "categories", "units", "stock_movements", "accounts", "financial", "financial_categories", "payment_types", "recurrence_frequencies", "financial_reports", "sale_types", "sales", "users", "roles", "precificacao", "price_tables"]
+ALL_MODULES = ["dashboard", "contacts", "deposits", "deposits_manage", "products", "stock_reports", "requisicoes", "categories", "units", "stock_movements", "accounts", "financial", "financial_categories", "payment_types", "recurrence_frequencies", "financial_reports", "sale_types", "sales", "users", "roles", "precificacao", "price_tables", "settings"]
 
 def seed():
     db = SessionLocal()
@@ -35,7 +35,7 @@ def seed():
         db.add_all(roles)
         db.flush()
 
-        gerente_modules = [m for m in ALL_MODULES if m not in ("users", "roles", "precificacao")]
+        gerente_modules = [m for m in ALL_MODULES if m not in ("users", "roles", "precificacao", "settings")]
         for m in gerente_modules:
             db.add(RoleModule(role_id=roles[1].id, module=m, access_level="edit"))
 
