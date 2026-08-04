@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+﻿import { useState, useEffect, useMemo } from 'react';
 import api from '../services/api';
 import { formatCurrency, getTodayLocal } from '../services/format';
 import { currencyToDigits, formatDigitsToCurrency, parseCurrencyToNumber, formatNumberToCurrency } from '../services/masks';
@@ -104,7 +104,7 @@ export default function Financial() {
   );
   const selectedPaymentType = paymentTypes.find(pt => String(pt.id) === String(form.payment_type_id));
   const selectedAccount = accounts.find(a => String(a.id) === String(form.account_id));
-  const paymentTypeIsCredit = selectedPaymentType?.name?.toLowerCase().includes('cartão') || selectedPaymentType?.name?.toLowerCase().includes('cartao');
+  const paymentTypeIsCredit = selectedPaymentType?.name?.toLowerCase().includes('cartÃ£o') || selectedPaymentType?.name?.toLowerCase().includes('cartao');
   const isCreditCard = paymentTypeIsCredit || selectedAccount?.account_type === 'cartao_credito';
   const hasClosingDays = isCreditCard && selectedAccount?.closing_day && selectedAccount?.due_day;
   const calculatedDueDate = (hasClosingDays && form.date)
@@ -123,7 +123,7 @@ export default function Financial() {
   const subcategoryOptions = subcategories.map(c => ({ value: c.id, label: c.name }));
   const paymentTypeOptions = paymentTypes.filter(pt => pt.is_active).map(pt => ({ value: pt.id, label: pt.name }));
   const accountTypeIcons = { banco: Landmark, caixa: Wallet, cartao_credito: CreditCard };
-  const accountTypeColors = { banco: 'text-blue-600', caixa: 'text-green-600', cartao_credito: 'text-purple-600' };
+  const accountTypeColors = { banco: 'text-brand-600', caixa: 'text-green-600', cartao_credito: 'text-purple-600' };
 
 const dueDaysInfo = (t) => {
   if (!t.due_date || t.status === 'pago' || t.status === 'recebido') return null;
@@ -295,7 +295,7 @@ const dueDaysInfo = (t) => {
   };
 
   const handleDelete = async (id) => {
-    if (confirm('Remover esta transação?')) { await api.delete(`/financial/transactions/${id}`); loadTransactions(); }
+    if (confirm('Remover esta transaÃ§Ã£o?')) { await api.delete(`/financial/transactions/${id}`); loadTransactions(); }
   };
 
   const totalReceitas = transactions.filter(t => t.type === 'receita').reduce((acc, t) => acc + t.amount, 0);
@@ -306,8 +306,8 @@ const dueDaysInfo = (t) => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Financeiro</h1>
         <button onClick={() => { setEditing(null); setForm(getEmptyForm()); setShowModal(true); }}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700">
-          <Plus size={18} /> Nova Transação
+          className="bg-brand-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-brand-700">
+          <Plus size={18} /> Nova TransaÃ§Ã£o
         </button>
       </div>
 
@@ -320,8 +320,8 @@ const dueDaysInfo = (t) => {
           <TrendingDown className="text-red-600" size={24} />
           <div><div className="text-sm text-red-600">Despesas</div><div className="text-xl font-bold text-red-700">{formatCurrency(totalDespesas)}</div></div>
         </div>
-        <div className="bg-blue-50 rounded-xl p-4 flex items-center gap-3">
-          <div><div className="text-sm text-blue-600">Saldo</div><div className="text-xl font-bold text-blue-700">{formatCurrency(totalReceitas - totalDespesas)}</div></div>
+        <div className="bg-brand-50 rounded-xl p-4 flex items-center gap-3">
+          <div><div className="text-sm text-brand-600">Saldo</div><div className="text-xl font-bold text-brand-700">{formatCurrency(totalReceitas - totalDespesas)}</div></div>
         </div>
       </div>
 
@@ -329,7 +329,7 @@ const dueDaysInfo = (t) => {
         <div className="flex gap-2">
           {[{ v: '', l: 'Todos' }, { v: 'receita', l: 'Receitas' }, { v: 'despesa', l: 'Despesas' }].map(f => (
             <button key={f.v} onClick={() => setFilter(f.v)}
-              className={`px-3 py-1 rounded-lg text-sm ${filter === f.v ? 'bg-blue-600 text-white' : 'bg-white border hover:bg-gray-50'}`}>
+              className={`px-3 py-1 rounded-lg text-sm ${filter === f.v ? 'bg-brand-600 text-white' : 'bg-white border hover:bg-gray-50'}`}>
               {f.l}
             </button>
           ))}
@@ -342,11 +342,11 @@ const dueDaysInfo = (t) => {
           </select>
         </div>
         <div className="flex items-center gap-2 ml-auto">
-          <label className="text-sm text-gray-500">Período:</label>
+          <label className="text-sm text-gray-500">PerÃ­odo:</label>
           <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)}
             max={endDate || undefined}
             className="px-3 py-1 border rounded-lg text-sm" />
-          <span className="text-gray-400">até</span>
+          <span className="text-gray-400">atÃ©</span>
           <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)}
             min={startDate || undefined}
             className="px-3 py-1 border rounded-lg text-sm" />
@@ -359,7 +359,7 @@ const dueDaysInfo = (t) => {
           <AlertTriangle size={11} /> Vencido
         </span>
         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-700">
-          <Clock size={11} /> Próximo (até 3d)
+          <Clock size={11} /> PrÃ³ximo (atÃ© 3d)
         </span>
       </div>
 
@@ -367,9 +367,9 @@ const dueDaysInfo = (t) => {
         <table className="w-full text-sm">
           <thead className="bg-gray-50">
             <tr>
-              <SortableHeader label="Lançamento" sortKey="date" currentSort={sortConfig} onSort={handleSort} />
+              <SortableHeader label="LanÃ§amento" sortKey="date" currentSort={sortConfig} onSort={handleSort} />
               <SortableHeader label="Vencimento" sortKey="due_date" currentSort={sortConfig} onSort={handleSort} />
-              <SortableHeader label="Descrição" sortKey="description" currentSort={sortConfig} onSort={handleSort} />
+              <SortableHeader label="DescriÃ§Ã£o" sortKey="description" currentSort={sortConfig} onSort={handleSort} />
               <th className="p-3 text-xs font-semibold text-gray-500 uppercase text-left">Contato</th>
               <SortableHeader label="Categoria" sortKey="financial_category_id" currentSort={sortConfig} onSort={handleSort} />
               <SortableHeader label="Pagamento" sortKey="payment_type_id" currentSort={sortConfig} onSort={handleSort} />
@@ -377,7 +377,7 @@ const dueDaysInfo = (t) => {
               <SortableHeader label="Tipo" sortKey="type" currentSort={sortConfig} onSort={handleSort} align="center" />
               <th className="text-center p-3 text-xs font-semibold text-gray-500 uppercase">Status</th>
               <SortableHeader label="Valor" sortKey="amount" currentSort={sortConfig} onSort={handleSort} align="right" />
-              <th className="text-center p-3">Ações</th>
+              <th className="text-center p-3">AÃ§Ãµes</th>
             </tr>
           </thead>
           <tbody>
@@ -409,7 +409,7 @@ const dueDaysInfo = (t) => {
                       {t.recurrence_frequency && <Repeat size={10} />}
                       <span className="font-medium">{t.current_installment}/{t.installments}x</span>
                       {t.recurrence_frequency && (
-                        <span className="bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded">
+                        <span className="bg-brand-50 text-brand-600 px-1.5 py-0.5 rounded">
                           {frequencyLabels[t.recurrence_frequency]}
                         </span>
                       )}
@@ -444,7 +444,7 @@ const dueDaysInfo = (t) => {
                       pendente: { label: 'Pendente', cls: 'bg-yellow-100 text-yellow-700' },
                       pago_parcial: { label: `Parcial ${formatCurrency(totalPaid)}`, cls: 'bg-orange-100 text-orange-700' },
                       pago: { label: 'Pago', cls: 'bg-green-100 text-green-700' },
-                      recebido: { label: 'Recebido', cls: 'bg-blue-100 text-blue-700' },
+                      recebido: { label: 'Recebido', cls: 'bg-brand-100 text-brand-700' },
                     };
                     const cfg = statusConfig[status] || statusConfig.pendente;
                     return <span className={`px-2 py-1 rounded-full text-xs font-medium ${cfg.cls}`}>{cfg.label}</span>;
@@ -460,7 +460,7 @@ const dueDaysInfo = (t) => {
                       Baixar
                     </button>
                   )}
-                  <button onClick={() => handleEdit(t)} className="text-blue-600 hover:text-blue-800 mr-2"><Edit size={16} /></button>
+                  <button onClick={() => handleEdit(t)} className="text-brand-600 hover:text-brand-800 mr-2"><Edit size={16} /></button>
                   <button onClick={() => handleDelete(t.id)} className="text-red-600 hover:text-red-800"><Trash2 size={16} /></button>
                 </td>
               </tr>
@@ -472,7 +472,7 @@ const dueDaysInfo = (t) => {
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-auto">
-            <h2 className="text-lg font-bold mb-4">{editing ? 'Editar' : 'Nova'} Transação</h2>
+            <h2 className="text-lg font-bold mb-4">{editing ? 'Editar' : 'Nova'} TransaÃ§Ã£o</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
 
               <div className="grid grid-cols-2 gap-3">
@@ -485,7 +485,7 @@ const dueDaysInfo = (t) => {
                   </select>
                 </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Data Lançamento *</label>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Data LanÃ§amento *</label>
                 <input type="date" value={form.date} onChange={e => handleDateChange(e.target.value)}
                   max={getTodayLocal()}
                   className="w-full px-3 py-2 border rounded-lg text-sm" required />
@@ -494,7 +494,7 @@ const dueDaysInfo = (t) => {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Descrição *</label>
+                <label className="block text-xs font-medium text-gray-500 mb-1">DescriÃ§Ã£o *</label>
                 <CaseInput placeholder="Ex: Pagamento fornecedor, Venda produto..." value={form.description}
                   onChange={e => setForm({...form, description: e.target.value})}
                   className="w-full px-3 py-2 border rounded-lg text-sm" required />
@@ -531,7 +531,7 @@ const dueDaysInfo = (t) => {
                     placeholder="Selecione..." />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Conta / Cartão</label>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Conta / CartÃ£o</label>
                   <SearchableSelect options={accountOptions} value={form.account_id ? parseInt(form.account_id) : ''}
                     onChange={val => handleAccountChange(val)}
                     renderOption={renderAccountOption}
@@ -557,19 +557,19 @@ const dueDaysInfo = (t) => {
                           <strong>{selectedAccount.name}</strong>
                           {selectedAccount.flag && ` (${selectedAccount.flag})`}
                           {selectedAccount.closing_day && selectedAccount.due_day
-                            ? ` — fecha dia ${selectedAccount.closing_day} / vence dia ${selectedAccount.due_day}`
+                            ? ` â€” fecha dia ${selectedAccount.closing_day} / vence dia ${selectedAccount.due_day}`
                             : ''
                           }
                         </>
                       ) : (
-                        'Selecione um cartão na Conta/Cartão para calcular o vencimento'
+                        'Selecione um cartÃ£o na Conta/CartÃ£o para calcular o vencimento'
                       )}
                     </span>
                   </div>
                   {calculatedDueDate && (
                     <div className="text-xs text-purple-600">
                       Vencimento calculado: <strong>{new Date(calculatedDueDate + 'T12:00:00').toLocaleDateString('pt-BR')}</strong>
-                      <span className="text-purple-400 ml-1">(compra {form.date && new Date(form.date).getDate() > selectedAccount.closing_day ? 'após' : 'antes'} do fechamento)</span>
+                      <span className="text-purple-400 ml-1">(compra {form.date && new Date(form.date).getDate() > selectedAccount.closing_day ? 'apÃ³s' : 'antes'} do fechamento)</span>
                     </div>
                   )}
                   {!selectedAccount?.closing_day && selectedAccount && (
@@ -599,7 +599,7 @@ const dueDaysInfo = (t) => {
                       <input type="number" min="1" max={parseInt(form.installments) || 60} value={form.current_installment}
                         onChange={e => setForm({...form, current_installment: e.target.value})}
                         className="w-full px-3 py-2 border rounded-lg text-sm" />
-                      <p className="text-xs text-gray-400 mt-0.5">Nº desta parcela</p>
+                      <p className="text-xs text-gray-400 mt-0.5">NÂº desta parcela</p>
                     </div>
                     <div>
                       <label className="block text-xs font-medium text-gray-500 mb-1">Total de Parcelas</label>
@@ -616,7 +616,7 @@ const dueDaysInfo = (t) => {
                     </div>
                     {installmentCount > 1 && (
                       <div>
-                        <label className="block text-xs font-medium text-gray-500 mb-1">Frequência *</label>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">FrequÃªncia *</label>
                         <select value={form.recurrence_frequency} onChange={e => setForm({...form, recurrence_frequency: e.target.value})}
                           className="w-full px-3 py-2 border rounded-lg text-sm" required>
                           <option value="">Selecione...</option>
@@ -634,7 +634,7 @@ const dueDaysInfo = (t) => {
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-500">Valor da parcela:</span>
-                        <span className="font-bold text-blue-700">{formatCurrency(installmentValue)}</span>
+                        <span className="font-bold text-brand-700">{formatCurrency(installmentValue)}</span>
                       </div>
                       {form.recurrence_frequency && effectiveDueDate && (
                         <div className="border-t pt-2 mt-2">
@@ -645,8 +645,8 @@ const dueDaysInfo = (t) => {
                             {installmentDates.map((d, i) => {
                               const num = startInstallment + i;
                               return (
-                                <div key={i} className={`flex justify-between text-xs px-2 py-1 rounded ${num === startInstallment ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600'}`}>
-                                  <span>{num}ª parcela{num === startInstallment ? ' (atual)' : ''}</span>
+                                <div key={i} className={`flex justify-between text-xs px-2 py-1 rounded ${num === startInstallment ? 'bg-brand-50 text-brand-700 font-medium' : 'text-gray-600'}`}>
+                                  <span>{num}Âª parcela{num === startInstallment ? ' (atual)' : ''}</span>
                                   <span>{d.toLocaleDateString('pt-BR')}</span>
                                   <span>{formatCurrency(installmentValue)}</span>
                                 </div>
@@ -666,7 +666,7 @@ const dueDaysInfo = (t) => {
               )}
 
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Observações</label>
+                <label className="block text-xs font-medium text-gray-500 mb-1">ObservaÃ§Ãµes</label>
                 <CaseTextarea placeholder="Notas adicionais..." value={form.notes} rows={2}
                   onChange={e => setForm({...form, notes: e.target.value})}
                   className="w-full px-3 py-2 border rounded-lg text-sm" />
@@ -680,7 +680,7 @@ const dueDaysInfo = (t) => {
 
               <div className="flex justify-end gap-2 mt-4">
                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border rounded-lg text-sm">Cancelar</button>
-                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">Salvar</button>
+                <button type="submit" className="px-4 py-2 bg-brand-600 text-white rounded-lg text-sm hover:bg-brand-700">Salvar</button>
               </div>
             </form>
           </div>
@@ -695,7 +695,7 @@ const dueDaysInfo = (t) => {
               <p><strong>{payingTransaction.description}</strong></p>
               <p>Valor total: {formatCurrency(payingTransaction.amount)}</p>
               {payingTransaction.payments?.length > 0 && (
-                <p>Já pago: {formatCurrency(payingTransaction.payments.reduce((s, p) => s + p.amount, 0))}</p>
+                <p>JÃ¡ pago: {formatCurrency(payingTransaction.payments.reduce((s, p) => s + p.amount, 0))}</p>
               )}
             </div>
             <form onSubmit={handlePaymentSubmit} className="space-y-3">
@@ -721,7 +721,7 @@ const dueDaysInfo = (t) => {
                   className="w-full px-3 py-2 border rounded-lg text-sm" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Observação</label>
+                <label className="block text-xs font-medium text-gray-500 mb-1">ObservaÃ§Ã£o</label>
                 <CaseInput type="text" placeholder="Nota opcional..."
                   value={paymentForm.notes}
                   onChange={e => setPaymentForm({...paymentForm, notes: e.target.value})}

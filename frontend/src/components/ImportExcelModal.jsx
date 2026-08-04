@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+﻿import { useState, useRef } from 'react';
 import { Upload, FileSpreadsheet, Download, X, CheckCircle, AlertCircle } from 'lucide-react';
 import api from '../services/api';
 
@@ -53,7 +53,7 @@ export default function ImportExcelModal({ open, onClose, onImported }) {
             })
             .catch(() => alert('Erro ao baixar modelo. Tente novamente.'));
         }}
-          className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 mb-4">
+          className="inline-flex items-center gap-1.5 text-sm text-brand-600 hover:text-brand-800 mb-4">
           <Download size={14} /> Baixar modelo da planilha
         </button>
 
@@ -62,13 +62,13 @@ export default function ImportExcelModal({ open, onClose, onImported }) {
             onDrop={handleDrop}
             onDragOver={(e) => e.preventDefault()}
             onClick={() => inputRef.current?.click()}
-            className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-blue-400 transition-colors"
+            className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-brand-400 transition-colors"
           >
             <Upload size={32} className="mx-auto text-gray-400 mb-2" />
             <p className="text-sm text-gray-600 mb-1">
               {file ? file.name : 'Clique ou arraste o arquivo .xlsx aqui'}
             </p>
-            {!file && <p className="text-xs text-gray-400">Colunas: Nome, SKU, Descrição, Código de Barras, Preço Venda, Preço Custo, Categoria, Subcategoria, Unidade</p>}
+            {!file && <p className="text-xs text-gray-400">Colunas: Nome, SKU, DescriÃ§Ã£o, CÃ³digo de Barras, PreÃ§o Venda, PreÃ§o Custo, Categoria, Subcategoria, Unidade</p>}
             <input ref={inputRef} type="file" accept=".xlsx,.xls" className="hidden"
               onChange={(e) => { const f = e.target.files[0]; if (f) setFile(f); }} />
           </div>

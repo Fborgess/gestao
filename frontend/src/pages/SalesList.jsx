@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { Plus, Edit, Printer, Share2, Trash2 } from 'lucide-react';
@@ -12,18 +12,18 @@ export default function SalesList() {
   }, []);
 
   const handleDelete = async (s) => {
-    if (!confirm(`Remover o lançamento #${s.id} de ${s.contact_name || '-'}?`)) return;
+    if (!confirm(`Remover o lanÃ§amento #${s.id} de ${s.contact_name || '-'}?`)) return;
     try { await api.delete(`/sales/${s.id}`); setSales(sales.filter(x => x.id !== s.id)); }
-    catch (err) { alert(err.response?.data?.detail || 'Erro ao remover lançamento'); }
+    catch (err) { alert(err.response?.data?.detail || 'Erro ao remover lanÃ§amento'); }
   };
 
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Lançamentos</h1>
+        <h1 className="text-2xl font-bold">LanÃ§amentos</h1>
         <button onClick={() => navigate('/sales/new')}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700">
-          <Plus size={18} /> Novo Lançamento
+          className="bg-brand-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-brand-700">
+          <Plus size={18} /> Novo LanÃ§amento
         </button>
       </div>
 
@@ -36,7 +36,7 @@ export default function SalesList() {
               <th className="text-left p-3">Tipo</th>
               <th className="text-right p-3">Valor</th>
               <th className="text-center p-3">Status</th>
-              <th className="text-center p-3">Ações</th>
+              <th className="text-center p-3">AÃ§Ãµes</th>
             </tr>
           </thead>
           <tbody>
@@ -56,7 +56,7 @@ export default function SalesList() {
                 <td className="p-3 text-center">
                   <div className="flex items-center justify-center gap-2">
                     <button onClick={() => navigate(`/sales/${s.id}`)}
-                      className="text-blue-600 hover:text-blue-800" title="Editar"><Edit size={16} /></button>
+                      className="text-brand-600 hover:text-brand-800" title="Editar"><Edit size={16} /></button>
                     <button onClick={() => window.open(`/sales/${s.id}/print`, '_blank')}
                       className="text-gray-600 hover:text-gray-800" title="Imprimir"><Printer size={16} /></button>
                     <button onClick={async () => {
@@ -98,7 +98,7 @@ export default function SalesList() {
               </tr>
             ))}
             {sales.length === 0 && (
-              <tr><td colSpan={6} className="p-8 text-center text-gray-500">Nenhum lançamento encontrado</td></tr>
+              <tr><td colSpan={6} className="p-8 text-center text-gray-500">Nenhum lanÃ§amento encontrado</td></tr>
             )}
           </tbody>
         </table>

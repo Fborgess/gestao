@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, Fragment } from 'react';
+﻿import { useState, useEffect, useMemo, Fragment } from 'react';
 import api from '../services/api';
 import { formatCurrency } from '../services/format';
 import { FileText, Calendar, TrendingUp, TrendingDown, AlertTriangle, Clock, BarChart3, ArrowRightLeft, Landmark, Printer, Download } from 'lucide-react';
@@ -13,9 +13,9 @@ const reports = [
   { id: 'by-account', label: 'Por Conta', icon: Landmark },
   { id: 'by-contact', label: 'Extrato por Fornecedor/Cliente', icon: FileText },
   { id: 'dre', label: 'DRE', icon: TrendingUp },
-  { id: 'overdue', label: 'Inadimplência', icon: AlertTriangle },
-  { id: 'forecast', label: 'Previsão de Pagamentos', icon: Clock },
-  { id: 'period-comparison', label: 'Comparativo Períodos', icon: Calendar },
+  { id: 'overdue', label: 'InadimplÃªncia', icon: AlertTriangle },
+  { id: 'forecast', label: 'PrevisÃ£o de Pagamentos', icon: Clock },
+  { id: 'period-comparison', label: 'Comparativo PerÃ­odos', icon: Calendar },
 ];
 
 const typeColors = {
@@ -127,7 +127,7 @@ function PayableReceivableReport({ contacts }) {
 
   const columns = [
     { header: 'Vencimento', accessor: t => new Date(t.due_date).toLocaleDateString('pt-BR'), width: 14 },
-    { header: 'Descrição', accessor: 'description', width: 25 },
+    { header: 'DescriÃ§Ã£o', accessor: 'description', width: 25 },
     { header: 'Contato', accessor: t => t.contact?.name || '-', width: 20 },
     { header: 'Categoria', accessor: t => t.financial_category?.name || '-', width: 18 },
     { header: 'Conta', accessor: t => t.account?.name || '-', width: 18 },
@@ -149,9 +149,9 @@ function PayableReceivableReport({ contacts }) {
           <div className="text-xs text-red-600 font-medium mb-1">Total Despesas</div>
           <div className="text-lg font-bold text-red-700">{formatCurrency(totals.despesas)}</div>
         </div>
-        <div className="bg-blue-50 rounded-xl p-4">
-          <div className="text-xs text-blue-600 font-medium mb-1">Saldo</div>
-          <div className={`text-lg font-bold ${totals.saldo >= 0 ? 'text-blue-700' : 'text-red-700'}`}>{formatCurrency(totals.saldo)}</div>
+        <div className="bg-brand-50 rounded-xl p-4">
+          <div className="text-xs text-brand-600 font-medium mb-1">Saldo</div>
+          <div className={`text-lg font-bold ${totals.saldo >= 0 ? 'text-brand-700' : 'text-red-700'}`}>{formatCurrency(totals.saldo)}</div>
         </div>
       </div>
 
@@ -160,7 +160,7 @@ function PayableReceivableReport({ contacts }) {
             <thead className="bg-gray-50">
               <tr>
                 <th className="text-left p-3">Vencimento</th>
-                <th className="text-left p-3">Descrição</th>
+                <th className="text-left p-3">DescriÃ§Ã£o</th>
                 <th className="text-left p-3">Contato</th>
                 <th className="text-left p-3">Categoria</th>
                 <th className="text-left p-3">Conta</th>
@@ -189,7 +189,7 @@ function PayableReceivableReport({ contacts }) {
                 </tr>
               ))}
               {data.length === 0 && (
-                <tr><td colSpan={8} className="p-6 text-center text-gray-400">Nenhum lançamento encontrado</td></tr>
+                <tr><td colSpan={8} className="p-6 text-center text-gray-400">Nenhum lanÃ§amento encontrado</td></tr>
               )}
             </tbody>
           </table>
@@ -234,7 +234,7 @@ function CashFlowReport({ contacts }) {
   const columns = [
     { header: 'Data', accessor: d => new Date(d.date + 'T12:00:00').toLocaleDateString('pt-BR'), width: 14 },
     { header: 'Entradas', accessor: d => d.entradas, format: v => v > 0 ? formatCurrency(v) : '-', width: 15 },
-    { header: 'Saídas', accessor: d => d.saidas, format: v => v > 0 ? formatCurrency(v) : '-', width: 15 },
+    { header: 'SaÃ­das', accessor: d => d.saidas, format: v => v > 0 ? formatCurrency(v) : '-', width: 15 },
     { header: 'Saldo Dia', accessor: d => d.entradas - d.saidas, format: v => formatCurrency(v), width: 15 },
   ];
 
@@ -248,12 +248,12 @@ function CashFlowReport({ contacts }) {
           <div className="text-lg font-bold text-green-700">{formatCurrency(totals.entradas)}</div>
         </div>
         <div className="bg-red-50 rounded-xl p-4">
-          <div className="text-xs text-red-600 font-medium mb-1">Total Saídas</div>
+          <div className="text-xs text-red-600 font-medium mb-1">Total SaÃ­das</div>
           <div className="text-lg font-bold text-red-700">{formatCurrency(totals.saidas)}</div>
         </div>
-        <div className="bg-blue-50 rounded-xl p-4">
-          <div className="text-xs text-blue-600 font-medium mb-1">Saldo do Período</div>
-          <div className={`text-lg font-bold ${(totals.entradas - totals.saidas) >= 0 ? 'text-blue-700' : 'text-red-700'}`}>
+        <div className="bg-brand-50 rounded-xl p-4">
+          <div className="text-xs text-brand-600 font-medium mb-1">Saldo do PerÃ­odo</div>
+          <div className={`text-lg font-bold ${(totals.entradas - totals.saidas) >= 0 ? 'text-brand-700' : 'text-red-700'}`}>
             {formatCurrency(totals.entradas - totals.saidas)}
           </div>
         </div>
@@ -265,7 +265,7 @@ function CashFlowReport({ contacts }) {
             <tr>
               <th className="text-left p-3">Data</th>
               <th className="text-right p-3">Entradas</th>
-              <th className="text-right p-3">Saídas</th>
+              <th className="text-right p-3">SaÃ­das</th>
               <th className="text-right p-3">Saldo Dia</th>
             </tr>
           </thead>
@@ -277,14 +277,14 @@ function CashFlowReport({ contacts }) {
                   <td className="p-3 text-gray-900">{new Date(d.date + 'T12:00:00').toLocaleDateString('pt-BR')}</td>
                   <td className="p-3 text-right text-green-600">{d.entradas > 0 ? formatCurrency(d.entradas) : '-'}</td>
                   <td className="p-3 text-right text-red-600">{d.saidas > 0 ? formatCurrency(d.saidas) : '-'}</td>
-                  <td className={`p-3 text-right font-medium ${saldo >= 0 ? 'text-blue-700' : 'text-red-700'}`}>
+                  <td className={`p-3 text-right font-medium ${saldo >= 0 ? 'text-brand-700' : 'text-red-700'}`}>
                     {formatCurrency(saldo)}
                   </td>
                 </tr>
               );
             })}
             {data.length === 0 && (
-              <tr><td colSpan={4} className="p-6 text-center text-gray-400">Nenhum lançamento encontrado</td></tr>
+              <tr><td colSpan={4} className="p-6 text-center text-gray-400">Nenhum lanÃ§amento encontrado</td></tr>
             )}
           </tbody>
         </table>
@@ -327,7 +327,7 @@ function MonthlySummaryReport({ contacts }) {
   }), [data]);
 
   const columns = [
-    { header: 'Mês', accessor: 'label', width: 18 },
+    { header: 'MÃªs', accessor: 'label', width: 18 },
     { header: 'Receitas', accessor: m => m.receitas, format: v => v > 0 ? formatCurrency(v) : '-', width: 15 },
     { header: 'Despesas', accessor: m => m.despesas, format: v => v > 0 ? formatCurrency(v) : '-', width: 15 },
     { header: 'Saldo', accessor: m => m.receitas - m.despesas, format: v => formatCurrency(v), width: 15 },
@@ -359,7 +359,7 @@ function MonthlySummaryReport({ contacts }) {
         <table className="w-full text-sm">
           <thead className="bg-gray-50">
             <tr>
-              <th className="text-left p-3">Mês</th>
+              <th className="text-left p-3">MÃªs</th>
               <th className="text-right p-3">Receitas</th>
               <th className="text-right p-3">Despesas</th>
               <th className="text-right p-3">Saldo</th>
@@ -373,7 +373,7 @@ function MonthlySummaryReport({ contacts }) {
                   <td className="p-3 text-gray-900 capitalize">{m.label}</td>
                   <td className="p-3 text-right text-green-600">{m.receitas > 0 ? formatCurrency(m.receitas) : '-'}</td>
                   <td className="p-3 text-right text-red-600">{m.despesas > 0 ? formatCurrency(m.despesas) : '-'}</td>
-                  <td className={`p-3 text-right font-medium ${saldo >= 0 ? 'text-blue-700' : 'text-red-700'}`}>
+                  <td className={`p-3 text-right font-medium ${saldo >= 0 ? 'text-brand-700' : 'text-red-700'}`}>
                     {formatCurrency(saldo)}
                   </td>
                 </tr>
@@ -385,7 +385,7 @@ function MonthlySummaryReport({ contacts }) {
               <td className="p-3 text-gray-900">Total Anual</td>
               <td className="p-3 text-right text-green-700">{formatCurrency(totals.receitas)}</td>
               <td className="p-3 text-right text-red-700">{formatCurrency(totals.despesas)}</td>
-              <td className={`p-3 text-right ${(totals.receitas - totals.despesas) >= 0 ? 'text-blue-700' : 'text-red-700'}`}>
+              <td className={`p-3 text-right ${(totals.receitas - totals.despesas) >= 0 ? 'text-brand-700' : 'text-red-700'}`}>
                 {formatCurrency(totals.receitas - totals.despesas)}
               </td>
             </tr>
@@ -430,7 +430,7 @@ function ByCategoryReport({ contacts }) {
 
   const columns = [
     { header: 'Categoria', accessor: 'name', width: 30 },
-    { header: 'Lançamentos', accessor: 'count', width: 14 },
+    { header: 'LanÃ§amentos', accessor: 'count', width: 14 },
     { header: 'Total', accessor: 'total', format: v => formatCurrency(v), width: 15 },
     { header: '% do Total', accessor: d => grandTotal > 0 ? ((d.total / grandTotal) * 100).toFixed(1) + '%' : '0%', width: 14 },
   ];
@@ -444,7 +444,7 @@ function ByCategoryReport({ contacts }) {
             <thead className="bg-gray-50">
               <tr>
                 <th className="text-left p-3">Categoria</th>
-                <th className="text-center p-3">Lançamentos</th>
+                <th className="text-center p-3">LanÃ§amentos</th>
                 <th className="text-right p-3">Total</th>
                 <th className="text-right p-3">% do Total</th>
               </tr>
@@ -508,7 +508,7 @@ function ByAccountReport({ contacts }) {
 
   const columns = [
     { header: 'Conta', accessor: 'name', width: 25 },
-    { header: 'Lançamentos', accessor: 'count', width: 14 },
+    { header: 'LanÃ§amentos', accessor: 'count', width: 14 },
     { header: 'Receitas', accessor: d => d.receitas, format: v => v > 0 ? formatCurrency(v) : '-', width: 15 },
     { header: 'Despesas', accessor: d => d.despesas, format: v => v > 0 ? formatCurrency(v) : '-', width: 15 },
     { header: 'Saldo', accessor: d => d.receitas - d.despesas, format: v => formatCurrency(v), width: 15 },
@@ -523,7 +523,7 @@ function ByAccountReport({ contacts }) {
             <thead className="bg-gray-50">
               <tr>
                 <th className="text-left p-3">Conta</th>
-                <th className="text-center p-3">Lançamentos</th>
+                <th className="text-center p-3">LanÃ§amentos</th>
                 <th className="text-right p-3">Receitas</th>
                 <th className="text-right p-3">Despesas</th>
                 <th className="text-right p-3">Saldo</th>
@@ -538,14 +538,14 @@ function ByAccountReport({ contacts }) {
                     <td className="p-3 text-center text-gray-500">{d.count}</td>
                     <td className="p-3 text-right text-green-600">{d.receitas > 0 ? formatCurrency(d.receitas) : '-'}</td>
                     <td className="p-3 text-right text-red-600">{d.despesas > 0 ? formatCurrency(d.despesas) : '-'}</td>
-                    <td className={`p-3 text-right font-medium ${saldo >= 0 ? 'text-blue-700' : 'text-red-700'}`}>
+                    <td className={`p-3 text-right font-medium ${saldo >= 0 ? 'text-brand-700' : 'text-red-700'}`}>
                       {formatCurrency(saldo)}
                     </td>
                   </tr>
                 );
               })}
               {data.length === 0 && (
-                <tr><td colSpan={5} className="p-6 text-center text-gray-400">Nenhum lançamento encontrado</td></tr>
+                <tr><td colSpan={5} className="p-6 text-center text-gray-400">Nenhum lanÃ§amento encontrado</td></tr>
               )}
             </tbody>
           </table>
@@ -620,7 +620,7 @@ function ByContactReport({ contacts }) {
     if (t.due_date && new Date(t.due_date) < now) {
       return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">Atrasado</span>;
     }
-    return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">Em dia</span>;
+    return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-brand-100 text-brand-700">Em dia</span>;
   };
 
   const renderPrint = () => {
@@ -646,20 +646,20 @@ function ByContactReport({ contacts }) {
           <div className="flex gap-4 text-sm mb-3">
             <span className="text-green-600 font-medium">Receitas: {formatCurrency(totalRec)}</span>
             <span className="text-red-600 font-medium">Despesas: {formatCurrency(totalDesp)}</span>
-            <span className={`font-medium ${saldo >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+            <span className={`font-medium ${saldo >= 0 ? 'text-brand-600' : 'text-red-600'}`}>
               Saldo: {formatCurrency(saldo)}
             </span>
           </div>
           <table className="w-full text-sm">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="text-left p-3">Data Lançamento</th>
+                  <th className="text-left p-3">Data LanÃ§amento</th>
                   <th className="text-left p-3">Data Vencimento</th>
-                  <th className="text-left p-3">Descrição</th>
+                  <th className="text-left p-3">DescriÃ§Ã£o</th>
                   <th className="text-left p-3">Categoria</th>
                   <th className="text-center p-3">Tipo</th>
                   <th className="text-right p-3">Valor</th>
-                  <th className="text-center p-3">Situação</th>
+                  <th className="text-center p-3">SituaÃ§Ã£o</th>
                 </tr>
               </thead>
               <tbody>
@@ -693,7 +693,7 @@ function ByContactReport({ contacts }) {
             <button onClick={() => setPrintPage(p => Math.max(0, p - 1))} disabled={printPage === 0}
               className="px-3 py-1.5 border rounded-lg text-sm hover:bg-gray-50 disabled:opacity-30">Anterior</button>
             <button onClick={() => setPrintPage(p => Math.min(total - 1, p + 1))} disabled={printPage >= total - 1}
-              className="px-3 py-1.5 border rounded-lg text-sm hover:bg-gray-50 disabled:opacity-30">Próximo</button>
+              className="px-3 py-1.5 border rounded-lg text-sm hover:bg-gray-50 disabled:opacity-30">PrÃ³ximo</button>
           </div>
         </div>
         <div className="no-print">
@@ -714,7 +714,7 @@ function ByContactReport({ contacts }) {
 
   const columns = [
     { header: 'Fornecedor/Cliente', accessor: 'name', width: 25 },
-    { header: 'Lançamentos', accessor: 'count', width: 14 },
+    { header: 'LanÃ§amentos', accessor: 'count', width: 14 },
     { header: 'Receitas', accessor: d => d.receitas, format: v => v > 0 ? formatCurrency(v) : '-', width: 15 },
     { header: 'Despesas', accessor: d => d.despesas, format: v => v > 0 ? formatCurrency(v) : '-', width: 15 },
     { header: 'Saldo', accessor: d => d.receitas - d.despesas, format: v => formatCurrency(v), width: 15 },
@@ -733,7 +733,7 @@ function ByContactReport({ contacts }) {
           <div className="flex gap-4 text-sm">
             <span className="text-green-600 font-medium">Receitas: {formatCurrency(totalRec)}</span>
             <span className="text-red-600 font-medium">Despesas: {formatCurrency(totalDesp)}</span>
-            <span className={`font-medium ${(totalRec - totalDesp) >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+            <span className={`font-medium ${(totalRec - totalDesp) >= 0 ? 'text-brand-600' : 'text-red-600'}`}>
               Saldo: {formatCurrency(totalRec - totalDesp)}
             </span>
           </div>
@@ -741,13 +741,13 @@ function ByContactReport({ contacts }) {
         <table className="w-full text-sm">
           <thead className="bg-gray-50">
             <tr>
-              <th className="text-left p-3">Data Lançamento</th>
+              <th className="text-left p-3">Data LanÃ§amento</th>
               <th className="text-left p-3">Data Vencimento</th>
-              <th className="text-left p-3">Descrição</th>
+              <th className="text-left p-3">DescriÃ§Ã£o</th>
               <th className="text-left p-3">Categoria</th>
               <th className="text-center p-3">Tipo</th>
               <th className="text-right p-3">Valor</th>
-              <th className="text-center p-3">Situação</th>
+              <th className="text-center p-3">SituaÃ§Ã£o</th>
             </tr>
           </thead>
           <tbody>
@@ -775,7 +775,7 @@ function ByContactReport({ contacts }) {
   };
 
   return (
-    <PrintAwareReport title="Extrato por Fornecedor/Cliente" subtitle={`Período: ${formatPeriod()}`} columns={columns} data={data}
+    <PrintAwareReport title="Extrato por Fornecedor/Cliente" subtitle={`PerÃ­odo: ${formatPeriod()}`} columns={columns} data={data}
       renderPrint={renderPrint}
       filters={<div className="flex flex-wrap items-end gap-3">
         <ReportFilters startDate={startDate} setStartDate={setStartDate} endDate={endDate} setEndDate={setEndDate}
@@ -793,15 +793,15 @@ function ByContactReport({ contacts }) {
         </div>
         <div className="flex flex-wrap gap-2 no-print">
             <button onClick={() => setPrintSelected(new Set(data.map(d => d.name)))}
-              className="px-3 py-2 bg-blue-50 text-blue-600 rounded-lg text-sm hover:bg-blue-100">
+              className="px-3 py-2 bg-brand-50 text-brand-600 rounded-lg text-sm hover:bg-brand-100">
               Selecionar tudo
             </button>
             <button onClick={() => setPrintSelected(new Set())}
               className="px-3 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm hover:bg-gray-200">
-              Limpar seleção
+              Limpar seleÃ§Ã£o
             </button>
             <button onClick={() => setExpanded(new Set(data.map(d => d.name)))}
-              className="px-3 py-2 bg-blue-50 text-blue-600 rounded-lg text-sm hover:bg-blue-100">
+              className="px-3 py-2 bg-brand-50 text-brand-600 rounded-lg text-sm hover:bg-brand-100">
               Expandir tudo
             </button>
             <button onClick={() => setExpanded(new Set())}
@@ -812,7 +812,7 @@ function ByContactReport({ contacts }) {
       </div>}>
 
         <div className="mb-4 text-sm text-gray-500">
-          Período: {formatPeriod()}
+          PerÃ­odo: {formatPeriod()}
         </div>
 
         <div className="bg-white rounded-xl overflow-hidden no-print">
@@ -822,7 +822,7 @@ function ByContactReport({ contacts }) {
                 <th className="p-2 w-8 no-print"></th>
                 <th className="p-2 w-8 no-print"></th>
                 <th className="text-left p-2">Fornecedor/Cliente</th>
-                <th className="text-center p-2">Lançamentos</th>
+                <th className="text-center p-2">LanÃ§amentos</th>
                 <th className="text-right p-2">Receitas</th>
                 <th className="text-right p-2">Despesas</th>
                 <th className="text-right p-2">Saldo</th>
@@ -838,7 +838,7 @@ function ByContactReport({ contacts }) {
                     <tr className={`border-b${isOpen ? ' bg-gray-50' : ''}`}>
                       <td className="p-2 text-center no-print">
                         <input type="checkbox" checked={checked} onChange={() => togglePrint(d.name)}
-                          className="w-4 h-4 rounded border-gray-300 text-blue-600 cursor-pointer" />
+                          className="w-4 h-4 rounded border-gray-300 text-brand-600 cursor-pointer" />
                       </td>
                       <td className="p-2 text-center no-print">
                         <button onClick={() => toggleExpand(d.name)}
@@ -850,7 +850,7 @@ function ByContactReport({ contacts }) {
                       <td className="p-2 text-center text-gray-500">{d.count}</td>
                       <td className="p-2 text-right text-green-600">{d.receitas > 0 ? formatCurrency(d.receitas) : '-'}</td>
                       <td className="p-2 text-right text-red-600">{d.despesas > 0 ? formatCurrency(d.despesas) : '-'}</td>
-                      <td className={`p-2 text-right font-medium ${saldo >= 0 ? 'text-blue-700' : 'text-red-700'}`}>
+                      <td className={`p-2 text-right font-medium ${saldo >= 0 ? 'text-brand-700' : 'text-red-700'}`}>
                         {formatCurrency(saldo)}
                       </td>
                     </tr>
@@ -863,7 +863,7 @@ function ByContactReport({ contacts }) {
                 );
               })}
               {data.length === 0 && (
-                <tr><td colSpan={7} className="p-6 text-center text-gray-400">Nenhum lançamento encontrado</td></tr>
+                <tr><td colSpan={7} className="p-6 text-center text-gray-400">Nenhum lanÃ§amento encontrado</td></tr>
               )}
             </tbody>
           </table>
@@ -898,7 +898,7 @@ function OverdueReport({ contacts }) {
   const columns = [
     { header: 'Vencimento', accessor: t => new Date(t.due_date).toLocaleDateString('pt-BR'), width: 14 },
     { header: 'Dias em Atraso', accessor: t => Math.ceil((new Date() - new Date(t.due_date)) / (1000 * 60 * 60 * 24)), width: 14 },
-    { header: 'Descrição', accessor: 'description', width: 22 },
+    { header: 'DescriÃ§Ã£o', accessor: 'description', width: 22 },
     { header: 'Contato', accessor: t => t.contact?.name || '-', width: 18 },
     { header: 'Categoria', accessor: t => t.financial_category?.name || '-', width: 16 },
     { header: 'Tipo', accessor: t => t.type === 'receita' ? 'A Receber' : 'A Pagar', width: 10 },
@@ -906,13 +906,13 @@ function OverdueReport({ contacts }) {
   ];
 
   return (
-    <PrintAwareReport title="Inadimplência" columns={columns} data={data}
+    <PrintAwareReport title="InadimplÃªncia" columns={columns} data={data}
       filters={<ReportFilters startDate={startDate} setStartDate={setStartDate} endDate={endDate} setEndDate={setEndDate} contactFilter={contactFilter} setContactFilter={setContactFilter} contacts={contacts} />}>
 
         <div className="bg-red-50 rounded-xl p-4">
           <div className="text-xs text-red-600 font-medium mb-1">Total em Atraso</div>
           <div className="text-xl font-bold text-red-700">{formatCurrency(total)}</div>
-          <div className="text-xs text-red-500 mt-1">{data.length} título(s) em atraso</div>
+          <div className="text-xs text-red-500 mt-1">{data.length} tÃ­tulo(s) em atraso</div>
         </div>
 
         <div className="bg-white rounded-xl overflow-hidden">
@@ -921,7 +921,7 @@ function OverdueReport({ contacts }) {
               <tr>
                 <th className="text-left p-3">Vencimento</th>
                 <th className="text-left p-3">Dias em Atraso</th>
-                <th className="text-left p-3">Descrição</th>
+                <th className="text-left p-3">DescriÃ§Ã£o</th>
                 <th className="text-left p-3">Contato</th>
                 <th className="text-left p-3">Categoria</th>
                 <th className="text-center p-3">Tipo</th>
@@ -952,7 +952,7 @@ function OverdueReport({ contacts }) {
                 );
               })}
               {data.length === 0 && (
-                <tr><td colSpan={7} className="p-6 text-center text-green-600">Nenhum título em atraso</td></tr>
+                <tr><td colSpan={7} className="p-6 text-center text-green-600">Nenhum tÃ­tulo em atraso</td></tr>
               )}
             </tbody>
           </table>
@@ -986,7 +986,7 @@ function ForecastReport({ contacts }) {
 
   const columns = [
     { header: 'Vencimento', accessor: t => new Date(t.due_date).toLocaleDateString('pt-BR'), width: 14 },
-    { header: 'Descrição', accessor: 'description', width: 22 },
+    { header: 'DescriÃ§Ã£o', accessor: 'description', width: 22 },
     { header: 'Contato', accessor: t => t.contact?.name || '-', width: 18 },
     { header: 'Categoria', accessor: t => t.financial_category?.name || '-', width: 16 },
     { header: 'Conta', accessor: t => t.account?.name || '-', width: 16 },
@@ -996,13 +996,13 @@ function ForecastReport({ contacts }) {
   ];
 
   return (
-    <PrintAwareReport title="Previsão de Pagamentos" columns={columns} data={data}
+    <PrintAwareReport title="PrevisÃ£o de Pagamentos" columns={columns} data={data}
       filters={<ReportFilters startDate={startDate} setStartDate={setStartDate} endDate={endDate} setEndDate={setEndDate} contactFilter={contactFilter} setContactFilter={setContactFilter} contacts={contacts} />}>
 
-        <div className="bg-blue-50 rounded-xl p-4">
-          <div className="text-xs text-blue-600 font-medium mb-1">Total Previsto</div>
-          <div className="text-xl font-bold text-blue-700">{formatCurrency(total)}</div>
-          <div className="text-xs text-blue-500 mt-1">{data.length} título(s) previsto(s)</div>
+        <div className="bg-brand-50 rounded-xl p-4">
+          <div className="text-xs text-brand-600 font-medium mb-1">Total Previsto</div>
+          <div className="text-xl font-bold text-brand-700">{formatCurrency(total)}</div>
+          <div className="text-xs text-brand-500 mt-1">{data.length} tÃ­tulo(s) previsto(s)</div>
         </div>
 
         <div className="bg-white rounded-xl overflow-hidden">
@@ -1010,7 +1010,7 @@ function ForecastReport({ contacts }) {
             <thead className="bg-gray-50">
               <tr>
                 <th className="text-left p-3">Vencimento</th>
-                <th className="text-left p-3">Descrição</th>
+                <th className="text-left p-3">DescriÃ§Ã£o</th>
                 <th className="text-left p-3">Contato</th>
                 <th className="text-left p-3">Categoria</th>
                 <th className="text-left p-3">Conta</th>
@@ -1039,7 +1039,7 @@ function ForecastReport({ contacts }) {
                 </tr>
               ))}
               {data.length === 0 && (
-                <tr><td colSpan={8} className="p-6 text-center text-gray-400">Nenhuma previsão encontrada</td></tr>
+                <tr><td colSpan={8} className="p-6 text-center text-gray-400">Nenhuma previsÃ£o encontrada</td></tr>
               )}
             </tbody>
           </table>
@@ -1096,16 +1096,16 @@ function PeriodComparisonReport({ contacts }) {
 
   const columns = [
     { header: 'Indicador', accessor: 'indicator', width: 20 },
-    { header: 'Período 1', accessor: d => formatCurrency(d.p1), width: 15 },
-    { header: 'Período 2', accessor: d => formatCurrency(d.p2), width: 15 },
-    { header: 'Variação', accessor: d => `${diffIcon(d.p1, d.p2)} ${diff(d.p1, d.p2)}%`, width: 14 },
+    { header: 'PerÃ­odo 1', accessor: d => formatCurrency(d.p1), width: 15 },
+    { header: 'PerÃ­odo 2', accessor: d => formatCurrency(d.p2), width: 15 },
+    { header: 'VariaÃ§Ã£o', accessor: d => `${diffIcon(d.p1, d.p2)} ${diff(d.p1, d.p2)}%`, width: 14 },
   ];
 
   return (
-    <PrintAwareReport title="Comparativo Períodos" columns={columns} data={compData}
+    <PrintAwareReport title="Comparativo PerÃ­odos" columns={columns} data={compData}
       filters={<div className="flex flex-wrap items-end gap-3">
         <div className="bg-gray-50 rounded-xl p-4">
-          <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Período 1</p>
+          <p className="text-xs font-semibold text-gray-500 uppercase mb-2">PerÃ­odo 1</p>
           <div className="flex gap-2">
             <input type="date" value={period1Start} onChange={e => setPeriod1Start(e.target.value)}
               max={period1End || undefined}
@@ -1116,7 +1116,7 @@ function PeriodComparisonReport({ contacts }) {
           </div>
         </div>
         <div className="bg-gray-50 rounded-xl p-4">
-          <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Período 2</p>
+          <p className="text-xs font-semibold text-gray-500 uppercase mb-2">PerÃ­odo 2</p>
           <div className="flex gap-2">
             <input type="date" value={period2Start} onChange={e => setPeriod2Start(e.target.value)}
               max={period2End || undefined}
@@ -1141,9 +1141,9 @@ function PeriodComparisonReport({ contacts }) {
             <thead className="bg-gray-50">
               <tr>
                 <th className="text-left p-3">Indicador</th>
-                <th className="text-right p-3">Período 1</th>
-                <th className="text-right p-3">Período 2</th>
-                <th className="text-right p-3">Variação</th>
+                <th className="text-right p-3">PerÃ­odo 1</th>
+                <th className="text-right p-3">PerÃ­odo 2</th>
+                <th className="text-right p-3">VariaÃ§Ã£o</th>
               </tr>
             </thead>
             <tbody>
@@ -1165,10 +1165,10 @@ function PeriodComparisonReport({ contacts }) {
               </tr>
               <tr className="border-t bg-gray-50">
                 <td className="p-3 font-bold">Saldo</td>
-                <td className={`p-3 text-right font-bold ${(p1.receitas - p1.despesas) >= 0 ? 'text-blue-700' : 'text-red-700'}`}>
+                <td className={`p-3 text-right font-bold ${(p1.receitas - p1.despesas) >= 0 ? 'text-brand-700' : 'text-red-700'}`}>
                   {formatCurrency(p1.receitas - p1.despesas)}
                 </td>
-                <td className={`p-3 text-right font-bold ${(p2.receitas - p2.despesas) >= 0 ? 'text-blue-700' : 'text-red-700'}`}>
+                <td className={`p-3 text-right font-bold ${(p2.receitas - p2.despesas) >= 0 ? 'text-brand-700' : 'text-red-700'}`}>
                   {formatCurrency(p2.receitas - p2.despesas)}
                 </td>
                 <td className="p-3 text-right font-bold">
@@ -1225,7 +1225,7 @@ function DPEReport({ contacts }) {
   const columns = [
     { header: 'Categoria', accessor: 'name', width: 25 },
     { header: 'Tipo', accessor: 'type', width: 10 },
-    { header: 'Lançamentos', accessor: 'count', width: 14 },
+    { header: 'LanÃ§amentos', accessor: 'count', width: 14 },
     { header: 'Valor', accessor: 'total', format: v => formatCurrency(v), width: 15 },
   ];
   const dreData = [...receitas.map(r => ({ ...r, type: 'Receita' })), ...despesas.map(d => ({ ...d, type: 'Despesa' }))];
@@ -1243,9 +1243,9 @@ function DPEReport({ contacts }) {
             <div className="text-xs text-red-600 font-medium mb-1">Despesas</div>
             <div className="text-lg font-bold text-red-700">{formatCurrency(totalDespesas)}</div>
           </div>
-          <div className={`rounded-xl p-4 ${resultado >= 0 ? 'bg-blue-50' : 'bg-red-50'}`}>
-            <div className={`text-xs font-medium mb-1 ${resultado >= 0 ? 'text-blue-600' : 'text-red-600'}`}>Resultado Líquido</div>
-            <div className={`text-lg font-bold ${resultado >= 0 ? 'text-blue-700' : 'text-red-700'}`}>
+          <div className={`rounded-xl p-4 ${resultado >= 0 ? 'bg-brand-50' : 'bg-red-50'}`}>
+            <div className={`text-xs font-medium mb-1 ${resultado >= 0 ? 'text-brand-600' : 'text-red-600'}`}>Resultado LÃ­quido</div>
+            <div className={`text-lg font-bold ${resultado >= 0 ? 'text-brand-700' : 'text-red-700'}`}>
               {formatCurrency(resultado)}
             </div>
           </div>
@@ -1321,11 +1321,11 @@ function DPEReport({ contacts }) {
           </div>
         </div>
 
-        <div className={`mt-4 rounded-xl p-4 text-center ${resultado >= 0 ? 'bg-blue-50' : 'bg-red-50'}`}>
-          <div className={`text-sm font-semibold mb-1 ${resultado >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
-            Resultado do Período
+        <div className={`mt-4 rounded-xl p-4 text-center ${resultado >= 0 ? 'bg-brand-50' : 'bg-red-50'}`}>
+          <div className={`text-sm font-semibold mb-1 ${resultado >= 0 ? 'text-brand-600' : 'text-red-600'}`}>
+            Resultado do PerÃ­odo
           </div>
-          <div className={`text-2xl font-bold ${resultado >= 0 ? 'text-blue-700' : 'text-red-700'}`}>
+          <div className={`text-2xl font-bold ${resultado >= 0 ? 'text-brand-700' : 'text-red-700'}`}>
             {resultado >= 0 ? '+' : ''}{formatCurrency(resultado)}
           </div>
         </div>
@@ -1355,7 +1355,7 @@ export default function FinancialReports() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Relatórios Financeiros</h1>
+      <h1 className="text-2xl font-bold mb-6">RelatÃ³rios Financeiros</h1>
 
       <div className="flex flex-wrap gap-2 mb-6">
         {reports.map(r => {
@@ -1364,7 +1364,7 @@ export default function FinancialReports() {
             <button key={r.id} onClick={() => setActiveReport(r.id)}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 activeReport === r.id
-                  ? 'bg-blue-600 text-white shadow-sm'
+                  ? 'bg-brand-600 text-white shadow-sm'
                   : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
               }`}>
               <Icon size={16} />

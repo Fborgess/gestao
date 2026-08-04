@@ -42,7 +42,7 @@ const printToolbar = `
 <div class="no-print" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:8px 12px;background:#f3f4f6;border-radius:8px;font-family:system-ui,-apple-system,sans-serif;position:sticky;top:0;z-index:999">
   <span style="font-size:13px;color:#666">Pr\u00e9-visualiza\u00e7\u00e3o de impress\u00e3o</span>
   <div style="display:flex;gap:6px">
-    <button onclick="window.print()" style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;background:#2563eb;color:white;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-family:inherit">
+    <button onclick="window.print()" style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;background:#0d9488;color:white;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-family:inherit">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
       Imprimir
     </button>

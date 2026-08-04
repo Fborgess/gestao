@@ -1,4 +1,4 @@
-import { ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
+﻿import { ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
 
 export default function SortableHeader({ label, sortKey, currentSort, onSort, align = 'left' }) {
   const isActive = currentSort.key === sortKey;
@@ -20,8 +20,8 @@ export default function SortableHeader({ label, sortKey, currentSort, onSort, al
         <span>{label}</span>
         <span className="text-gray-400">
           {!isActive && <ChevronsUpDown size={14} />}
-          {isActive && direction === 'asc' && <ChevronUp size={14} className="text-blue-600" />}
-          {isActive && direction === 'desc' && <ChevronDown size={14} className="text-blue-600" />}
+          {isActive && direction === 'asc' && <ChevronUp size={14} className="text-brand-600" />}
+          {isActive && direction === 'desc' && <ChevronDown size={14} className="text-brand-600" />}
         </span>
       </div>
     </th>

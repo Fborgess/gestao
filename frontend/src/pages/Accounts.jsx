@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+﻿import { useState, useEffect, useMemo } from 'react';
 import api from '../services/api';
 import { formatCurrency } from '../services/format';
 import { currencyToDigits, formatDigitsToCurrency, parseCurrencyToNumber, formatNumberToCurrency } from '../services/masks';
@@ -6,9 +6,9 @@ import { Plus, Edit, Trash2, CreditCard, Landmark, Wallet } from 'lucide-react';
 import { CaseInput } from '../components/CaseInput';
 
 const typeConfig = {
-  banco: { label: 'Banco', icon: Landmark, color: 'bg-blue-100 text-blue-600' },
+  banco: { label: 'Banco', icon: Landmark, color: 'bg-brand-100 text-brand-600' },
   caixa: { label: 'Caixa', icon: Wallet, color: 'bg-green-100 text-green-600' },
-  cartao_credito: { label: 'Cartão de Crédito', icon: CreditCard, color: 'bg-purple-100 text-purple-600' },
+  cartao_credito: { label: 'CartÃ£o de CrÃ©dito', icon: CreditCard, color: 'bg-purple-100 text-purple-600' },
 };
 
 const flagOptions = ['Visa', 'Mastercard', 'Elo', 'Amex', 'Hipercard', 'Aura', 'Outro'];
@@ -78,17 +78,17 @@ export default function Accounts() {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Contas e Cartões de Crédito</h1>
+        <h1 className="text-2xl font-bold">Contas e CartÃµes de CrÃ©dito</h1>
         <button onClick={() => { setEditing(null); setForm(emptyForm); setShowModal(true); }}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700">
+          className="bg-brand-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-brand-700">
           <Plus size={18} /> Nova Conta
         </button>
       </div>
 
       <div className="flex gap-2 mb-4">
-        {[{ v: '', l: 'Todas' }, { v: 'banco', l: 'Bancos' }, { v: 'caixa', l: 'Caixa' }, { v: 'cartao_credito', l: 'Cartões' }].map(f => (
+        {[{ v: '', l: 'Todas' }, { v: 'banco', l: 'Bancos' }, { v: 'caixa', l: 'Caixa' }, { v: 'cartao_credito', l: 'CartÃµes' }].map(f => (
           <button key={f.v} onClick={() => setFilter(f.v)}
-            className={`px-3 py-1 rounded-lg text-sm ${filter === f.v ? 'bg-blue-600 text-white' : 'bg-white border hover:bg-gray-50'}`}>
+            className={`px-3 py-1 rounded-lg text-sm ${filter === f.v ? 'bg-brand-600 text-white' : 'bg-white border hover:bg-gray-50'}`}>
             {f.l}
           </button>
         ))}
@@ -117,7 +117,7 @@ export default function Accounts() {
                   )}
                   {a.account_type !== 'cartao_credito' && a.agency && (
                     <div>
-                      <span className="text-gray-400 text-xs">Agência</span>
+                      <span className="text-gray-400 text-xs">AgÃªncia</span>
                       <div className="text-gray-700">{a.agency}</div>
                     </div>
                   )}
@@ -160,13 +160,13 @@ export default function Accounts() {
               <div className="px-5 py-3 bg-gray-50 border-t border-gray-100 flex justify-between items-center">
                 <div>
                   <span className="text-xs text-gray-400">Saldo</span>
-                  <div className={`text-lg font-bold ${a.balance >= 0 ? 'text-blue-700' : 'text-red-600'}`}>
+                  <div className={`text-lg font-bold ${a.balance >= 0 ? 'text-brand-700' : 'text-red-600'}`}>
                     {formatCurrency(a.balance)}
                   </div>
                 </div>
                 <div className="flex gap-1">
                   <button onClick={() => handleEdit(a)}
-                    className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                    className="p-2 text-gray-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors">
                     <Edit size={16} />
                   </button>
                   <button onClick={() => handleDelete(a.id)}
@@ -184,7 +184,7 @@ export default function Accounts() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-auto shadow-2xl">
             <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
-              <div className={`p-2 rounded-xl ${isCreditCard ? 'bg-purple-100 text-purple-600' : form.account_type === 'caixa' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'}`}>
+              <div className={`p-2 rounded-xl ${isCreditCard ? 'bg-purple-100 text-purple-600' : form.account_type === 'caixa' ? 'bg-green-100 text-green-600' : 'bg-brand-100 text-brand-600'}`}>
                 {isCreditCard ? <CreditCard size={20} /> : form.account_type === 'caixa' ? <Wallet size={20} /> : <Landmark size={20} />}
               </div>
               <h2 className="text-lg font-bold text-gray-900">{editing ? 'Editar' : 'Nova'} Conta</h2>
@@ -196,17 +196,17 @@ export default function Accounts() {
                   <div>
                     <label className="block text-xs font-medium text-gray-500 mb-1">Tipo *</label>
                     <select value={form.account_type} onChange={e => setForm({...form, account_type: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
                       <option value="banco">Banco</option>
                       <option value="caixa">Caixa</option>
-                      <option value="cartao_credito">Cartão de Crédito</option>
+                      <option value="cartao_credito">CartÃ£o de CrÃ©dito</option>
                     </select>
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-500 mb-1">Nome *</label>
-                    <CaseInput placeholder="Ex: Itaú Corrente, Nubank..." value={form.name}
+                    <CaseInput placeholder="Ex: ItaÃº Corrente, Nubank..." value={form.name}
                       onChange={e => setForm({...form, name: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" required />
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none" required />
                   </div>
                 </div>
 
@@ -214,31 +214,31 @@ export default function Accounts() {
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="block text-xs font-medium text-gray-500 mb-1">Banco</label>
-                      <CaseInput placeholder="Ex: Itaú, Bradesco, BB..." value={form.bank_name}
+                      <CaseInput placeholder="Ex: ItaÃº, Bradesco, BB..." value={form.bank_name}
                         onChange={e => setForm({...form, bank_name: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" />
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none" />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-500 mb-1">Agência</label>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">AgÃªncia</label>
                       <input placeholder="Ex: 0001" value={form.agency}
                         onChange={e => setForm({...form, agency: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" />
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none" />
                     </div>
                   </div>
                 )}
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">{isCreditCard ? 'Final do Cartão' : 'Nº Conta'}</label>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">{isCreditCard ? 'Final do CartÃ£o' : 'NÂº Conta'}</label>
                     <input placeholder={isCreditCard ? 'Ex: 1234' : 'Ex: 12345-6'} value={form.account_number}
                       onChange={e => setForm({...form, account_number: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" />
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none" />
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-500 mb-1">Saldo Inicial</label>
                     <input type="text" inputMode="decimal" placeholder="0,00" value={form.balance}
                       onChange={e => setForm({...form, balance: formatDigitsToCurrency(currencyToDigits(e.target.value), 2)})}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" />
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none" />
                   </div>
                 </div>
 
@@ -246,7 +246,7 @@ export default function Accounts() {
                   <div className="border-t border-gray-100 pt-4 mt-2">
                     <div className="flex items-center gap-2 mb-3">
                       <CreditCard size={14} className="text-purple-500" />
-                      <p className="text-xs font-semibold text-purple-600 uppercase tracking-wide">Dados do Cartão</p>
+                      <p className="text-xs font-semibold text-purple-600 uppercase tracking-wide">Dados do CartÃ£o</p>
                     </div>
                     <div className="space-y-3">
                       <div>
@@ -278,7 +278,7 @@ export default function Accounts() {
                         </div>
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-gray-500 mb-1">Limite Disponível (R$)</label>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Limite DisponÃ­vel (R$)</label>
                         <input type="text" inputMode="decimal" placeholder="0,00" value={form.credit_limit}
                           onChange={e => setForm({...form, credit_limit: formatDigitsToCurrency(currencyToDigits(e.target.value), 2)})}
                           className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none" />
@@ -294,7 +294,7 @@ export default function Accounts() {
                   Cancelar
                 </button>
                 <button type="submit"
-                  className="px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm">
+                  className="px-5 py-2.5 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 transition-colors shadow-sm">
                   {editing ? 'Atualizar' : 'Criar Conta'}
                 </button>
               </div>

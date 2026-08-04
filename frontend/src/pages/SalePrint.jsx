@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../services/api';
 import { Printer, X } from 'lucide-react';
@@ -27,18 +27,18 @@ export default function SalePrint() {
     <div className="max-w-5xl mx-auto p-8">
       <div className="no-print flex justify-between items-center mb-4 p-3 bg-gray-100 rounded-lg">
         <div>
-          <span className="text-sm text-gray-600">Pré-visualização de impressão</span>
+          <span className="text-sm text-gray-600">PrÃ©-visualizaÃ§Ã£o de impressÃ£o</span>
           <p className="text-xs text-gray-400 mt-0.5">Gerado em {new Date().toLocaleString('pt-BR')}</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={() => window.print()} className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm flex items-center gap-1 hover:bg-blue-700"><Printer size={14} /> Imprimir</button>
+          <button onClick={() => window.print()} className="px-3 py-1.5 bg-brand-600 text-white rounded text-sm flex items-center gap-1 hover:bg-brand-700"><Printer size={14} /> Imprimir</button>
           <button onClick={() => window.close()} className="px-3 py-1.5 border rounded text-sm flex items-center gap-1 hover:bg-gray-50"><X size={14} /> Fechar</button>
         </div>
       </div>
 
       <div className="text-center mb-6">
         <h1 className="text-2xl font-bold">Pedido #{sale.id}</h1>
-        <p className="text-sm text-gray-400">Sistema de Gestão</p>
+        <p className="text-sm text-gray-400">Sistema de GestÃ£o</p>
       </div>
 
       <div className="border rounded-lg p-4 mb-6">
@@ -79,7 +79,7 @@ export default function SalePrint() {
 
       {sale.notes && (
         <div className="text-sm text-gray-600 border-t pt-4">
-          <span className="font-medium">Observações:</span> {sale.notes}
+          <span className="font-medium">ObservaÃ§Ãµes:</span> {sale.notes}
         </div>
       )}
     </div>

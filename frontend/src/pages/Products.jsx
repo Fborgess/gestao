@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+﻿import { useState, useEffect, useMemo } from 'react';
 import api from '../services/api';
 import { Plus, Edit, Trash2, Search, Upload } from 'lucide-react';
 import SearchableSelect from '../components/SearchableSelect';
@@ -196,7 +196,7 @@ export default function Products() {
             <Upload size={18} /> Importar Excel
           </button>
           <button onClick={() => { resetForm(); setEditingProduct(null); setShowModal(true); }}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700">
+            className="bg-brand-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-brand-700">
             <Plus size={18} /> Novo Produto
           </button>
         </div>
@@ -217,10 +217,10 @@ export default function Products() {
               <SortableHeader label="Nome" sortKey="name" currentSort={sortConfig} onSort={handleSort} />
               <SortableHeader label="SKU" sortKey="sku" currentSort={sortConfig} onSort={handleSort} />
               <SortableHeader label="Categoria" sortKey="category_id" currentSort={sortConfig} onSort={handleSort} />
-              <SortableHeader label="Preço Custo" sortKey="cost_price" currentSort={sortConfig} onSort={handleSort} align="right" />
+              <SortableHeader label="PreÃ§o Custo" sortKey="cost_price" currentSort={sortConfig} onSort={handleSort} align="right" />
               <SortableHeader label="Markup" sortKey="markup" currentSort={sortConfig} onSort={handleSort} align="right" />
-              <SortableHeader label="Preço Venda" sortKey="price" currentSort={sortConfig} onSort={handleSort} align="right" />
-              <th className="text-center p-3">Ações</th>
+              <SortableHeader label="PreÃ§o Venda" sortKey="price" currentSort={sortConfig} onSort={handleSort} align="right" />
+              <th className="text-center p-3">AÃ§Ãµes</th>
             </tr>
           </thead>
           <tbody>
@@ -233,7 +233,7 @@ export default function Products() {
                 <td className="p-3 text-right">{p.markup != null ? Number(p.markup).toLocaleString('pt-BR', { minimumFractionDigits: 4, maximumFractionDigits: 4 }) : '-'}</td>
                 <td className="p-3 text-right">{fmtVal(p.price, p.unit)}</td>
                 <td className="p-3 text-center">
-                  <button onClick={() => handleEdit(p)} className="text-blue-600 hover:text-blue-800 mr-2"><Edit size={16} /></button>
+                  <button onClick={() => handleEdit(p)} className="text-brand-600 hover:text-brand-800 mr-2"><Edit size={16} /></button>
                   <button onClick={() => handleDelete(p.id)} className="text-red-600 hover:text-red-800"><Trash2 size={16} /></button>
                 </td>
               </tr>
@@ -262,7 +262,7 @@ export default function Products() {
                 <CaseInput placeholder="SKU *" value={form.sku}
                   onChange={e => setForm({...form, sku: e.target.value})}
                   className="px-3 py-2 border rounded-lg text-sm" required />
-                <CaseInput placeholder="Código de barras" value={form.barcode}
+                <CaseInput placeholder="CÃ³digo de barras" value={form.barcode}
                   onChange={e => setForm({...form, barcode: e.target.value})}
                   className="px-3 py-2 border rounded-lg text-sm" />
               </div>
@@ -291,7 +291,7 @@ export default function Products() {
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">Preço de Custo</label>
+                  <label className="block text-xs text-gray-500 mb-1">PreÃ§o de Custo</label>
                   <input type="text" inputMode="decimal" placeholder="R$ 0,00" value={form.cost_price}
                     onChange={e => handleCostChange(e.target.value)}
                     className="w-full px-3 py-2 border rounded-lg text-sm" />
@@ -304,7 +304,7 @@ export default function Products() {
                     className="w-full px-3 py-2 border rounded-lg text-sm" />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">Preço de Venda</label>
+                  <label className="block text-xs text-gray-500 mb-1">PreÃ§o de Venda</label>
                   <input type="text" inputMode="decimal" placeholder="R$ 0,00" value={form.price}
                     onChange={e => handlePriceChange(e.target.value)}
                     className="w-full px-3 py-2 border rounded-lg text-sm" />
@@ -312,18 +312,18 @@ export default function Products() {
               </div>
               {form.cost_price && (form.markup || form.price) && (
                 <p className="text-xs text-gray-400">
-                  {form.markup && form.cost_price ? `Preço de venda = custo × markup → R$ ${formatNumberToCurrency(parseCurrencyToNumber(form.cost_price, formDecimals) * parseDecimal(form.markup), formDecimals)}` : ''}
-                  {form.price && form.cost_price && !form.markup ? `Markup = venda ÷ custo → ${formatDecimal(parseCurrencyToNumber(form.price, formDecimals) / parseCurrencyToNumber(form.cost_price, formDecimals))}` : ''}
+                  {form.markup && form.cost_price ? `PreÃ§o de venda = custo Ã— markup â†’ R$ ${formatNumberToCurrency(parseCurrencyToNumber(form.cost_price, formDecimals) * parseDecimal(form.markup), formDecimals)}` : ''}
+                  {form.price && form.cost_price && !form.markup ? `Markup = venda Ã· custo â†’ ${formatDecimal(parseCurrencyToNumber(form.price, formDecimals) / parseCurrencyToNumber(form.cost_price, formDecimals))}` : ''}
                 </p>
               )}
-              <CaseTextarea placeholder="Descrição do produto" value={form.description} rows={4}
+              <CaseTextarea placeholder="DescriÃ§Ã£o do produto" value={form.description} rows={4}
                 onChange={e => setForm({...form, description: e.target.value})}
                 className="w-full px-3 py-2 border rounded-lg text-sm" />
               <div className="flex justify-end gap-2 mt-4">
                 <button type="button" onClick={() => setShowModal(false)}
                   className="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">Cancelar</button>
                 <button type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">Salvar</button>
+                  className="px-4 py-2 bg-brand-600 text-white rounded-lg text-sm hover:bg-brand-700">Salvar</button>
               </div>
             </form>
           </div>

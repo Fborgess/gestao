@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+﻿import { useState, useEffect, useMemo } from 'react';
 import api from '../services/api';
 import { Plus, Edit, Trash2, Banknote } from 'lucide-react';
 import SortableHeader from '../components/SortableHeader';
@@ -53,7 +53,7 @@ export default function PaymentTypes() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Tipos de Pagamento</h1>
         <button onClick={() => { setEditing(null); setForm({ name: '', description: '', requires_installments: false }); setShowModal(true); }}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700">
+          className="bg-brand-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-brand-700">
           <Plus size={18} /> Novo Tipo
         </button>
       </div>
@@ -63,9 +63,9 @@ export default function PaymentTypes() {
           <thead className="bg-gray-50">
             <tr>
               <SortableHeader label="Nome" sortKey="name" currentSort={sortConfig} onSort={handleSort} />
-              <SortableHeader label="Descrição" sortKey="description" currentSort={sortConfig} onSort={handleSort} />
+              <SortableHeader label="DescriÃ§Ã£o" sortKey="description" currentSort={sortConfig} onSort={handleSort} />
               <SortableHeader label="Parcelas" sortKey="requires_installments" currentSort={sortConfig} onSort={handleSort} align="center" />
-              <th className="text-center p-3">Ações</th>
+              <th className="text-center p-3">AÃ§Ãµes</th>
             </tr>
           </thead>
           <tbody>
@@ -79,11 +79,11 @@ export default function PaymentTypes() {
                   {t.requires_installments ? (
                     <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">Sim</span>
                   ) : (
-                    <span className="px-2 py-1 bg-gray-100 text-gray-500 rounded-full text-xs">Não</span>
+                    <span className="px-2 py-1 bg-gray-100 text-gray-500 rounded-full text-xs">NÃ£o</span>
                   )}
                 </td>
                 <td className="p-3 text-center">
-                  <button onClick={() => handleEdit(t)} className="text-blue-600 hover:text-blue-800 mr-2"><Edit size={16} /></button>
+                  <button onClick={() => handleEdit(t)} className="text-brand-600 hover:text-brand-800 mr-2"><Edit size={16} /></button>
                   <button onClick={() => handleDelete(t.id)} className="text-red-600 hover:text-red-800"><Trash2 size={16} /></button>
                 </td>
               </tr>
@@ -102,7 +102,7 @@ export default function PaymentTypes() {
             <form onSubmit={handleSubmit} className="space-y-3">
               <CaseInput placeholder="Nome *" value={form.name} onChange={e => setForm({...form, name: e.target.value})}
                 className="w-full px-3 py-2 border rounded-lg text-sm" required />
-              <CaseInput placeholder="Descrição" value={form.description} onChange={e => setForm({...form, description: e.target.value})}
+              <CaseInput placeholder="DescriÃ§Ã£o" value={form.description} onChange={e => setForm({...form, description: e.target.value})}
                 className="w-full px-3 py-2 border rounded-lg text-sm" />
               <label className="flex items-center gap-2 text-sm">
                 <input type="checkbox" checked={form.requires_installments}
@@ -111,7 +111,7 @@ export default function PaymentTypes() {
               </label>
               <div className="flex justify-end gap-2 mt-4">
                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border rounded-lg text-sm">Cancelar</button>
-                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">Salvar</button>
+                <button type="submit" className="px-4 py-2 bg-brand-600 text-white rounded-lg text-sm hover:bg-brand-700">Salvar</button>
               </div>
             </form>
           </div>

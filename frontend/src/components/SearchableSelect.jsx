@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+﻿import { useState, useRef, useEffect } from 'react';
 import { Search, ChevronDown, X } from 'lucide-react';
 
 export default function SearchableSelect({ options, value, onChange, placeholder, required, disabled, renderOption, renderSelected }) {
@@ -67,7 +67,7 @@ export default function SearchableSelect({ options, value, onChange, placeholder
         onClick={() => !disabled && setOpen(!open)}
         className={`w-full flex items-center justify-between px-3 py-2 border rounded-lg text-sm cursor-pointer bg-white ${
           disabled ? 'bg-gray-50 text-gray-400' : 'hover:border-gray-400'
-        } ${open ? 'border-blue-500 ring-1 ring-blue-500' : 'border-gray-300'}`}
+        } ${open ? 'border-brand-500 ring-1 ring-brand-500' : 'border-gray-300'}`}
       >
         <span className={selected ? 'text-gray-900 flex items-center gap-2' : 'text-gray-400'}>
           {selected ? (renderSelected ? renderSelected(selected) : selected.label) : (placeholder || 'Selecione...')}
@@ -105,7 +105,7 @@ export default function SearchableSelect({ options, value, onChange, placeholder
                 key={opt.value}
                 onClick={() => select(opt.value)}
                 className={`px-3 py-2 text-sm cursor-pointer flex items-center gap-2 ${
-                  opt.value === value ? 'bg-blue-50 text-blue-700 font-medium' :
+                  opt.value === value ? 'bg-brand-50 text-brand-700 font-medium' :
                   i === highlighted ? 'bg-gray-100' : 'hover:bg-gray-50'
                 }`}
               >

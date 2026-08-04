@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+﻿import { useState, useEffect, useMemo } from 'react';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
@@ -130,11 +130,11 @@ export default function Contacts() {
 
   const lookupCnpj = async () => {
     const cnpj = form.cpf_cnpj.replace(/\D/g, '');
-    if (cnpj.length !== 14) { alert('Informe um CNPJ válido (14 dígitos)'); return; }
+    if (cnpj.length !== 14) { alert('Informe um CNPJ vÃ¡lido (14 dÃ­gitos)'); return; }
     setLookupLoading(true);
     try {
       const res = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`);
-      if (!res.ok) throw new Error('CNPJ não encontrado');
+      if (!res.ok) throw new Error('CNPJ nÃ£o encontrado');
       const d = await res.json();
       const address = [d.logradouro, d.numero, d.complemento].filter(Boolean).join(', ');
       setForm(f => ({
@@ -156,11 +156,11 @@ export default function Contacts() {
 
   const lookupCep = async () => {
     const cep = form.cep.replace(/\D/g, '');
-    if (cep.length !== 8) { alert('Informe um CEP válido (8 dígitos)'); return; }
+    if (cep.length !== 8) { alert('Informe um CEP vÃ¡lido (8 dÃ­gitos)'); return; }
     setCepLoading(true);
     try {
       const res = await fetch(`https://brasilapi.com.br/api/cep/v2/${cep}`);
-      if (!res.ok) throw new Error('CEP não encontrado');
+      if (!res.ok) throw new Error('CEP nÃ£o encontrado');
       const d = await res.json();
       setForm(f => ({
         ...f,
@@ -176,7 +176,7 @@ export default function Contacts() {
   };
 
   const typeLabels = { cliente: 'Cliente', fornecedor: 'Fornecedor', both: 'Cliente/Fornecedor' };
-  const typeColors = { cliente: 'bg-blue-100 text-blue-700', fornecedor: 'bg-purple-100 text-purple-700', both: 'bg-teal-100 text-teal-700' };
+  const typeColors = { cliente: 'bg-brand-100 text-brand-700', fornecedor: 'bg-purple-100 text-purple-700', both: 'bg-teal-100 text-teal-700' };
 
   return (
     <div>
@@ -190,7 +190,7 @@ export default function Contacts() {
             </button>
           )}
           <button onClick={() => { resetForm(); setEditing(null); setShowModal(true); }}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700">
+            className="bg-brand-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-brand-700">
             <Plus size={18} /> Novo Contato
           </button>
         </div>
@@ -199,7 +199,7 @@ export default function Contacts() {
       <div className="flex gap-2 mb-4">
         {[{ v: '', l: 'Todos' }, { v: 'cliente', l: 'Clientes' }, { v: 'fornecedor', l: 'Fornecedores' }].map(f => (
           <button key={f.v} onClick={() => setFilter(f.v)}
-            className={`px-3 py-1 rounded-lg text-sm ${filter === f.v ? 'bg-blue-600 text-white' : 'bg-white border hover:bg-gray-50'}`}>
+            className={`px-3 py-1 rounded-lg text-sm ${filter === f.v ? 'bg-brand-600 text-white' : 'bg-white border hover:bg-gray-50'}`}>
             {f.l}
           </button>
         ))}
@@ -218,9 +218,9 @@ export default function Contacts() {
           <div key={c.id} className="bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition-shadow">
             <div className="flex justify-between items-start mb-3">
               <div className="flex items-center gap-2">
-                {c.contact_type === 'fornecedor' ? <Building size={20} className="text-purple-600" /> : <User size={20} className="text-blue-600" />}
+                {c.contact_type === 'fornecedor' ? <Building size={20} className="text-purple-600" /> : <User size={20} className="text-brand-600" />}
                 <span className="font-semibold">{c.name}</span>
-                {c.segment && <span className="text-xs text-gray-400">· {c.segment}</span>}
+                {c.segment && <span className="text-xs text-gray-400">Â· {c.segment}</span>}
               </div>
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${typeColors[c.contact_type]}`}>
                 {typeLabels[c.contact_type]}
@@ -233,7 +233,7 @@ export default function Contacts() {
               {c.city && c.state && <div>{c.city} - {c.state}</div>}
             </div>
             <div className="flex justify-end gap-2">
-              <button onClick={() => handleEdit(c)} className="text-blue-600 hover:text-blue-800"><Edit size={16} /></button>
+              <button onClick={() => handleEdit(c)} className="text-brand-600 hover:text-brand-800"><Edit size={16} /></button>
               <button onClick={() => handleDelete(c.id)} className="text-red-600 hover:text-red-800"><Trash2 size={16} /></button>
             </div>
           </div>
@@ -261,7 +261,7 @@ export default function Contacts() {
                     className="flex-1 min-w-0 px-3 py-2 border rounded-lg text-sm" />
                   {form.cpf_cnpj.replace(/\D/g, '').length === 14 && (
                     <button type="button" onClick={lookupCnpj} title="Buscar dados pelo CNPJ"
-                      className="px-3 py-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200">
+                      className="px-3 py-2 rounded-lg bg-brand-50 text-brand-600 hover:bg-brand-100 border border-brand-200">
                       {lookupLoading ? '...' : <Search size={16} />}
                     </button>
                   )}
@@ -284,13 +284,13 @@ export default function Contacts() {
                     onChange={e => setForm({...form, cep: e.target.value})}
                     className="flex-1 min-w-0 px-3 py-2 border rounded-lg text-sm" />
                   {form.cep.replace(/\D/g, '').length === 8 && (
-                    <button type="button" onClick={lookupCep} title="Buscar endereço pelo CEP"
-                      className="px-3 py-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200">
+                    <button type="button" onClick={lookupCep} title="Buscar endereÃ§o pelo CEP"
+                      className="px-3 py-2 rounded-lg bg-brand-50 text-brand-600 hover:bg-brand-100 border border-brand-200">
                       {cepLoading ? '...' : <Search size={16} />}
                     </button>
                   )}
                 </div>
-                <CaseInput placeholder="Endereço" value={form.address}
+                <CaseInput placeholder="EndereÃ§o" value={form.address}
                   onChange={e => setForm({...form, address: e.target.value})}
                   className="col-span-2 px-3 py-2 border rounded-lg text-sm" />
                 <CaseInput placeholder="Cidade" value={form.city}
@@ -301,20 +301,20 @@ export default function Contacts() {
                   className="px-3 py-2 border rounded-lg text-sm" />
                 <select value={form.price_table_id} onChange={e => setForm({...form, price_table_id: e.target.value})}
                   className="col-span-2 px-3 py-2 border rounded-lg text-sm">
-                  <option value="">Sem tabela de preços</option>
+                  <option value="">Sem tabela de preÃ§os</option>
                   {priceTables.map(t => (
                     <option key={t.id} value={t.id}>{t.name}</option>
                   ))}
                 </select>
               </div>
-              <CaseTextarea placeholder="Observações" value={form.notes} rows={2}
+              <CaseTextarea placeholder="ObservaÃ§Ãµes" value={form.notes} rows={2}
                 onChange={e => setForm({...form, notes: e.target.value})}
                 className="w-full px-3 py-2 border rounded-lg text-sm" />
               <div className="flex justify-end gap-2 mt-4">
                 <button type="button" onClick={() => setShowModal(false)}
                   className="px-4 py-2 border rounded-lg text-sm">Cancelar</button>
                 <button type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">Salvar</button>
+                  className="px-4 py-2 bg-brand-600 text-white rounded-lg text-sm hover:bg-brand-700">Salvar</button>
               </div>
             </form>
           </div>
@@ -333,7 +333,7 @@ export default function Contacts() {
                 onChange={e => setNewSegment(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSegment(); } }}
                 className="flex-1 px-3 py-2 border rounded-lg text-sm" />
-              <button onClick={addSegment} className="px-3 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">Adicionar</button>
+              <button onClick={addSegment} className="px-3 py-2 bg-brand-600 text-white rounded-lg text-sm hover:bg-brand-700">Adicionar</button>
             </div>
             <ul className="space-y-2">
               {segments.map(s => (
@@ -349,7 +349,7 @@ export default function Contacts() {
                   ) : (
                     <>
                       <span className="flex-1 text-sm">{s.name}</span>
-                      <button onClick={() => { setEditSegId(s.id); setEditSegName(s.name); }} className="text-blue-600 hover:text-blue-800"><Edit size={16} /></button>
+                      <button onClick={() => { setEditSegId(s.id); setEditSegName(s.name); }} className="text-brand-600 hover:text-brand-800"><Edit size={16} /></button>
                       <button onClick={() => deleteSegment(s.id)} className="text-red-600 hover:text-red-800"><Trash2 size={16} /></button>
                     </>
                   )}

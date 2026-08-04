@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+﻿import { useState, useEffect, useMemo, useRef } from 'react';
 import api from '../services/api';
 import { formatCurrency, getTodayLocal } from '../services/format';
 import { qtyStep, qtyMin, roundQty, currencyToDigits, formatDigitsToCurrency, parseCurrencyToNumber, formatNumberToCurrency } from '../services/masks';
@@ -88,12 +88,12 @@ export default function Stock() {
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Remover esta movimentação?')) return;
+    if (!confirm('Remover esta movimentaÃ§Ã£o?')) return;
     try {
       await api.delete(`/stock/movements/${id}`);
       loadMovements();
     } catch (err) {
-      alert(err.response?.data?.detail || 'Erro ao remover movimentação');
+      alert(err.response?.data?.detail || 'Erro ao remover movimentaÃ§Ã£o');
     }
   };
 
@@ -115,7 +115,7 @@ export default function Stock() {
       }
       setShowModal(false); resetForm(); loadMovements();
     } catch (err) {
-      alert(err.response?.data?.detail || 'Erro ao salvar movimentação');
+      alert(err.response?.data?.detail || 'Erro ao salvar movimentaÃ§Ã£o');
     }
   };
 
@@ -127,7 +127,7 @@ export default function Stock() {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Movimentação de Estoque</h1>
+        <h1 className="text-2xl font-bold">MovimentaÃ§Ã£o de Estoque</h1>
         <div className="flex gap-2">
           <button onClick={() => { resetForm(); setActiveTab('entrada'); setShowModal(true); }}
             className="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-green-700">
@@ -135,7 +135,7 @@ export default function Stock() {
           </button>
           <button onClick={() => { resetForm(); setActiveTab('saida'); setShowModal(true); }}
             className="bg-orange-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-orange-700">
-            <ClipboardList size={18} /> Nova Requisição
+            <ClipboardList size={18} /> Nova RequisiÃ§Ã£o
           </button>
         </div>
       </div>
@@ -145,14 +145,14 @@ export default function Stock() {
           <thead className="bg-gray-50">
             <tr>
               <SortableHeader label="Data" sortKey="movement_date" currentSort={sortConfig} onSort={handleSort} />
-              <SortableHeader label="Depósito" sortKey="deposit_id" currentSort={sortConfig} onSort={handleSort} />
+              <SortableHeader label="DepÃ³sito" sortKey="deposit_id" currentSort={sortConfig} onSort={handleSort} />
               <SortableHeader label="Produto" sortKey="product_id" currentSort={sortConfig} onSort={handleSort} />
               <SortableHeader label="Tipo" sortKey="movement_type" currentSort={sortConfig} onSort={handleSort} align="center" />
               <SortableHeader label="Qtd" sortKey="quantity" currentSort={sortConfig} onSort={handleSort} align="right" />
-              <SortableHeader label="Preço Unit." sortKey="unit_price" currentSort={sortConfig} onSort={handleSort} align="right" />
+              <SortableHeader label="PreÃ§o Unit." sortKey="unit_price" currentSort={sortConfig} onSort={handleSort} align="right" />
               <SortableHeader label="Total" sortKey="total_value" currentSort={sortConfig} onSort={handleSort} align="right" />
               <SortableHeader label="Motivo" sortKey="reason" currentSort={sortConfig} onSort={handleSort} />
-              <th className="p-3 text-center whitespace-nowrap">Ações</th>
+              <th className="p-3 text-center whitespace-nowrap">AÃ§Ãµes</th>
             </tr>
           </thead>
           <tbody>
@@ -166,7 +166,7 @@ export default function Stock() {
                     m.movement_type === 'entrada' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
                   }`}>
                     {m.movement_type === 'entrada' ? <ArrowDownCircle size={12} /> : <ArrowUpCircle size={12} />}
-                    {m.movement_type === 'entrada' ? 'Entrada' : 'Saída'}
+                    {m.movement_type === 'entrada' ? 'Entrada' : 'SaÃ­da'}
                   </span>
                 </td>
                 <td className="p-3 text-right font-medium whitespace-nowrap">{m.quantity}</td>
@@ -176,7 +176,7 @@ export default function Stock() {
                 <td className="p-3 text-center whitespace-nowrap">
                   {m.source !== 'requisicao' && (
                     <>
-                      <button onClick={() => handleEdit(m)} className="text-blue-600 hover:text-blue-800 mr-2"><Edit size={16} /></button>
+                      <button onClick={() => handleEdit(m)} className="text-brand-600 hover:text-brand-800 mr-2"><Edit size={16} /></button>
                       <button onClick={() => handleDelete(m.id)} className="text-red-600 hover:text-red-800"><Trash2 size={16} /></button>
                     </>
                   )}
@@ -184,7 +184,7 @@ export default function Stock() {
               </tr>
             ))}
             {sortedMovements.length === 0 && (
-              <tr><td colSpan={9} className="p-8 text-center text-gray-400">Nenhuma movimentação registrada</td></tr>
+              <tr><td colSpan={9} className="p-8 text-center text-gray-400">Nenhuma movimentaÃ§Ã£o registrada</td></tr>
             )}
           </tbody>
         </table>
@@ -200,17 +200,17 @@ export default function Stock() {
               </button>
               <button type="button" onClick={() => setActiveTab('saida')}
                 className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'saida' ? 'bg-orange-600 text-white' : 'bg-gray-100 text-gray-600'}`}>
-                <span className="flex items-center justify-center gap-1"><ClipboardList size={14} /> Requisição</span>
+                <span className="flex items-center justify-center gap-1"><ClipboardList size={14} /> RequisiÃ§Ã£o</span>
               </button>
             </div>
             <h2 className="text-lg font-bold mb-4">
-              {editing ? 'Editar' : 'Nova'} {activeTab === 'entrada' ? 'Entrada de Estoque' : 'Requisição de Saída'}
+              {editing ? 'Editar' : 'Nova'} {activeTab === 'entrada' ? 'Entrada de Estoque' : 'RequisiÃ§Ã£o de SaÃ­da'}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-3">
               <div>
-                <label className="block text-xs text-gray-500 mb-1">Depósito *</label>
+                <label className="block text-xs text-gray-500 mb-1">DepÃ³sito *</label>
                 <SearchableSelect options={depositOptions} value={form.deposit_id ? parseInt(form.deposit_id) : ''}
-                  onChange={v => setForm({...form, deposit_id: String(v)})} placeholder="Selecione o depósito" required />
+                  onChange={v => setForm({...form, deposit_id: String(v)})} placeholder="Selecione o depÃ³sito" required />
               </div>
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Produto *</label>
@@ -232,7 +232,7 @@ export default function Stock() {
                 </div>
                 {activeTab === 'entrada' && (
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1">Preço Unitário</label>
+                    <label className="block text-xs text-gray-500 mb-1">PreÃ§o UnitÃ¡rio</label>
                     <input placeholder="R$ 0,00" type="text" inputMode="decimal" value={form.unit_price}
                       onChange={e => setForm({...form, unit_price: formatDigitsToCurrency(currencyToDigits(e.target.value), 2)})}
                       className="w-full px-3 py-2 border rounded-lg text-sm" />
@@ -242,28 +242,28 @@ export default function Stock() {
               {activeTab === 'saida' ? (
                 <div>
                   <label className="block text-xs text-gray-500 mb-1">Motivo / Destino *</label>
-                  <CaseInput placeholder="Ex: Uso interno, Transferência, Cliente X" value={form.reason}
+                  <CaseInput placeholder="Ex: Uso interno, TransferÃªncia, Cliente X" value={form.reason}
                     onChange={e => setForm({...form, reason: e.target.value})}
                     className="w-full px-3 py-2 border rounded-lg text-sm" required />
                 </div>
               ) : (
                 <div>
                   <label className="block text-xs text-gray-500 mb-1">Motivo</label>
-                  <CaseInput placeholder="Ex: Compra, Devolução, Ajuste" value={form.reason}
+                  <CaseInput placeholder="Ex: Compra, DevoluÃ§Ã£o, Ajuste" value={form.reason}
                     onChange={e => setForm({...form, reason: e.target.value})}
                     className="w-full px-3 py-2 border rounded-lg text-sm" />
                 </div>
               )}
               <div>
-                <label className="block text-xs text-gray-500 mb-1">Observações</label>
-                <CaseTextarea placeholder="Observações" value={form.notes} rows={2}
+                <label className="block text-xs text-gray-500 mb-1">ObservaÃ§Ãµes</label>
+                <CaseTextarea placeholder="ObservaÃ§Ãµes" value={form.notes} rows={2}
                   onChange={e => setForm({...form, notes: e.target.value})}
                   className="w-full px-3 py-2 border rounded-lg text-sm" />
               </div>
               <div className="flex justify-end gap-2 mt-4">
                 <button type="button" onClick={() => { setShowModal(false); resetForm(); }} className="px-4 py-2 border rounded-lg text-sm">Cancelar</button>
                 <button type="submit" className={`px-4 py-2 text-white rounded-lg text-sm hover:opacity-90 ${activeTab === 'entrada' ? 'bg-green-600' : 'bg-orange-600'}`}>
-                  {editing ? 'Salvar Alterações' : (activeTab === 'entrada' ? 'Registrar Entrada' : 'Registrar Requisição')}
+                  {editing ? 'Salvar AlteraÃ§Ãµes' : (activeTab === 'entrada' ? 'Registrar Entrada' : 'Registrar RequisiÃ§Ã£o')}
                 </button>
               </div>
             </form>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+﻿import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import api from '../services/api';
 import { Plus, Edit, Trash2, Warehouse, ChevronDown, ChevronRight, ArrowRightLeft, AlertTriangle, BarChart3, Package, X, Search, MinusCircle, ClipboardCheck, ArrowDownCircle, ArrowUpCircle, Save } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -7,14 +7,14 @@ import { CaseInput, CaseTextarea } from '../components/CaseInput';
 import { qtyStep, qtyMin, roundQty, currencyToDigits, formatDigitsToCurrency, parseCurrencyToNumber, formatNumberToCurrency } from '../services/masks';
 
 const statusColors = {
-  maintained: 'bg-blue-100 text-blue-700 border-blue-200',
+  maintained: 'bg-brand-100 text-brand-700 border-brand-200',
   damaged: 'bg-red-100 text-red-700 border-red-200',
   sold: 'bg-green-100 text-green-700 border-green-200',
 };
 
 const SIDES = {
-  abastecimento: { label: 'Abastecimento', icon: ArrowRightLeft, color: 'text-blue-600', bg: 'bg-blue-50', btn: 'bg-blue-600 hover:bg-blue-700' },
-  devolucao: { label: 'Devolução', icon: ArrowRightLeft, color: 'text-orange-600', bg: 'bg-orange-50', btn: 'bg-orange-600 hover:bg-orange-700' },
+  abastecimento: { label: 'Abastecimento', icon: ArrowRightLeft, color: 'text-brand-600', bg: 'bg-brand-50', btn: 'bg-brand-600 hover:bg-brand-700' },
+  devolucao: { label: 'DevoluÃ§Ã£o', icon: ArrowRightLeft, color: 'text-orange-600', bg: 'bg-orange-50', btn: 'bg-orange-600 hover:bg-orange-700' },
   avaria: { label: 'Avaria', icon: AlertTriangle, color: 'text-red-600', bg: 'bg-red-50', btn: 'bg-red-600 hover:bg-red-700' },
 };
 
@@ -28,12 +28,12 @@ function ProductSearch({ products, onSelect, onClose }) {
     return products.filter(p => p.name.toLowerCase().includes(lq) || (p.sku && p.sku.toLowerCase().includes(lq))).slice(0, 8);
   }, [q, products]);
   return (
-    <div className="p-3 border border-blue-200 rounded-lg bg-blue-50 mb-3">
+    <div className="p-3 border border-brand-200 rounded-lg bg-brand-50 mb-3">
       <input type="text" placeholder="Buscar produto..." value={q} onChange={e => setQ(e.target.value)}
         autoFocus className="w-full px-3 py-2 border rounded-lg text-sm mb-2" />
       {results.map(p => (
         <button key={p.id} type="button" onClick={() => onSelect(p)}
-          className="w-full text-left px-3 py-2 text-sm hover:bg-blue-100 border-b flex justify-between">
+          className="w-full text-left px-3 py-2 text-sm hover:bg-brand-100 border-b flex justify-between">
           <span>{productLabel(p)}</span>
           <span className="text-gray-400 text-xs">{p.sku}</span>
         </button>
@@ -65,7 +65,7 @@ function TransferModal({ type, deposit, deposits, onClose, onDone }) {
     setBalanceError('');
     api.get('/stock/balance/', { params: { deposit_id: srcId } })
       .then(res => { if (active) setSrcBalance(res.data || []); })
-      .catch(err => { if (active) setBalanceError(err.response?.data?.detail || 'Erro ao carregar o saldo do depósito'); });
+      .catch(err => { if (active) setBalanceError(err.response?.data?.detail || 'Erro ao carregar o saldo do depÃ³sito'); });
     return () => { active = false; };
   }, [srcId]);
 
@@ -107,7 +107,7 @@ function TransferModal({ type, deposit, deposits, onClose, onDone }) {
     for (const it of items) {
       const max = balOf(it.product_id);
       if (max != null && it.quantity > max) {
-        alert(`${it.product_name}: quantidade (${it.quantity}) excede o saldo no depósito (${max})`);
+        alert(`${it.product_name}: quantidade (${it.quantity}) excede o saldo no depÃ³sito (${max})`);
         return;
       }
     }
@@ -152,7 +152,7 @@ function TransferModal({ type, deposit, deposits, onClose, onDone }) {
                 <div className="absolute top-full left-0 right-0 mt-1 border rounded-lg bg-white shadow-lg z-10 max-h-40 overflow-y-auto">
                   {searchResults.map(p => (
                     <button key={p.product_id} type="button" onClick={() => addItem(p)}
-                      className="w-full text-left px-3 py-2.5 text-sm hover:bg-blue-50 border-b last:border-0 flex justify-between items-center">
+                      className="w-full text-left px-3 py-2.5 text-sm hover:bg-brand-50 border-b last:border-0 flex justify-between items-center">
                       <span className="flex-1">{p.product_name}</span>
                       <span className={`text-xs font-medium ${p.balance > 0 ? 'text-green-600' : 'text-gray-400'}`}>Saldo: {p.balance}</span>
                     </button>
@@ -161,13 +161,13 @@ function TransferModal({ type, deposit, deposits, onClose, onDone }) {
               )}
             </div>
             {!srcBalance && !balanceError && (
-              <p className="text-sm text-gray-400 text-center py-6">Carregando produtos do depósito...</p>
+              <p className="text-sm text-gray-400 text-center py-6">Carregando produtos do depÃ³sito...</p>
             )}
             {srcBalance && srcBalance.length === 0 && !balanceError && (
-              <p className="text-sm text-gray-400 text-center py-6">Nenhum produto com saldo neste depósito</p>
+              <p className="text-sm text-gray-400 text-center py-6">Nenhum produto com saldo neste depÃ³sito</p>
             )}
             {srcBalance && searchQ && searchResults.length === 0 && (
-              <p className="text-sm text-gray-400 text-center py-2">Nenhum produto encontrado neste depósito</p>
+              <p className="text-sm text-gray-400 text-center py-2">Nenhum produto encontrado neste depÃ³sito</p>
             )}
             {items.length === 0 ? (
               <p className="text-sm text-gray-400 text-center py-6">Busque e adicione produtos acima</p>
@@ -180,12 +180,12 @@ function TransferModal({ type, deposit, deposits, onClose, onDone }) {
                       <div className="flex-1 min-w-0 pr-2">
                         <div className="text-sm font-medium truncate">{it.product_name}</div>
                         <div className="text-xs text-gray-500">
-                          {type === 'abastecimento' ? 'Saldo no Pai' : 'Saldo'}: <span className={bal > 0 ? 'text-green-600 font-medium' : 'text-gray-400'}>{bal != null ? bal : '—'}</span>
+                          {type === 'abastecimento' ? 'Saldo no Pai' : 'Saldo'}: <span className={bal > 0 ? 'text-green-600 font-medium' : 'text-gray-400'}>{bal != null ? bal : 'â€”'}</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <button type="button" onClick={() => changeQty(it.product_id, -1)}
-                          className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">−</button>
+                          className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">âˆ’</button>
                         <input type="number" min={qtyMin(it.unit_abbr)} step={qtyStep(it.unit_abbr)} max={bal != null ? bal : ''} value={it.quantity}
                           onChange={e => updateQty(it.product_id, e.target.value)}
                           className="w-16 text-center font-bold text-sm border border-gray-200 rounded-lg py-1" />
@@ -231,7 +231,7 @@ function AvariaModal({ deposit, deposits, onClose, onDone }) {
     setForm(f => ({ ...f, items: [] }));
     api.get('/stock/balance/', { params: { deposit_id: selId } })
       .then(res => { if (active) setBalance(res.data || []); })
-      .catch(err => { if (active) setBalanceError(err.response?.data?.detail || 'Erro ao carregar o saldo do depósito'); });
+      .catch(err => { if (active) setBalanceError(err.response?.data?.detail || 'Erro ao carregar o saldo do depÃ³sito'); });
     return () => { active = false; };
   }, [selId]);
 
@@ -269,13 +269,13 @@ function AvariaModal({ deposit, deposits, onClose, onDone }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.deposit_id) { alert('Selecione o depósito'); return; }
+    if (!form.deposit_id) { alert('Selecione o depÃ³sito'); return; }
     if (form.items.length === 0) { alert('Adicione pelo menos um produto'); return; }
     if (!form.description) { alert('Descreva a avaria'); return; }
     for (const it of form.items) {
       const max = balOf(it.product_id);
       if (max != null && it.quantity > max) {
-        alert(`${it.product_name}: quantidade (${it.quantity}) excede o saldo no depósito (${max})`);
+        alert(`${it.product_name}: quantidade (${it.quantity}) excede o saldo no depÃ³sito (${max})`);
         return;
       }
     }
@@ -306,7 +306,7 @@ function AvariaModal({ deposit, deposits, onClose, onDone }) {
         <form onSubmit={handleSubmit}>
           <div className="px-5 py-4 space-y-3">
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Depósito *</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1">DepÃ³sito *</label>
               <select value={form.deposit_id} onChange={e => setForm({...form, deposit_id: e.target.value})}
                 className="w-full px-3 py-2.5 border rounded-lg text-sm" required>
                 <option value="">Selecione</option>
@@ -314,7 +314,7 @@ function AvariaModal({ deposit, deposits, onClose, onDone }) {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Descrição da Avaria *</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1">DescriÃ§Ã£o da Avaria *</label>
               <CaseInput placeholder="Ex: Produto danificado, vencido, quebrado..." value={form.description}
                 onChange={e => setForm({...form, description: e.target.value})}
                 className="w-full px-3 py-2.5 border rounded-lg text-sm" required />
@@ -330,7 +330,7 @@ function AvariaModal({ deposit, deposits, onClose, onDone }) {
                   <div className="absolute top-full left-0 right-0 mt-1 border rounded-lg bg-white shadow-lg z-10 max-h-40 overflow-y-auto">
                     {searchResults.map(p => (
                       <button key={p.product_id} type="button" onClick={() => addItem(p)}
-                        className="w-full text-left px-3 py-2.5 text-sm hover:bg-blue-50 border-b last:border-0 flex justify-between items-center">
+                        className="w-full text-left px-3 py-2.5 text-sm hover:bg-brand-50 border-b last:border-0 flex justify-between items-center">
                         <span className="flex-1">{p.product_name}</span>
                         <span className={`text-xs font-medium ${p.balance > 0 ? 'text-green-600' : 'text-gray-400'}`}>Saldo: {p.balance}</span>
                       </button>
@@ -339,13 +339,13 @@ function AvariaModal({ deposit, deposits, onClose, onDone }) {
                 )}
               </div>
               {!balance && !balanceError && selId && (
-                <p className="text-sm text-gray-400 text-center py-6 mt-2">Carregando produtos do depósito...</p>
+                <p className="text-sm text-gray-400 text-center py-6 mt-2">Carregando produtos do depÃ³sito...</p>
               )}
               {balance && balance.length === 0 && !balanceError && (
-                <p className="text-sm text-gray-400 text-center py-6 mt-2">Nenhum produto com saldo neste depósito</p>
+                <p className="text-sm text-gray-400 text-center py-6 mt-2">Nenhum produto com saldo neste depÃ³sito</p>
               )}
               {balance && searchQ && searchResults.length === 0 && (
-                <p className="text-sm text-gray-400 text-center py-2 mt-2">Nenhum produto encontrado neste depósito</p>
+                <p className="text-sm text-gray-400 text-center py-2 mt-2">Nenhum produto encontrado neste depÃ³sito</p>
               )}
               {form.items.length === 0 ? (
                 <p className="text-sm text-gray-400 text-center py-6 mt-2">Busque e adicione produtos acima</p>
@@ -358,12 +358,12 @@ function AvariaModal({ deposit, deposits, onClose, onDone }) {
                         <div className="flex-1 min-w-0 pr-2">
                           <div className="text-sm font-medium truncate">{it.product_name}</div>
                           <div className="text-xs text-gray-500">
-                            Saldo: <span className={bal > 0 ? 'text-green-600 font-medium' : 'text-gray-400'}>{bal != null ? bal : '—'}</span>
+                            Saldo: <span className={bal > 0 ? 'text-green-600 font-medium' : 'text-gray-400'}>{bal != null ? bal : 'â€”'}</span>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
                           <button type="button" onClick={() => changeQty(it.product_id, -1)}
-                            className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">−</button>
+                            className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">âˆ’</button>
                           <input type="number" min={qtyMin(it.unit_abbr)} step={qtyStep(it.unit_abbr)} max={bal != null ? bal : ''} value={it.quantity}
                             onChange={e => updateQty(it.product_id, e.target.value)}
                             className="w-16 text-center font-bold text-sm border border-gray-200 rounded-lg py-1" />
@@ -435,7 +435,7 @@ function MovementsModal({ deposit, products, deposits, onClose }) {
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Remover esta movimentação?')) return;
+    if (!confirm('Remover esta movimentaÃ§Ã£o?')) return;
     try {
       await api.delete(`/stock/movements/${id}`);
       load();
@@ -453,8 +453,8 @@ function MovementsModal({ deposit, products, deposits, onClose }) {
       <div className="bg-white rounded-2xl w-full max-w-3xl shadow-2xl max-h-[90vh] overflow-y-auto">
         <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-blue-50"><Package size={20} className="text-blue-600" /></div>
-            <h2 className="text-lg font-bold">Movimentações - {deposit?.name}</h2>
+            <div className="p-2 rounded-xl bg-brand-50"><Package size={20} className="text-brand-600" /></div>
+            <h2 className="text-lg font-bold">MovimentaÃ§Ãµes - {deposit?.name}</h2>
           </div>
           <button onClick={onClose}><X size={20} className="text-gray-400" /></button>
         </div>
@@ -462,7 +462,7 @@ function MovementsModal({ deposit, products, deposits, onClose }) {
           {loading ? (
             <p className="text-gray-400 text-center py-8">Carregando...</p>
           ) : movements.length === 0 ? (
-            <p className="text-gray-400 text-center py-8">Nenhuma movimentação neste depósito</p>
+            <p className="text-gray-400 text-center py-8">Nenhuma movimentaÃ§Ã£o neste depÃ³sito</p>
           ) : (
             <table className="w-full text-sm">
               <thead className="bg-gray-50">
@@ -471,9 +471,9 @@ function MovementsModal({ deposit, products, deposits, onClose }) {
                   <th className="text-left p-3">Produto</th>
                   <th className="text-center p-3">Tipo</th>
                   <th className="text-center p-3">Qtd</th>
-                  <th className="text-center p-3">Preço</th>
+                  <th className="text-center p-3">PreÃ§o</th>
                   <th className="text-left p-3">Motivo</th>
-                  <th className="text-center p-3">Ações</th>
+                  <th className="text-center p-3">AÃ§Ãµes</th>
                 </tr>
               </thead>
               <tbody>
@@ -485,7 +485,7 @@ function MovementsModal({ deposit, products, deposits, onClose }) {
                         <td className="p-3 font-medium">{prodName(m.product_id)}</td>
                         <td className="p-3 text-center">
                           <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${m.movement_type === 'entrada' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
-                            {m.movement_type === 'entrada' ? 'Entrada' : 'Saída'}
+                            {m.movement_type === 'entrada' ? 'Entrada' : 'SaÃ­da'}
                           </span>
                         </td>
                         <td className="p-3 text-center">
@@ -514,7 +514,7 @@ function MovementsModal({ deposit, products, deposits, onClose }) {
                         <td className="p-3 text-center">
                           <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${m.movement_type === 'entrada' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
                             {m.movement_type === 'entrada' ? <ArrowDownCircle size={11} /> : <ArrowUpCircle size={11} />}
-                            {m.movement_type === 'entrada' ? 'Entrada' : 'Saída'}
+                            {m.movement_type === 'entrada' ? 'Entrada' : 'SaÃ­da'}
                           </span>
                         </td>
                         <td className="p-3 text-center font-medium">{m.quantity}</td>
@@ -524,7 +524,7 @@ function MovementsModal({ deposit, products, deposits, onClose }) {
                           <div className="flex items-center justify-center gap-1">
                             {m.source !== 'requisicao' && (
                               <>
-                                <button onClick={() => startEdit(m)} className="p-1 text-blue-600 hover:text-blue-800" title="Editar"><Edit size={14} /></button>
+                                <button onClick={() => startEdit(m)} className="p-1 text-brand-600 hover:text-brand-800" title="Editar"><Edit size={14} /></button>
                                 <button onClick={() => handleDelete(m.id)} className="p-1 text-red-600 hover:text-red-800" title="Remover"><Trash2 size={14} /></button>
                               </>
                             )}
@@ -577,14 +577,14 @@ function StockBalanceModal({ deposit, onClose }) {
           ) : error ? (
             <p className="text-red-500 text-center py-8">{error}</p>
           ) : balance.length === 0 ? (
-            <p className="text-gray-400 text-center py-8">Nenhum saldo encontrado para este depósito</p>
+            <p className="text-gray-400 text-center py-8">Nenhum saldo encontrado para este depÃ³sito</p>
           ) : (
             <table className="w-full text-sm">
               <thead className="bg-gray-50">
                 <tr>
                   <th className="text-left p-3">Produto</th>
                   <th className="text-center p-3">Entradas</th>
-                  <th className="text-center p-3">Saídas</th>
+                  <th className="text-center p-3">SaÃ­das</th>
                   <th className="text-center p-3 font-bold">Saldo</th>
                 </tr>
               </thead>
@@ -592,7 +592,7 @@ function StockBalanceModal({ deposit, onClose }) {
                 {balance.map((item, i) => (
                   <tr key={item.product_id || i} className="border-t hover:bg-gray-50">
                     <td className="p-3 font-medium">{item.product_name}</td>
-                    <td className="p-3 text-center text-blue-600">{item.quantity_entries}</td>
+                    <td className="p-3 text-center text-brand-600">{item.quantity_entries}</td>
                     <td className="p-3 text-center text-orange-600">{item.quantity_exits}</td>
                     <td className={`p-3 text-center font-bold ${item.balance > 0 ? 'text-green-600' : item.balance < 0 ? 'text-red-600' : 'text-gray-500'}`}>
                       {item.balance}
@@ -655,7 +655,7 @@ export default function Deposits() {
       else { await api.post('/deposits/', data); }
       setShowModal(false); setEditing(null); setForm({ name: '', description: '', address: '', parent_id: '' }); load();
     } catch (err) {
-      alert(err.response?.data?.detail || 'Erro ao salvar depósito');
+      alert(err.response?.data?.detail || 'Erro ao salvar depÃ³sito');
     }
   };
 
@@ -666,9 +666,9 @@ export default function Deposits() {
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Remover depósito?')) return;
+    if (!confirm('Remover depÃ³sito?')) return;
     try { await api.delete(`/deposits/${id}`); load(); } catch (err) {
-      alert(err.response?.data?.detail || 'Erro ao remover depósito');
+      alert(err.response?.data?.detail || 'Erro ao remover depÃ³sito');
     }
   };
 
@@ -682,25 +682,25 @@ export default function Deposits() {
     <div className={`bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition-shadow ${isChild ? 'ml-8 border-l-4 border-orange-300' : ''}`}>
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2">
-          <div className={`p-2 rounded-lg ${isChild ? 'bg-orange-100' : 'bg-blue-100'}`}>
-            <Warehouse size={20} className={isChild ? 'text-orange-600' : 'text-blue-600'} />
+          <div className={`p-2 rounded-lg ${isChild ? 'bg-orange-100' : 'bg-brand-100'}`}>
+            <Warehouse size={20} className={isChild ? 'text-orange-600' : 'text-brand-600'} />
           </div>
           <div>
             <span className="font-semibold">{d.name}</span>
-            {isChild && <span className="ml-2 text-xs bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full">Sub-depósito</span>}
+            {isChild && <span className="ml-2 text-xs bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full">Sub-depÃ³sito</span>}
           </div>
         </div>
       </div>
       {d.description && <p className="text-sm text-gray-500 mt-2">{d.description}</p>}
       <div className="flex items-center gap-2 mt-3 flex-wrap">
         {isChild && (
-          <button onClick={() => setTransferAction({ type: 'abastecimento', deposit: d })} className="flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs hover:bg-blue-100 border border-blue-200">
+          <button onClick={() => setTransferAction({ type: 'abastecimento', deposit: d })} className="flex items-center gap-1 px-3 py-1.5 bg-brand-50 text-brand-600 rounded-lg text-xs hover:bg-brand-100 border border-brand-200">
             <ArrowRightLeft size={12} /> Abastecer
           </button>
         )}
         {!isChild && canManage && (
           <button onClick={() => handleAddSub(d)} className="flex items-center gap-1 px-3 py-1.5 bg-green-50 text-green-600 rounded-lg text-xs hover:bg-green-100 border border-green-200">
-            <Plus size={12} /> Sub-depósito
+            <Plus size={12} /> Sub-depÃ³sito
           </button>
         )}
         <button onClick={() => { setAvariaDeposit(d); setShowAvaria(true); }} className="flex items-center gap-1 px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs hover:bg-red-100 border border-red-200">
@@ -718,7 +718,7 @@ export default function Deposits() {
           <Package size={12} /> Mov.
         </button>
         {canManage && (
-          <button onClick={() => handleEdit(d)} className="flex items-center gap-1 px-3 py-1.5 text-blue-600 rounded-lg text-xs hover:bg-blue-50 border border-blue-200">
+          <button onClick={() => handleEdit(d)} className="flex items-center gap-1 px-3 py-1.5 text-brand-600 rounded-lg text-xs hover:bg-brand-50 border border-brand-200">
             <Edit size={12} /> Editar
           </button>
         )}
@@ -735,24 +735,24 @@ export default function Deposits() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-3">
-          <Warehouse size={28} className="text-blue-600" />
-          <h1 className="text-2xl font-bold">Depósitos</h1>
+          <Warehouse size={28} className="text-brand-600" />
+          <h1 className="text-2xl font-bold">DepÃ³sitos</h1>
         </div>
         <div className="flex gap-2">
           <button onClick={() => navigate('/transfer-report')} className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm hover:bg-gray-50">
-            <BarChart3 size={18} /> Relatório
+            <BarChart3 size={18} /> RelatÃ³rio
           </button>
           {canManage && (
             <button onClick={() => { setEditing(null); setForm({ name: '', description: '', address: '', parent_id: '' }); setShowModal(true); }}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 text-sm">
-              <Plus size={18} /> Novo Depósito
+              className="bg-brand-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-brand-700 text-sm">
+              <Plus size={18} /> Novo DepÃ³sito
             </button>
           )}
         </div>
       </div>
 
       {deposits.length === 0 ? (
-        <p className="text-gray-500 text-center py-8">Nenhum depósito cadastrado</p>
+        <p className="text-gray-500 text-center py-8">Nenhum depÃ³sito cadastrado</p>
       ) : (
         <div className="space-y-4">
           {parents.map(p => (
@@ -771,31 +771,31 @@ export default function Deposits() {
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-auto">
-            <h2 className="text-lg font-bold mb-4">{editing ? 'Editar' : form.parent_id ? 'Novo Sub-depósito' : 'Novo Depósito'}</h2>
+            <h2 className="text-lg font-bold mb-4">{editing ? 'Editar' : form.parent_id ? 'Novo Sub-depÃ³sito' : 'Novo DepÃ³sito'}</h2>
             <form onSubmit={handleSubmit} className="space-y-3">
               <CaseInput placeholder="Nome *" value={form.name} onChange={e => setForm({...form, name: e.target.value})}
                 className="w-full px-3 py-2 border rounded-lg text-sm" required />
-              <CaseTextarea placeholder="Descrição" value={form.description} rows={2}
+              <CaseTextarea placeholder="DescriÃ§Ã£o" value={form.description} rows={2}
                 onChange={e => setForm({...form, description: e.target.value})}
                 className="w-full px-3 py-2 border rounded-lg text-sm" />
-              <CaseInput placeholder="Endereço" value={form.address} onChange={e => setForm({...form, address: e.target.value})}
+              <CaseInput placeholder="EndereÃ§o" value={form.address} onChange={e => setForm({...form, address: e.target.value})}
                 className="w-full px-3 py-2 border rounded-lg text-sm" />
               {!form.parent_id && (
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Depósito Pai (criar como sub-depósito)</label>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">DepÃ³sito Pai (criar como sub-depÃ³sito)</label>
                   <select value={form.parent_id} onChange={e => setForm({...form, parent_id: e.target.value})}
                     className="w-full px-3 py-2 border rounded-lg text-sm">
-                    <option value="">Nenhum (depósito principal)</option>
+                    <option value="">Nenhum (depÃ³sito principal)</option>
                     {deposits.filter(d => !d.parent_id).map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
                   </select>
                 </div>
               )}
               {form.parent_id && (
-                <p className="text-xs text-gray-400">Sub-depósito de: <strong>{deposits.find(d => String(d.id) === form.parent_id)?.name}</strong></p>
+                <p className="text-xs text-gray-400">Sub-depÃ³sito de: <strong>{deposits.find(d => String(d.id) === form.parent_id)?.name}</strong></p>
               )}
               <div className="flex justify-end gap-2 mt-4">
                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border rounded-lg text-sm">Cancelar</button>
-                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">Salvar</button>
+                <button type="submit" className="px-4 py-2 bg-brand-600 text-white rounded-lg text-sm hover:bg-brand-700">Salvar</button>
               </div>
             </form>
           </div>

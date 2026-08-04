@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+﻿import { useState, useEffect, useMemo } from 'react';
 import api from '../services/api';
 import { Plus, Edit, Trash2, Ruler } from 'lucide-react';
 import SortableHeader from '../components/SortableHeader';
@@ -53,7 +53,7 @@ export default function Units() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Unidades de Medida</h1>
         <button onClick={() => { setEditing(null); setForm({ name: '', abbreviation: '' }); setShowModal(true); }}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700">
+          className="bg-brand-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-brand-700">
           <Plus size={18} /> Nova Unidade
         </button>
       </div>
@@ -63,8 +63,8 @@ export default function Units() {
           <thead className="bg-gray-50">
             <tr>
               <SortableHeader label="Nome" sortKey="name" currentSort={sortConfig} onSort={handleSort} />
-              <SortableHeader label="Abreviação" sortKey="abbreviation" currentSort={sortConfig} onSort={handleSort} />
-              <th className="text-center p-3">Ações</th>
+              <SortableHeader label="AbreviaÃ§Ã£o" sortKey="abbreviation" currentSort={sortConfig} onSort={handleSort} />
+              <th className="text-center p-3">AÃ§Ãµes</th>
             </tr>
           </thead>
           <tbody>
@@ -75,7 +75,7 @@ export default function Units() {
                 </td>
                 <td className="p-3 text-gray-500">{u.abbreviation}</td>
                 <td className="p-3 text-center">
-                  <button onClick={() => handleEdit(u)} className="text-blue-600 hover:text-blue-800 mr-2"><Edit size={16} /></button>
+                  <button onClick={() => handleEdit(u)} className="text-brand-600 hover:text-brand-800 mr-2"><Edit size={16} /></button>
                   <button onClick={() => handleDelete(u.id)} className="text-red-600 hover:text-red-800"><Trash2 size={16} /></button>
                 </td>
               </tr>
@@ -95,12 +95,12 @@ export default function Units() {
               <CaseInput placeholder="Nome (ex: Quilograma)" value={form.name}
                 onChange={e => setForm({...form, name: e.target.value})}
                 className="w-full px-3 py-2 border rounded-lg text-sm" required />
-              <input placeholder="Abreviação (ex: kg)" value={form.abbreviation}
+              <input placeholder="AbreviaÃ§Ã£o (ex: kg)" value={form.abbreviation}
                 onChange={e => setForm({...form, abbreviation: e.target.value})}
                 className="w-full px-3 py-2 border rounded-lg text-sm" required />
               <div className="flex justify-end gap-2 mt-4">
                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border rounded-lg text-sm">Cancelar</button>
-                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">Salvar</button>
+                <button type="submit" className="px-4 py-2 bg-brand-600 text-white rounded-lg text-sm hover:bg-brand-700">Salvar</button>
               </div>
             </form>
           </div>

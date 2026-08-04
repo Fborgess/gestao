@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+﻿import { useState, useEffect, useMemo } from 'react';
 import api from '../services/api';
 import { Plus, Edit, Trash2, Users as UsersIcon, Shield, User, Lock, KeyRound, Warehouse } from 'lucide-react';
 import { CaseInput } from '../components/CaseInput';
@@ -59,7 +59,7 @@ export default function Users() {
     e.preventDefault();
     try {
       if (form.password && form.password !== form.confirmPassword) {
-        alert('Senha e confirmação não conferem');
+        alert('Senha e confirmaÃ§Ã£o nÃ£o conferem');
         return;
       }
       const data = { name: form.name, email: form.email, role: form.role, deposit_ids: form.deposit_ids };
@@ -72,7 +72,7 @@ export default function Users() {
       }
       setShowModal(false); setEditing(null); setForm(emptyForm); load();
     } catch (err) {
-      alert(err.response?.data?.detail || 'Erro ao salvar usuário');
+      alert(err.response?.data?.detail || 'Erro ao salvar usuÃ¡rio');
     }
   };
 
@@ -94,12 +94,12 @@ export default function Users() {
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Remover este usuário?')) return;
+    if (!confirm('Remover este usuÃ¡rio?')) return;
     try {
       await api.delete(`/auth/users/${id}`);
       load();
     } catch (err) {
-      alert(err.response?.data?.detail || 'Erro ao remover usuário');
+      alert(err.response?.data?.detail || 'Erro ao remover usuÃ¡rio');
     }
   };
 
@@ -118,12 +118,12 @@ export default function Users() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-3">
-          <UsersIcon size={28} className="text-blue-600" />
-          <h1 className="text-2xl font-bold">Usuários</h1>
+          <UsersIcon size={28} className="text-brand-600" />
+          <h1 className="text-2xl font-bold">UsuÃ¡rios</h1>
         </div>
         <button onClick={openNew}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 text-sm">
-          <Plus size={18} /> Novo Usuário
+          className="bg-brand-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-brand-700 text-sm">
+          <Plus size={18} /> Novo UsuÃ¡rio
         </button>
       </div>
 
@@ -137,7 +137,7 @@ export default function Users() {
               <th className="text-center p-3">Senha</th>
               <th className="text-center p-3">Status</th>
               <th className="text-center p-3">Criado em</th>
-              <th className="text-center p-3">Ações</th>
+              <th className="text-center p-3">AÃ§Ãµes</th>
             </tr>
           </thead>
           <tbody>
@@ -170,13 +170,13 @@ export default function Users() {
                   {u.created_at ? new Date(u.created_at).toLocaleDateString('pt-BR') : '-'}
                 </td>
                 <td className="p-3 text-center whitespace-nowrap">
-                  <button onClick={() => handleEdit(u)} className="text-blue-600 hover:text-blue-800 mr-2" title="Editar"><Edit size={16} /></button>
+                  <button onClick={() => handleEdit(u)} className="text-brand-600 hover:text-brand-800 mr-2" title="Editar"><Edit size={16} /></button>
                   <button onClick={() => handleDelete(u.id)} className="text-red-600 hover:text-red-800" title="Remover"><Trash2 size={16} /></button>
                 </td>
               </tr>
             ))}
             {sorted.length === 0 && (
-              <tr><td colSpan={7} className="p-6 text-center text-gray-400">Nenhum usuário cadastrado</td></tr>
+              <tr><td colSpan={7} className="p-6 text-center text-gray-400">Nenhum usuÃ¡rio cadastrado</td></tr>
             )}
           </tbody>
         </table>
@@ -186,10 +186,10 @@ export default function Users() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl flex flex-col max-h-[90vh]">
             <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-blue-100 text-blue-600">
+              <div className="p-2 rounded-xl bg-brand-100 text-brand-600">
                 <UsersIcon size={20} />
               </div>
-              <h2 className="text-lg font-bold text-gray-900">{editing ? 'Editar' : 'Novo'} Usuário</h2>
+              <h2 className="text-lg font-bold text-gray-900">{editing ? 'Editar' : 'Novo'} UsuÃ¡rio</h2>
             </div>
             <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
               <div className="px-6 py-4 space-y-4 overflow-y-auto">
@@ -197,13 +197,13 @@ export default function Users() {
                   <label className="block text-xs font-medium text-gray-500 mb-1">Nome *</label>
                   <CaseInput placeholder="Nome completo" value={form.name}
                     onChange={e => setForm({...form, name: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" required />
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none" required />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1">Email *</label>
                   <input type="email" placeholder="email@exemplo.com" value={form.email}
                     onChange={e => setForm({...form, email: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" required />
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none" required />
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-1">
@@ -212,14 +212,14 @@ export default function Users() {
                     </label>
                     {editing && (
                       <button type="button" onClick={handleGeneratePass}
-                        className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                        className="text-xs text-brand-600 hover:text-brand-800 flex items-center gap-1">
                         <KeyRound size={12} /> Gerar senha
                       </button>
                     )}
                   </div>
-                  <input type="text" placeholder={editing ? 'Deixe vazio para manter a atual' : 'Mínimo 6 caracteres'} value={form.password}
+                  <input type="text" placeholder={editing ? 'Deixe vazio para manter a atual' : 'MÃ­nimo 6 caracteres'} value={form.password}
                     onChange={e => setForm({...form, password: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
                     required={!editing} minLength={editing ? 0 : 6} />
                 </div>
                 {form.password && (
@@ -227,29 +227,29 @@ export default function Users() {
                     <label className="block text-xs font-medium text-gray-500 mb-1">Confirmar senha</label>
                     <input type="text" placeholder="Repita a senha" value={form.confirmPassword}
                       onChange={e => setForm({...form, confirmPassword: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" />
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none" />
                   </div>
                 )}
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1">Perfil *</label>
                   <select value={form.role} onChange={e => setForm({...form, role: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" required>
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none" required>
                     <option value="">Selecione</option>
                     {roles.map(r => (
-                      <option key={r.id} value={r.name}>{r.name}{r.is_admin ? ' (Admin)' : ''}{r.is_default ? ' (padrão)' : ''}</option>
+                      <option key={r.id} value={r.name}>{r.name}{r.is_admin ? ' (Admin)' : ''}{r.is_default ? ' (padrÃ£o)' : ''}</option>
                     ))}
                   </select>
                 </div>
                 {deposits.length > 0 && (
                   <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">Depósitos com Acesso</label>
-                    <p className="text-xs text-gray-400 mb-1">Apenas depósitos pai (filhos são liberados automaticamente)</p>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">DepÃ³sitos com Acesso</label>
+                    <p className="text-xs text-gray-400 mb-1">Apenas depÃ³sitos pai (filhos sÃ£o liberados automaticamente)</p>
                     <div className="border border-gray-200 rounded-lg max-h-40 overflow-y-auto p-1">
                       {deposits.filter(d => !d.parent_id).map(d => (
                         <label key={d.id} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer text-sm">
                           <input type="checkbox" checked={form.deposit_ids.includes(d.id)}
                             onChange={() => toggleDeposit(d.id)}
-                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                            className="rounded border-gray-300 text-brand-600 focus:ring-brand-500" />
                           <Warehouse size={14} className="text-gray-400" />
                           {d.name}
                         </label>
@@ -264,8 +264,8 @@ export default function Users() {
                   Cancelar
                 </button>
                 <button type="submit"
-                  className="px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm">
-                  {editing ? 'Atualizar' : 'Criar Usuário'}
+                  className="px-5 py-2.5 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 transition-colors shadow-sm">
+                  {editing ? 'Atualizar' : 'Criar UsuÃ¡rio'}
                 </button>
               </div>
             </form>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../services/api';
 import { Plus, Trash2, Save, X, Printer, Share2 } from 'lucide-react';
@@ -157,7 +157,7 @@ export default function SaleDetail() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">{isNew ? 'Novo' : `Editar`} Lançamento {!isNew && `#${id}`}</h1>
+        <h1 className="text-2xl font-bold">{isNew ? 'Novo' : `Editar`} LanÃ§amento {!isNew && `#${id}`}</h1>
         <div className="flex gap-2">
           {!isNew && (
             <>
@@ -177,7 +177,7 @@ export default function SaleDetail() {
               <SearchableSelect options={contacts.map(c => ({ value: c.id, label: c.name }))} value={contactId ? parseInt(contactId) : ''} onChange={v => setContactId(String(v))} placeholder="Selecione o cliente..." />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Lançamento</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de LanÃ§amento</label>
               <SearchableSelect options={saleTypes.map(t => ({ value: t.id, label: t.name }))} value={saleTypeId ? parseInt(saleTypeId) : ''} onChange={v => setSaleTypeId(String(v))} placeholder="Selecione o tipo..." />
             </div>
           </div>
@@ -190,12 +190,12 @@ export default function SaleDetail() {
           </div>
 
           {showProductSearch && (
-            <div className="mb-4 p-3 border border-blue-200 rounded-lg bg-blue-50">
+            <div className="mb-4 p-3 border border-brand-200 rounded-lg bg-brand-50">
               <input type="text" placeholder="Buscar produto..." value={productSearch} onChange={e => searchProducts(e.target.value)} autoFocus className="w-full px-3 py-2 border rounded-lg text-sm mb-2" />
               {productResults.length > 0 && (
                 <div className="max-h-40 overflow-y-auto border rounded-lg bg-white">
                   {productResults.map(p => (
-                    <button key={p.id} type="button" onClick={() => addItem(p)} className="w-full text-left px-3 py-2 text-sm hover:bg-blue-100 border-b flex items-center justify-between">
+                    <button key={p.id} type="button" onClick={() => addItem(p)} className="w-full text-left px-3 py-2 text-sm hover:bg-brand-100 border-b flex items-center justify-between">
                       <span>{prodLabel(p)}</span>
                       <span className="text-gray-400 text-xs">{p.sku} - R$ {(tablePrices[p.id] ?? p.price)?.toFixed(2) || '0,00'}</span>
                     </button>
@@ -237,12 +237,12 @@ export default function SaleDetail() {
         </div>
 
         <div className="bg-white rounded-xl p-6 shadow-sm">
-          <CaseTextarea placeholder="Observações" value={notes} rows={3} onChange={e => setNotes(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" />
+          <CaseTextarea placeholder="ObservaÃ§Ãµes" value={notes} rows={3} onChange={e => setNotes(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" />
         </div>
 
         <div className="flex justify-end gap-2">
           <button type="button" onClick={() => navigate('/sales')} className="px-6 py-2 border rounded-lg text-sm hover:bg-gray-50">Cancelar</button>
-          <button type="submit" className="px-6 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 flex items-center gap-2"><Save size={16} /> Salvar</button>
+          <button type="submit" className="px-6 py-2 bg-brand-600 text-white rounded-lg text-sm hover:bg-brand-700 flex items-center gap-2"><Save size={16} /> Salvar</button>
         </div>
       </form>
     </div>

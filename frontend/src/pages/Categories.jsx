@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+﻿import { useState, useEffect, useMemo } from 'react';
 import api from '../services/api';
 import { Plus, Edit, Trash2, ChevronRight, ChevronDown } from 'lucide-react';
 import { CaseInput, CaseTextarea } from '../components/CaseInput';
@@ -66,7 +66,7 @@ export default function Categories() {
             <span className={level > 0 ? 'text-sm' : 'font-medium'}>{cat.name}</span>
             {subs.length > 0 && <span className="text-xs text-gray-400 ml-2">({subs.length} sub)</span>}
           </div>
-          <button onClick={() => handleEdit(cat)} className="text-blue-600 hover:text-blue-800 mr-2"><Edit size={14} /></button>
+          <button onClick={() => handleEdit(cat)} className="text-brand-600 hover:text-brand-800 mr-2"><Edit size={14} /></button>
           <button onClick={() => handleDelete(cat.id)} className="text-red-600 hover:text-red-800"><Trash2 size={14} /></button>
         </div>
         {isExpanded && subs.map(sub => renderCategory(sub, level + 1))}
@@ -79,7 +79,7 @@ export default function Categories() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Categorias e Subcategorias</h1>
         <button onClick={() => { setEditing(null); setForm({ name: '', description: '', parent_id: '' }); setShowModal(true); }}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700">
+          className="bg-brand-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-brand-700">
           <Plus size={18} /> Nova Categoria
         </button>
       </div>
@@ -99,7 +99,7 @@ export default function Categories() {
             <form onSubmit={handleSubmit} className="space-y-3">
               <CaseInput placeholder="Nome *" value={form.name} onChange={e => setForm({...form, name: e.target.value})}
                 className="w-full px-3 py-2 border rounded-lg text-sm" required />
-              <CaseTextarea placeholder="Descrição" value={form.description} rows={2}
+              <CaseTextarea placeholder="DescriÃ§Ã£o" value={form.description} rows={2}
                 onChange={e => setForm({...form, description: e.target.value})}
                 className="w-full px-3 py-2 border rounded-lg text-sm" />
               <select value={form.parent_id} onChange={e => setForm({...form, parent_id: e.target.value})}
@@ -111,7 +111,7 @@ export default function Categories() {
               </select>
               <div className="flex justify-end gap-2 mt-4">
                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border rounded-lg text-sm">Cancelar</button>
-                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">Salvar</button>
+                <button type="submit" className="px-4 py-2 bg-brand-600 text-white rounded-lg text-sm hover:bg-brand-700">Salvar</button>
               </div>
             </form>
           </div>
