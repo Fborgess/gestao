@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import api from '../services/api';
 import { Plus, Edit, Trash2, FileText } from 'lucide-react';
 import SortableHeader from '../components/SortableHeader';
@@ -39,14 +39,14 @@ export default function SaleTypes() {
 
   const handleEdit = (t) => { setEditing(t); setForm({ name: t.name, description: t.description || '' }); setShowModal(true); };
   const handleDelete = async (id) => {
-    if (!confirm('Remover este tipo de lanÃ§amento?')) return;
+    if (!confirm('Remover este tipo de lançamento?')) return;
     try { await api.delete(`/sale-types/${id}`); load(); } catch (err) { alert(err.response?.data?.detail || 'Erro'); }
   };
 
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Tipos de LanÃ§amento</h1>
+        <h1 className="text-2xl font-bold">Tipos de Lançamento</h1>
         <button onClick={() => { setEditing(null); setForm({ name: '', description: '' }); setShowModal(true); }}
           className="bg-brand-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-brand-700">
           <Plus size={18} /> Novo Tipo
@@ -58,8 +58,8 @@ export default function SaleTypes() {
           <thead className="bg-gray-50">
             <tr>
               <SortableHeader label="Nome" sortKey="name" currentSort={sortConfig} onSort={handleSort} />
-              <SortableHeader label="DescriÃ§Ã£o" sortKey="description" currentSort={sortConfig} onSort={handleSort} />
-              <th className="text-center p-3">AÃ§Ãµes</th>
+              <SortableHeader label="Descrição" sortKey="description" currentSort={sortConfig} onSort={handleSort} />
+              <th className="text-center p-3">Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -85,11 +85,11 @@ export default function SaleTypes() {
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-auto">
-            <h2 className="text-lg font-bold mb-4">{editing ? 'Editar' : 'Novo'} Tipo de LanÃ§amento</h2>
+            <h2 className="text-lg font-bold mb-4">{editing ? 'Editar' : 'Novo'} Tipo de Lançamento</h2>
             <form onSubmit={handleSubmit} className="space-y-3">
               <CaseInput placeholder="Nome *" value={form.name} onChange={e => setForm({...form, name: e.target.value})}
                 className="w-full px-3 py-2 border rounded-lg text-sm" required />
-              <CaseTextarea placeholder="DescriÃ§Ã£o (opcional)" value={form.description} rows={3}
+              <CaseTextarea placeholder="Descrição (opcional)" value={form.description} rows={3}
                 onChange={e => setForm({...form, description: e.target.value})}
                 className="w-full px-3 py-2 border rounded-lg text-sm" />
               <div className="flex justify-end gap-2 mt-4">

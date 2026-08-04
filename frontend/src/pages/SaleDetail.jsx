@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../services/api';
 import { Plus, Trash2, Save, X, Printer, Share2 } from 'lucide-react';
@@ -157,7 +157,7 @@ export default function SaleDetail() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">{isNew ? 'Novo' : `Editar`} LanÃ§amento {!isNew && `#${id}`}</h1>
+        <h1 className="text-2xl font-bold">{isNew ? 'Novo' : `Editar`} Lançamento {!isNew && `#${id}`}</h1>
         <div className="flex gap-2">
           {!isNew && (
             <>
@@ -177,7 +177,7 @@ export default function SaleDetail() {
               <SearchableSelect options={contacts.map(c => ({ value: c.id, label: c.name }))} value={contactId ? parseInt(contactId) : ''} onChange={v => setContactId(String(v))} placeholder="Selecione o cliente..." />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de LanÃ§amento</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Lançamento</label>
               <SearchableSelect options={saleTypes.map(t => ({ value: t.id, label: t.name }))} value={saleTypeId ? parseInt(saleTypeId) : ''} onChange={v => setSaleTypeId(String(v))} placeholder="Selecione o tipo..." />
             </div>
           </div>
@@ -237,7 +237,7 @@ export default function SaleDetail() {
         </div>
 
         <div className="bg-white rounded-xl p-6 shadow-sm">
-          <CaseTextarea placeholder="ObservaÃ§Ãµes" value={notes} rows={3} onChange={e => setNotes(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" />
+          <CaseTextarea placeholder="Observações" value={notes} rows={3} onChange={e => setNotes(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" />
         </div>
 
         <div className="flex justify-end gap-2">

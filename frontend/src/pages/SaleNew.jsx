@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { Plus, Trash2, Save, X } from 'lucide-react';
@@ -81,7 +81,7 @@ export default function SaleNew() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!contactId) { alert('Selecione um cliente'); return; }
-    if (!saleTypeId) { alert('Selecione o tipo de lanÃ§amento'); return; }
+    if (!saleTypeId) { alert('Selecione o tipo de lançamento'); return; }
     if (items.length === 0) { alert('Adicione pelo menos um produto'); return; }
     try {
       await api.post('/sales/', {
@@ -96,7 +96,7 @@ export default function SaleNew() {
       });
       navigate('/sales');
     } catch (err) {
-      alert(err.response?.data?.detail || 'Erro ao salvar lanÃ§amento');
+      alert(err.response?.data?.detail || 'Erro ao salvar lançamento');
     }
   };
 
@@ -115,7 +115,7 @@ export default function SaleNew() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Novo LanÃ§amento</h1>
+        <h1 className="text-2xl font-bold">Novo Lançamento</h1>
         <button onClick={() => navigate('/sales')} className="text-gray-500 hover:text-gray-700"><X size={20} /></button>
       </div>
 
@@ -128,7 +128,7 @@ export default function SaleNew() {
                 onChange={v => setContactId(String(v))} placeholder="Selecione o cliente..." />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de LanÃ§amento</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Lançamento</label>
               <SearchableSelect options={typeOptions} value={saleTypeId ? parseInt(saleTypeId) : ''}
                 onChange={v => setSaleTypeId(String(v))} placeholder="Selecione o tipo..." />
             </div>
@@ -216,7 +216,7 @@ export default function SaleNew() {
         </div>
 
         <div className="bg-white rounded-xl p-6 shadow-sm">
-          <CaseTextarea placeholder="ObservaÃ§Ãµes (opcional)" value={notes} rows={3}
+          <CaseTextarea placeholder="Observações (opcional)" value={notes} rows={3}
             onChange={e => setNotes(e.target.value)}
             className="w-full px-3 py-2 border rounded-lg text-sm" />
         </div>
@@ -226,7 +226,7 @@ export default function SaleNew() {
             className="px-6 py-2 border rounded-lg text-sm hover:bg-gray-50">Cancelar</button>
           <button type="submit"
             className="px-6 py-2 bg-brand-600 text-white rounded-lg text-sm hover:bg-brand-700 flex items-center gap-2">
-            <Save size={16} /> Salvar LanÃ§amento
+            <Save size={16} /> Salvar Lançamento
           </button>
         </div>
       </form>

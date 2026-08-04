@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import api from '../services/api';
 import { formatCurrency, getTodayLocal } from '../services/format';
 import { currencyToDigits, formatDigitsToCurrency, parseCurrencyToNumber, formatNumberToCurrency } from '../services/masks';
@@ -104,7 +104,7 @@ export default function Financial() {
   );
   const selectedPaymentType = paymentTypes.find(pt => String(pt.id) === String(form.payment_type_id));
   const selectedAccount = accounts.find(a => String(a.id) === String(form.account_id));
-  const paymentTypeIsCredit = selectedPaymentType?.name?.toLowerCase().includes('cartÃ£o') || selectedPaymentType?.name?.toLowerCase().includes('cartao');
+  const paymentTypeIsCredit = selectedPaymentType?.name?.toLowerCase().includes('cartão') || selectedPaymentType?.name?.toLowerCase().includes('cartao');
   const isCreditCard = paymentTypeIsCredit || selectedAccount?.account_type === 'cartao_credito';
   const hasClosingDays = isCreditCard && selectedAccount?.closing_day && selectedAccount?.due_day;
   const calculatedDueDate = (hasClosingDays && form.date)
@@ -295,7 +295,7 @@ const dueDaysInfo = (t) => {
   };
 
   const handleDelete = async (id) => {
-    if (confirm('Remover esta transaÃ§Ã£o?')) { await api.delete(`/financial/transactions/${id}`); loadTransactions(); }
+    if (confirm('Remover esta transação?')) { await api.delete(`/financial/transactions/${id}`); loadTransactions(); }
   };
 
   const totalReceitas = transactions.filter(t => t.type === 'receita').reduce((acc, t) => acc + t.amount, 0);
@@ -307,7 +307,7 @@ const dueDaysInfo = (t) => {
         <h1 className="text-2xl font-bold">Financeiro</h1>
         <button onClick={() => { setEditing(null); setForm(getEmptyForm()); setShowModal(true); }}
           className="bg-brand-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-brand-700">
-          <Plus size={18} /> Nova TransaÃ§Ã£o
+          <Plus size={18} /> Nova Transação
         </button>
       </div>
 
@@ -342,11 +342,11 @@ const dueDaysInfo = (t) => {
           </select>
         </div>
         <div className="flex items-center gap-2 ml-auto">
-          <label className="text-sm text-gray-500">PerÃ­odo:</label>
+          <label className="text-sm text-gray-500">Período:</label>
           <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)}
             max={endDate || undefined}
             className="px-3 py-1 border rounded-lg text-sm" />
-          <span className="text-gray-400">atÃ©</span>
+          <span className="text-gray-400">até</span>
           <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)}
             min={startDate || undefined}
             className="px-3 py-1 border rounded-lg text-sm" />
@@ -359,7 +359,7 @@ const dueDaysInfo = (t) => {
           <AlertTriangle size={11} /> Vencido
         </span>
         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-700">
-          <Clock size={11} /> PrÃ³ximo (atÃ© 3d)
+          <Clock size={11} /> Próximo (até 3d)
         </span>
       </div>
 
@@ -367,9 +367,9 @@ const dueDaysInfo = (t) => {
         <table className="w-full text-sm">
           <thead className="bg-gray-50">
             <tr>
-              <SortableHeader label="LanÃ§amento" sortKey="date" currentSort={sortConfig} onSort={handleSort} />
+              <SortableHeader label="Lançamento" sortKey="date" currentSort={sortConfig} onSort={handleSort} />
               <SortableHeader label="Vencimento" sortKey="due_date" currentSort={sortConfig} onSort={handleSort} />
-              <SortableHeader label="DescriÃ§Ã£o" sortKey="description" currentSort={sortConfig} onSort={handleSort} />
+              <SortableHeader label="Descrição" sortKey="description" currentSort={sortConfig} onSort={handleSort} />
               <th className="p-3 text-xs font-semibold text-gray-500 uppercase text-left">Contato</th>
               <SortableHeader label="Categoria" sortKey="financial_category_id" currentSort={sortConfig} onSort={handleSort} />
               <SortableHeader label="Pagamento" sortKey="payment_type_id" currentSort={sortConfig} onSort={handleSort} />
@@ -377,7 +377,7 @@ const dueDaysInfo = (t) => {
               <SortableHeader label="Tipo" sortKey="type" currentSort={sortConfig} onSort={handleSort} align="center" />
               <th className="text-center p-3 text-xs font-semibold text-gray-500 uppercase">Status</th>
               <SortableHeader label="Valor" sortKey="amount" currentSort={sortConfig} onSort={handleSort} align="right" />
-              <th className="text-center p-3">AÃ§Ãµes</th>
+              <th className="text-center p-3">Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -472,7 +472,7 @@ const dueDaysInfo = (t) => {
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-auto">
-            <h2 className="text-lg font-bold mb-4">{editing ? 'Editar' : 'Nova'} TransaÃ§Ã£o</h2>
+            <h2 className="text-lg font-bold mb-4">{editing ? 'Editar' : 'Nova'} Transação</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
 
               <div className="grid grid-cols-2 gap-3">
@@ -485,7 +485,7 @@ const dueDaysInfo = (t) => {
                   </select>
                 </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Data LanÃ§amento *</label>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Data Lançamento *</label>
                 <input type="date" value={form.date} onChange={e => handleDateChange(e.target.value)}
                   max={getTodayLocal()}
                   className="w-full px-3 py-2 border rounded-lg text-sm" required />
@@ -494,7 +494,7 @@ const dueDaysInfo = (t) => {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">DescriÃ§Ã£o *</label>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Descrição *</label>
                 <CaseInput placeholder="Ex: Pagamento fornecedor, Venda produto..." value={form.description}
                   onChange={e => setForm({...form, description: e.target.value})}
                   className="w-full px-3 py-2 border rounded-lg text-sm" required />
@@ -531,7 +531,7 @@ const dueDaysInfo = (t) => {
                     placeholder="Selecione..." />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Conta / CartÃ£o</label>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Conta / Cartão</label>
                   <SearchableSelect options={accountOptions} value={form.account_id ? parseInt(form.account_id) : ''}
                     onChange={val => handleAccountChange(val)}
                     renderOption={renderAccountOption}
@@ -557,19 +557,19 @@ const dueDaysInfo = (t) => {
                           <strong>{selectedAccount.name}</strong>
                           {selectedAccount.flag && ` (${selectedAccount.flag})`}
                           {selectedAccount.closing_day && selectedAccount.due_day
-                            ? ` â€” fecha dia ${selectedAccount.closing_day} / vence dia ${selectedAccount.due_day}`
+                            ? ` — fecha dia ${selectedAccount.closing_day} / vence dia ${selectedAccount.due_day}`
                             : ''
                           }
                         </>
                       ) : (
-                        'Selecione um cartÃ£o na Conta/CartÃ£o para calcular o vencimento'
+                        'Selecione um cartão na Conta/Cartão para calcular o vencimento'
                       )}
                     </span>
                   </div>
                   {calculatedDueDate && (
                     <div className="text-xs text-purple-600">
                       Vencimento calculado: <strong>{new Date(calculatedDueDate + 'T12:00:00').toLocaleDateString('pt-BR')}</strong>
-                      <span className="text-purple-400 ml-1">(compra {form.date && new Date(form.date).getDate() > selectedAccount.closing_day ? 'apÃ³s' : 'antes'} do fechamento)</span>
+                      <span className="text-purple-400 ml-1">(compra {form.date && new Date(form.date).getDate() > selectedAccount.closing_day ? 'após' : 'antes'} do fechamento)</span>
                     </div>
                   )}
                   {!selectedAccount?.closing_day && selectedAccount && (
@@ -599,7 +599,7 @@ const dueDaysInfo = (t) => {
                       <input type="number" min="1" max={parseInt(form.installments) || 60} value={form.current_installment}
                         onChange={e => setForm({...form, current_installment: e.target.value})}
                         className="w-full px-3 py-2 border rounded-lg text-sm" />
-                      <p className="text-xs text-gray-400 mt-0.5">NÂº desta parcela</p>
+                      <p className="text-xs text-gray-400 mt-0.5">Nº desta parcela</p>
                     </div>
                     <div>
                       <label className="block text-xs font-medium text-gray-500 mb-1">Total de Parcelas</label>
@@ -616,7 +616,7 @@ const dueDaysInfo = (t) => {
                     </div>
                     {installmentCount > 1 && (
                       <div>
-                        <label className="block text-xs font-medium text-gray-500 mb-1">FrequÃªncia *</label>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Frequência *</label>
                         <select value={form.recurrence_frequency} onChange={e => setForm({...form, recurrence_frequency: e.target.value})}
                           className="w-full px-3 py-2 border rounded-lg text-sm" required>
                           <option value="">Selecione...</option>
@@ -646,7 +646,7 @@ const dueDaysInfo = (t) => {
                               const num = startInstallment + i;
                               return (
                                 <div key={i} className={`flex justify-between text-xs px-2 py-1 rounded ${num === startInstallment ? 'bg-brand-50 text-brand-700 font-medium' : 'text-gray-600'}`}>
-                                  <span>{num}Âª parcela{num === startInstallment ? ' (atual)' : ''}</span>
+                                  <span>{num}ª parcela{num === startInstallment ? ' (atual)' : ''}</span>
                                   <span>{d.toLocaleDateString('pt-BR')}</span>
                                   <span>{formatCurrency(installmentValue)}</span>
                                 </div>
@@ -666,7 +666,7 @@ const dueDaysInfo = (t) => {
               )}
 
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">ObservaÃ§Ãµes</label>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Observações</label>
                 <CaseTextarea placeholder="Notas adicionais..." value={form.notes} rows={2}
                   onChange={e => setForm({...form, notes: e.target.value})}
                   className="w-full px-3 py-2 border rounded-lg text-sm" />
@@ -695,7 +695,7 @@ const dueDaysInfo = (t) => {
               <p><strong>{payingTransaction.description}</strong></p>
               <p>Valor total: {formatCurrency(payingTransaction.amount)}</p>
               {payingTransaction.payments?.length > 0 && (
-                <p>JÃ¡ pago: {formatCurrency(payingTransaction.payments.reduce((s, p) => s + p.amount, 0))}</p>
+                <p>Já pago: {formatCurrency(payingTransaction.payments.reduce((s, p) => s + p.amount, 0))}</p>
               )}
             </div>
             <form onSubmit={handlePaymentSubmit} className="space-y-3">
@@ -721,7 +721,7 @@ const dueDaysInfo = (t) => {
                   className="w-full px-3 py-2 border rounded-lg text-sm" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">ObservaÃ§Ã£o</label>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Observação</label>
                 <CaseInput type="text" placeholder="Nota opcional..."
                   value={paymentForm.notes}
                   onChange={e => setPaymentForm({...paymentForm, notes: e.target.value})}

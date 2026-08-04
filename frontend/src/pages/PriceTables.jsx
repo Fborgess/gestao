@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import api from '../services/api';
 import { Plus, Edit, Trash2, Tag, Search } from 'lucide-react';
 import { CaseInput } from '../components/CaseInput';
@@ -90,7 +90,7 @@ export default function PriceTables() {
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Remover esta tabela de preÃ§os?')) return;
+    if (!confirm('Remover esta tabela de preços?')) return;
     try { await api.delete(`/price-tables/${id}`); load(); }
     catch (err) { alert(err.response?.data?.detail || 'Erro'); }
   };
@@ -98,7 +98,7 @@ export default function PriceTables() {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Tabelas de PreÃ§os</h1>
+        <h1 className="text-2xl font-bold">Tabelas de Preços</h1>
         <button onClick={openNew}
           className="bg-brand-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-brand-700">
           <Plus size={18} /> Nova Tabela
@@ -123,27 +123,27 @@ export default function PriceTables() {
           </div>
         ))}
         {tables.length === 0 && (
-          <p className="text-gray-500 text-sm col-span-full text-center py-8">Nenhuma tabela de preÃ§os cadastrada</p>
+          <p className="text-gray-500 text-sm col-span-full text-center py-8">Nenhuma tabela de preços cadastrada</p>
         )}
       </div>
 
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-auto">
-            <h2 className="text-lg font-bold mb-4">{editing ? 'Editar' : 'Nova'} Tabela de PreÃ§os</h2>
+            <h2 className="text-lg font-bold mb-4">{editing ? 'Editar' : 'Nova'} Tabela de Preços</h2>
             <form onSubmit={handleSubmit} className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <CaseInput placeholder="Nome *" value={form.name}
                   onChange={e => setForm({...form, name: e.target.value})}
                   className="col-span-2 px-3 py-2 border rounded-lg text-sm" required />
-                <CaseInput placeholder="DescriÃ§Ã£o (opcional)" value={form.description}
+                <CaseInput placeholder="Descrição (opcional)" value={form.description}
                   onChange={e => setForm({...form, description: e.target.value})}
                   className="col-span-2 px-3 py-2 border rounded-lg text-sm" />
               </div>
 
               <div className="border rounded-lg p-3">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-semibold">PreÃ§os</h3>
+                  <h3 className="text-sm font-semibold">Preços</h3>
                   <div className="relative w-64">
                     <Search size={14} className="absolute left-2 top-2 text-gray-400" />
                     <input type="text" placeholder="Buscar produto..." value={productSearch}
@@ -169,7 +169,7 @@ export default function PriceTables() {
                     <thead className="bg-gray-50">
                       <tr>
                         <th className="text-left p-2">Produto</th>
-                        <th className="text-right p-2 w-32">PreÃ§o (R$)</th>
+                        <th className="text-right p-2 w-32">Preço (R$)</th>
                         <th className="text-center p-2 w-10"></th>
                       </tr>
                     </thead>

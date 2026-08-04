@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import api from '../services/api';
 import { formatCurrency } from '../services/format';
 import { Package, AlertTriangle, DollarSign, TrendingUp, TrendingDown, Users, Clock, AlertOctagon, Receipt, ArrowUpRight, ArrowDownRight } from 'lucide-react';
@@ -19,12 +19,12 @@ export default function Dashboard() {
 
   if (loading) return <div className="flex items-center justify-center h-64">Carregando...</div>;
   if (error) return <div className="flex items-center justify-center h-64 text-red-500">{error}</div>;
-  if (!data) return <div className="flex items-center justify-center h-64">Nenhum dado disponÃ­vel</div>;
+  if (!data) return <div className="flex items-center justify-center h-64">Nenhum dado disponível</div>;
 
   const financialStats = [
-    { label: 'Receitas do MÃªs', value: formatCurrency(data.monthly_receitas), icon: TrendingUp, color: 'bg-green-500', textColor: 'text-green-700' },
-    { label: 'Despesas do MÃªs', value: formatCurrency(data.monthly_despesas), icon: TrendingDown, color: 'bg-orange-500', textColor: 'text-orange-700' },
-    { label: 'Saldo do MÃªs', value: formatCurrency(data.monthly_balance), icon: DollarSign, color: 'bg-purple-500', textColor: 'text-purple-700' },
+    { label: 'Receitas do Mês', value: formatCurrency(data.monthly_receitas), icon: TrendingUp, color: 'bg-green-500', textColor: 'text-green-700' },
+    { label: 'Despesas do Mês', value: formatCurrency(data.monthly_despesas), icon: TrendingDown, color: 'bg-orange-500', textColor: 'text-orange-700' },
+    { label: 'Saldo do Mês', value: formatCurrency(data.monthly_balance), icon: DollarSign, color: 'bg-purple-500', textColor: 'text-purple-700' },
   ];
 
   const otherStats = [
@@ -112,7 +112,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         {data.monthly_evolution && data.monthly_evolution.length > 0 && (
           <div className="bg-white rounded-xl p-5 shadow-sm lg:col-span-1">
-            <h2 className="text-lg font-semibold mb-4">EvoluÃ§Ã£o Mensal</h2>
+            <h2 className="text-lg font-semibold mb-4">Evolução Mensal</h2>
             <ResponsiveContainer width="100%" height={260}>
               <LineChart data={data.monthly_evolution}>
                 <XAxis dataKey="mes" tickFormatter={(v) => v.slice(5)} />
@@ -164,18 +164,18 @@ export default function Dashboard() {
             <div className="group relative flex justify-between items-center p-3 bg-red-50 rounded-lg">
               <span className="flex items-center gap-2 text-red-700 cursor-pointer"><ArrowDownRight size={16} />A Pagar</span>
               <span className="font-bold text-red-700">{formatCurrency(data.a_pagar)}</span>
-              <PopupList list={data.a_pagar_list} borderColor="border-red-200" label="Top 5 pendentes do mÃªs" />
+              <PopupList list={data.a_pagar_list} borderColor="border-red-200" label="Top 5 pendentes do mês" />
             </div>
             <div className="group relative flex justify-between items-center p-3 bg-green-50 rounded-lg">
               <span className="flex items-center gap-2 text-green-700 cursor-pointer"><ArrowUpRight size={16} />A Receber</span>
               <span className="font-bold text-green-700">{formatCurrency(data.a_receber)}</span>
-              <PopupList list={data.a_receber_list} borderColor="border-green-200" label="Top 5 pendentes do mÃªs" />
+              <PopupList list={data.a_receber_list} borderColor="border-green-200" label="Top 5 pendentes do mês" />
             </div>
             <div className="flex justify-between items-center p-3 bg-brand-50 rounded-lg">
               <span className="flex items-center gap-2 text-brand-700"><DollarSign size={16} />Saldo Previsto</span>
               <span className="font-bold text-brand-700">{formatCurrency(data.a_receber - data.a_pagar)}</span>
             </div>
-            <div className="text-xs text-gray-400 text-center pt-1">{data.qtd_pendentes} tÃ­tulo(s) pendente(s) no mÃªs</div>
+            <div className="text-xs text-gray-400 text-center pt-1">{data.qtd_pendentes} título(s) pendente(s) no mês</div>
           </div>
         </div>
 
@@ -204,7 +204,7 @@ export default function Dashboard() {
         </div>
 
         <div className="bg-white rounded-xl p-5 shadow-sm border-l-4 border-orange-400">
-          <h2 className="text-lg font-semibold mb-3 flex items-center gap-2 text-orange-700"><Clock size={20} />Vencimentos PrÃ³ximos</h2>
+          <h2 className="text-lg font-semibold mb-3 flex items-center gap-2 text-orange-700"><Clock size={20} />Vencimentos Próximos</h2>
           <div className="space-y-3">
             <OverdueSection
               title="A Pagar"
@@ -213,7 +213,7 @@ export default function Dashboard() {
               bgColor="bg-orange-50"
               textColor="text-orange-700"
               borderColor="border-orange-200"
-              popupLabel="Top 5 prÃ³ximos 7 dias"
+              popupLabel="Top 5 próximos 7 dias"
             />
             <OverdueSection
               title="A Receber"
@@ -222,19 +222,19 @@ export default function Dashboard() {
               bgColor="bg-green-50"
               textColor="text-green-700"
               borderColor="border-green-200"
-              popupLabel="Top 5 prÃ³ximos 7 dias"
+              popupLabel="Top 5 próximos 7 dias"
             />
           </div>
         </div>
       </div>
 
       <div className="bg-white rounded-xl p-5 shadow-sm">
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2"><Receipt size={20} />Ãšltimos LanÃ§amentos</h2>
+        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2"><Receipt size={20} />Últimos Lançamentos</h2>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-gray-500 border-b">
-                <th className="pb-3 font-medium">DescriÃ§Ã£o</th>
+                <th className="pb-3 font-medium">Descrição</th>
                 <th className="pb-3 font-medium">Tipo</th>
                 <th className="pb-3 font-medium">Categoria</th>
                 <th className="pb-3 font-medium">Contato</th>
@@ -259,7 +259,7 @@ export default function Dashboard() {
                 </tr>
               ))}
               {data.recent_transactions.length === 0 && (
-                <tr><td colSpan="6" className="py-6 text-center text-gray-400">Nenhum lanÃ§amento encontrado</td></tr>
+                <tr><td colSpan="6" className="py-6 text-center text-gray-400">Nenhum lançamento encontrado</td></tr>
               )}
             </tbody>
           </table>

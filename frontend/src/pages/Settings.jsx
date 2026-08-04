@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { Check, Settings } from 'lucide-react';
@@ -6,20 +6,20 @@ import { Check, Settings } from 'lucide-react';
 const OPTIONS = [
   {
     value: 'upper',
-    title: 'Tudo MaiÃºsculo',
-    description: 'Todo texto Ã© convertido para CAIXA ALTA.',
+    title: 'Tudo Maiúsculo',
+    description: 'Todo texto é convertido para CAIXA ALTA.',
     example: 'RMC COMERCIO DE ALIMENTOS LTDA',
   },
   {
     value: 'title',
-    title: 'Primeira letra MaiÃºscula',
-    description: 'Cada palavra comeÃ§a com maiÃºscula e as preposiÃ§Ãµes ficam em minÃºsculo.',
+    title: 'Primeira letra Maiúscula',
+    description: 'Cada palavra começa com maiúscula e as preposições ficam em minúsculo.',
     example: 'Rmc Comercio de Alimentos Ltda',
   },
   {
     value: 'free',
     title: 'Entrada livre',
-    description: 'O texto Ã© mantido exatamente como digitado.',
+    description: 'O texto é mantido exatamente como digitado.',
     example: 'Rmc COMERCIO de alimentos LTDA',
   },
 ];
@@ -40,7 +40,7 @@ export default function SettingsPage() {
   if (!canManage) {
     return (
       <div className="bg-white rounded-xl shadow-sm p-6">
-        <p className="text-gray-500">VocÃª nÃ£o tem permissÃ£o para alterar as configuraÃ§Ãµes.</p>
+        <p className="text-gray-500">Você não tem permissão para alterar as configurações.</p>
       </div>
     );
   }
@@ -48,13 +48,13 @@ export default function SettingsPage() {
   return (
     <div className="max-w-2xl">
       <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
-        <Settings size={24} /> ConfiguraÃ§Ã£o de texto
+        <Settings size={24} /> Configuração de texto
       </h1>
 
       <div className="bg-white rounded-xl shadow-sm p-6">
         <h2 className="text-lg font-semibold mb-1">Caixa de texto dos dados</h2>
         <p className="text-sm text-gray-500 mb-4">
-          Define como os textos digitados nos formulÃ¡rios e os dados automÃ¡ticos (busca de CNPJ e CEP) serÃ£o gravados.
+          Define como os textos digitados nos formulários e os dados automáticos (busca de CNPJ e CEP) serão gravados.
         </p>
 
         <div className="space-y-3">
@@ -84,7 +84,7 @@ export default function SettingsPage() {
         </div>
 
         {savedValue && (
-          <p className="mt-4 text-sm text-green-600">ConfiguraÃ§Ã£o salva com sucesso.</p>
+          <p className="mt-4 text-sm text-green-600">Configuração salva com sucesso.</p>
         )}
         {loading && <p className="mt-4 text-sm text-gray-500">Salvando...</p>}
       </div>

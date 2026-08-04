@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import api from '../services/api';
 import { Plus, Edit, Trash2, ChevronRight, ChevronDown } from 'lucide-react';
 import { CaseInput, CaseTextarea } from '../components/CaseInput';
@@ -122,7 +122,7 @@ export default function FinancialCategories() {
               </div>
               <CaseInput placeholder="Nome *" value={form.name} onChange={e => setForm({...form, name: e.target.value})}
                 className="w-full px-3 py-2 border rounded-lg text-sm" required />
-              <CaseTextarea placeholder="DescriÃ§Ã£o" value={form.description} rows={2}
+              <CaseTextarea placeholder="Descrição" value={form.description} rows={2}
                 onChange={e => setForm({...form, description: e.target.value})}
                 className="w-full px-3 py-2 border rounded-lg text-sm" />
               <div className="flex justify-end gap-2 mt-4">

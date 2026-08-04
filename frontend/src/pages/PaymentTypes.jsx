@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import api from '../services/api';
 import { Plus, Edit, Trash2, Banknote } from 'lucide-react';
 import SortableHeader from '../components/SortableHeader';
@@ -63,9 +63,9 @@ export default function PaymentTypes() {
           <thead className="bg-gray-50">
             <tr>
               <SortableHeader label="Nome" sortKey="name" currentSort={sortConfig} onSort={handleSort} />
-              <SortableHeader label="DescriÃ§Ã£o" sortKey="description" currentSort={sortConfig} onSort={handleSort} />
+              <SortableHeader label="Descrição" sortKey="description" currentSort={sortConfig} onSort={handleSort} />
               <SortableHeader label="Parcelas" sortKey="requires_installments" currentSort={sortConfig} onSort={handleSort} align="center" />
-              <th className="text-center p-3">AÃ§Ãµes</th>
+              <th className="text-center p-3">Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -79,7 +79,7 @@ export default function PaymentTypes() {
                   {t.requires_installments ? (
                     <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">Sim</span>
                   ) : (
-                    <span className="px-2 py-1 bg-gray-100 text-gray-500 rounded-full text-xs">NÃ£o</span>
+                    <span className="px-2 py-1 bg-gray-100 text-gray-500 rounded-full text-xs">Não</span>
                   )}
                 </td>
                 <td className="p-3 text-center">
@@ -102,7 +102,7 @@ export default function PaymentTypes() {
             <form onSubmit={handleSubmit} className="space-y-3">
               <CaseInput placeholder="Nome *" value={form.name} onChange={e => setForm({...form, name: e.target.value})}
                 className="w-full px-3 py-2 border rounded-lg text-sm" required />
-              <CaseInput placeholder="DescriÃ§Ã£o" value={form.description} onChange={e => setForm({...form, description: e.target.value})}
+              <CaseInput placeholder="Descrição" value={form.description} onChange={e => setForm({...form, description: e.target.value})}
                 className="w-full px-3 py-2 border rounded-lg text-sm" />
               <label className="flex items-center gap-2 text-sm">
                 <input type="checkbox" checked={form.requires_installments}

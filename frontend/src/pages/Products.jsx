@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import api from '../services/api';
 import { Plus, Edit, Trash2, Search, Upload } from 'lucide-react';
 import SearchableSelect from '../components/SearchableSelect';
@@ -217,10 +217,10 @@ export default function Products() {
               <SortableHeader label="Nome" sortKey="name" currentSort={sortConfig} onSort={handleSort} />
               <SortableHeader label="SKU" sortKey="sku" currentSort={sortConfig} onSort={handleSort} />
               <SortableHeader label="Categoria" sortKey="category_id" currentSort={sortConfig} onSort={handleSort} />
-              <SortableHeader label="PreÃ§o Custo" sortKey="cost_price" currentSort={sortConfig} onSort={handleSort} align="right" />
+              <SortableHeader label="Preço Custo" sortKey="cost_price" currentSort={sortConfig} onSort={handleSort} align="right" />
               <SortableHeader label="Markup" sortKey="markup" currentSort={sortConfig} onSort={handleSort} align="right" />
-              <SortableHeader label="PreÃ§o Venda" sortKey="price" currentSort={sortConfig} onSort={handleSort} align="right" />
-              <th className="text-center p-3">AÃ§Ãµes</th>
+              <SortableHeader label="Preço Venda" sortKey="price" currentSort={sortConfig} onSort={handleSort} align="right" />
+              <th className="text-center p-3">Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -262,7 +262,7 @@ export default function Products() {
                 <CaseInput placeholder="SKU *" value={form.sku}
                   onChange={e => setForm({...form, sku: e.target.value})}
                   className="px-3 py-2 border rounded-lg text-sm" required />
-                <CaseInput placeholder="CÃ³digo de barras" value={form.barcode}
+                <CaseInput placeholder="Código de barras" value={form.barcode}
                   onChange={e => setForm({...form, barcode: e.target.value})}
                   className="px-3 py-2 border rounded-lg text-sm" />
               </div>
@@ -291,7 +291,7 @@ export default function Products() {
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">PreÃ§o de Custo</label>
+                  <label className="block text-xs text-gray-500 mb-1">Preço de Custo</label>
                   <input type="text" inputMode="decimal" placeholder="R$ 0,00" value={form.cost_price}
                     onChange={e => handleCostChange(e.target.value)}
                     className="w-full px-3 py-2 border rounded-lg text-sm" />
@@ -304,7 +304,7 @@ export default function Products() {
                     className="w-full px-3 py-2 border rounded-lg text-sm" />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">PreÃ§o de Venda</label>
+                  <label className="block text-xs text-gray-500 mb-1">Preço de Venda</label>
                   <input type="text" inputMode="decimal" placeholder="R$ 0,00" value={form.price}
                     onChange={e => handlePriceChange(e.target.value)}
                     className="w-full px-3 py-2 border rounded-lg text-sm" />
@@ -312,11 +312,11 @@ export default function Products() {
               </div>
               {form.cost_price && (form.markup || form.price) && (
                 <p className="text-xs text-gray-400">
-                  {form.markup && form.cost_price ? `PreÃ§o de venda = custo Ã— markup â†’ R$ ${formatNumberToCurrency(parseCurrencyToNumber(form.cost_price, formDecimals) * parseDecimal(form.markup), formDecimals)}` : ''}
-                  {form.price && form.cost_price && !form.markup ? `Markup = venda Ã· custo â†’ ${formatDecimal(parseCurrencyToNumber(form.price, formDecimals) / parseCurrencyToNumber(form.cost_price, formDecimals))}` : ''}
+                  {form.markup && form.cost_price ? `Preço de venda = custo × markup → R$ ${formatNumberToCurrency(parseCurrencyToNumber(form.cost_price, formDecimals) * parseDecimal(form.markup), formDecimals)}` : ''}
+                  {form.price && form.cost_price && !form.markup ? `Markup = venda ÷ custo → ${formatDecimal(parseCurrencyToNumber(form.price, formDecimals) / parseCurrencyToNumber(form.cost_price, formDecimals))}` : ''}
                 </p>
               )}
-              <CaseTextarea placeholder="DescriÃ§Ã£o do produto" value={form.description} rows={4}
+              <CaseTextarea placeholder="Descrição do produto" value={form.description} rows={4}
                 onChange={e => setForm({...form, description: e.target.value})}
                 className="w-full px-3 py-2 border rounded-lg text-sm" />
               <div className="flex justify-end gap-2 mt-4">

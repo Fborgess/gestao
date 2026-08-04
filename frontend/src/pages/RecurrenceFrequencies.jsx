@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import api from '../services/api';
 import { Plus, Edit, Trash2, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { CaseInput } from '../components/CaseInput';
@@ -25,7 +25,7 @@ export default function RecurrenceFrequencies() {
       else { await api.post('/recurrence-frequencies/', data); }
       setShowModal(false); setEditing(null); setForm({ name: '', days_interval: '' }); load();
     } catch (err) {
-      alert(err.response?.data?.detail || 'Erro ao salvar frequÃªncia');
+      alert(err.response?.data?.detail || 'Erro ao salvar frequência');
     }
   };
 
@@ -47,7 +47,7 @@ export default function RecurrenceFrequencies() {
   const formatInterval = (days) => {
     if (days === 1) return '1 dia';
     if (days < 30) return `${days} dias`;
-    if (days === 30) return '1 mÃªs';
+    if (days === 30) return '1 mês';
     if (days < 365) return `${Math.round(days / 30)} meses`;
     return `${Math.round(days / 365)} ano(s)`;
   };
@@ -55,10 +55,10 @@ export default function RecurrenceFrequencies() {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">FrequÃªncias de RecorrÃªncia</h1>
+        <h1 className="text-2xl font-bold">Frequências de Recorrência</h1>
         <button onClick={() => { setEditing(null); setForm({ name: '', days_interval: '' }); setShowModal(true); }}
           className="bg-brand-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-brand-700">
-          <Plus size={18} /> Nova FrequÃªncia
+          <Plus size={18} /> Nova Frequência
         </button>
       </div>
 
@@ -70,7 +70,7 @@ export default function RecurrenceFrequencies() {
               <th className="text-center p-3">Intervalo</th>
               <th className="text-center p-3">Dias</th>
               <th className="text-center p-3">Status</th>
-              <th className="text-center p-3">AÃ§Ãµes</th>
+              <th className="text-center p-3">Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -109,7 +109,7 @@ export default function RecurrenceFrequencies() {
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-auto">
-            <h2 className="text-lg font-bold mb-4">{editing ? 'Editar' : 'Nova'} FrequÃªncia</h2>
+            <h2 className="text-lg font-bold mb-4">{editing ? 'Editar' : 'Nova'} Frequência</h2>
             <form onSubmit={handleSubmit} className="space-y-3">
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1">Nome *</label>

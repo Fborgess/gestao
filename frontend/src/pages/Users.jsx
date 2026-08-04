@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import api from '../services/api';
 import { Plus, Edit, Trash2, Users as UsersIcon, Shield, User, Lock, KeyRound, Warehouse } from 'lucide-react';
 import { CaseInput } from '../components/CaseInput';
@@ -59,7 +59,7 @@ export default function Users() {
     e.preventDefault();
     try {
       if (form.password && form.password !== form.confirmPassword) {
-        alert('Senha e confirmaÃ§Ã£o nÃ£o conferem');
+        alert('Senha e confirmação não conferem');
         return;
       }
       const data = { name: form.name, email: form.email, role: form.role, deposit_ids: form.deposit_ids };
@@ -72,7 +72,7 @@ export default function Users() {
       }
       setShowModal(false); setEditing(null); setForm(emptyForm); load();
     } catch (err) {
-      alert(err.response?.data?.detail || 'Erro ao salvar usuÃ¡rio');
+      alert(err.response?.data?.detail || 'Erro ao salvar usuário');
     }
   };
 
@@ -94,12 +94,12 @@ export default function Users() {
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Remover este usuÃ¡rio?')) return;
+    if (!confirm('Remover este usuário?')) return;
     try {
       await api.delete(`/auth/users/${id}`);
       load();
     } catch (err) {
-      alert(err.response?.data?.detail || 'Erro ao remover usuÃ¡rio');
+      alert(err.response?.data?.detail || 'Erro ao remover usuário');
     }
   };
 
@@ -119,11 +119,11 @@ export default function Users() {
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-3">
           <UsersIcon size={28} className="text-brand-600" />
-          <h1 className="text-2xl font-bold">UsuÃ¡rios</h1>
+          <h1 className="text-2xl font-bold">Usuários</h1>
         </div>
         <button onClick={openNew}
           className="bg-brand-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-brand-700 text-sm">
-          <Plus size={18} /> Novo UsuÃ¡rio
+          <Plus size={18} /> Novo Usuário
         </button>
       </div>
 
@@ -137,7 +137,7 @@ export default function Users() {
               <th className="text-center p-3">Senha</th>
               <th className="text-center p-3">Status</th>
               <th className="text-center p-3">Criado em</th>
-              <th className="text-center p-3">AÃ§Ãµes</th>
+              <th className="text-center p-3">Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -176,7 +176,7 @@ export default function Users() {
               </tr>
             ))}
             {sorted.length === 0 && (
-              <tr><td colSpan={7} className="p-6 text-center text-gray-400">Nenhum usuÃ¡rio cadastrado</td></tr>
+              <tr><td colSpan={7} className="p-6 text-center text-gray-400">Nenhum usuário cadastrado</td></tr>
             )}
           </tbody>
         </table>
@@ -189,7 +189,7 @@ export default function Users() {
               <div className="p-2 rounded-xl bg-brand-100 text-brand-600">
                 <UsersIcon size={20} />
               </div>
-              <h2 className="text-lg font-bold text-gray-900">{editing ? 'Editar' : 'Novo'} UsuÃ¡rio</h2>
+              <h2 className="text-lg font-bold text-gray-900">{editing ? 'Editar' : 'Novo'} Usuário</h2>
             </div>
             <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
               <div className="px-6 py-4 space-y-4 overflow-y-auto">
@@ -217,7 +217,7 @@ export default function Users() {
                       </button>
                     )}
                   </div>
-                  <input type="text" placeholder={editing ? 'Deixe vazio para manter a atual' : 'MÃ­nimo 6 caracteres'} value={form.password}
+                  <input type="text" placeholder={editing ? 'Deixe vazio para manter a atual' : 'Mínimo 6 caracteres'} value={form.password}
                     onChange={e => setForm({...form, password: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
                     required={!editing} minLength={editing ? 0 : 6} />
@@ -236,14 +236,14 @@ export default function Users() {
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none" required>
                     <option value="">Selecione</option>
                     {roles.map(r => (
-                      <option key={r.id} value={r.name}>{r.name}{r.is_admin ? ' (Admin)' : ''}{r.is_default ? ' (padrÃ£o)' : ''}</option>
+                      <option key={r.id} value={r.name}>{r.name}{r.is_admin ? ' (Admin)' : ''}{r.is_default ? ' (padrão)' : ''}</option>
                     ))}
                   </select>
                 </div>
                 {deposits.length > 0 && (
                   <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">DepÃ³sitos com Acesso</label>
-                    <p className="text-xs text-gray-400 mb-1">Apenas depÃ³sitos pai (filhos sÃ£o liberados automaticamente)</p>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Depósitos com Acesso</label>
+                    <p className="text-xs text-gray-400 mb-1">Apenas depósitos pai (filhos são liberados automaticamente)</p>
                     <div className="border border-gray-200 rounded-lg max-h-40 overflow-y-auto p-1">
                       {deposits.filter(d => !d.parent_id).map(d => (
                         <label key={d.id} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer text-sm">
@@ -265,7 +265,7 @@ export default function Users() {
                 </button>
                 <button type="submit"
                   className="px-5 py-2.5 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 transition-colors shadow-sm">
-                  {editing ? 'Atualizar' : 'Criar UsuÃ¡rio'}
+                  {editing ? 'Atualizar' : 'Criar Usuário'}
                 </button>
               </div>
             </form>

@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import api from '../services/api';
 import { formatCurrency } from '../services/format';
 import { BarChart3, ArrowDownCircle, ArrowUpCircle, FileText, Download, Printer, List, AlignJustify } from 'lucide-react';
@@ -39,7 +39,7 @@ export default function StockReports() {
     if (f.end_date) params.end_date = f.end_date;
     api.get('/stock/report/', { params })
       .then(res => setMovements(res.data))
-      .catch(err => console.error('Erro ao buscar movimentaÃ§Ãµes:', err))
+      .catch(err => console.error('Erro ao buscar movimentações:', err))
       .finally(() => setLoading(false));
   };
 
@@ -59,7 +59,7 @@ export default function StockReports() {
     : filters.start_date
     ? `A partir de ${formatDate(filters.start_date)}`
     : filters.end_date
-    ? `AtÃ© ${formatDate(filters.end_date)}`
+    ? `Até ${formatDate(filters.end_date)}`
     : 'Todos';
 
   const totalEntries = balance.reduce((s, b) => s + b.quantity_entries, 0);
@@ -74,23 +74,23 @@ export default function StockReports() {
   const balanceColumnsFull = [
     { header: 'Produto', accessor: r => r.product_name, width: 30, align: 'left' },
     { header: 'Entradas', accessor: r => r.quantity_entries, width: 12, align: 'right' },
-    { header: 'SaÃ­das', accessor: r => r.quantity_exits, width: 12, align: 'right' },
+    { header: 'Saídas', accessor: r => r.quantity_exits, width: 12, align: 'right' },
     { header: 'Saldo', accessor: r => r.balance, width: 12, align: 'right' },
     { header: 'Valor Entradas', accessor: r => formatCurrency(r.total_value_entries), width: 18, align: 'right' },
-    { header: 'Valor SaÃ­das', accessor: r => formatCurrency(r.total_value_exits), width: 18, align: 'right' },
+    { header: 'Valor Saídas', accessor: r => formatCurrency(r.total_value_exits), width: 18, align: 'right' },
   ];
 
   const balanceColumnsNoFin = [
     { header: 'Produto', accessor: r => r.product_name, width: 30, align: 'left' },
     { header: 'Entradas', accessor: r => r.quantity_entries, width: 15, align: 'right' },
-    { header: 'SaÃ­das', accessor: r => r.quantity_exits, width: 15, align: 'right' },
+    { header: 'Saídas', accessor: r => r.quantity_exits, width: 15, align: 'right' },
     { header: 'Saldo', accessor: r => r.balance, width: 15, align: 'right' },
   ];
 
   const syntheticColumnsFull = [
     { header: 'Produto', accessor: r => r.product_name, width: 30, align: 'left' },
     { header: 'Qtd', accessor: r => r.balance, width: 12, align: 'right' },
-    { header: 'PreÃ§o Unit.', accessor: r => formatCurrency(getAvgPrice(r)), width: 14, align: 'right' },
+    { header: 'Preço Unit.', accessor: r => formatCurrency(getAvgPrice(r)), width: 14, align: 'right' },
     { header: 'Total', accessor: r => formatCurrency(r.total_value_entries), width: 18, align: 'right' },
   ];
 
@@ -101,11 +101,11 @@ export default function StockReports() {
 
   const movementColumns = [
     { header: 'Data', accessor: r => r.movement_date ? new Date(r.movement_date).toLocaleDateString('pt-BR') : '-', width: 14, align: 'left' },
-    { header: 'DepÃ³sito', accessor: r => r.deposit_name, width: 20, align: 'left' },
+    { header: 'Depósito', accessor: r => r.deposit_name, width: 20, align: 'left' },
     { header: 'Produto', accessor: r => r.product_name, width: 25, align: 'left' },
-    { header: 'Tipo', accessor: r => r.movement_type === 'entrada' ? 'Entrada' : 'SaÃ­da', width: 10, align: 'center' },
+    { header: 'Tipo', accessor: r => r.movement_type === 'entrada' ? 'Entrada' : 'Saída', width: 10, align: 'center' },
     { header: 'Qtd', accessor: r => r.quantity, width: 8, align: 'right' },
-    { header: 'PreÃ§o Unit.', accessor: r => formatCurrency(r.unit_price || 0), width: 14, align: 'right' },
+    { header: 'Preço Unit.', accessor: r => formatCurrency(r.unit_price || 0), width: 14, align: 'right' },
     { header: 'Total', accessor: r => formatCurrency(r.total_value || 0), width: 14, align: 'right' },
     { header: 'Motivo', accessor: r => r.reason || '-', width: 20, align: 'left' },
   ];
@@ -123,17 +123,17 @@ export default function StockReports() {
   const handlePrint = () => {
     if (activeTab === 'balance') {
       setPrinting({
-        title: `RelatÃ³rio de Estoque - Saldo\nDepÃ³sito: ${depositName}\nPerÃ­odo: ${periodStr}`,
+        title: `Relatório de Estoque - Saldo\nDepósito: ${depositName}\nPeríodo: ${periodStr}`,
         content: (
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="bg-gray-50">
                 <th className="p-3 text-left">Produto</th>
                 <th className="p-3 text-right">Entradas</th>
-                <th className="p-3 text-right">SaÃ­das</th>
+                <th className="p-3 text-right">Saídas</th>
                 <th className="p-3 text-right">Saldo</th>
                 {financialData && <th className="p-3 text-right">Valor Entradas</th>}
-                {financialData && <th className="p-3 text-right">Valor SaÃ­das</th>}
+                {financialData && <th className="p-3 text-right">Valor Saídas</th>}
               </tr>
             </thead>
             <tbody>
@@ -153,14 +153,14 @@ export default function StockReports() {
       });
     } else if (activeTab === 'synthetic') {
       setPrinting({
-        title: `RelatÃ³rio de Estoque - Saldo\nDepÃ³sito: ${depositName}\nPerÃ­odo: ${periodStr}`,
+        title: `Relatório de Estoque - Saldo\nDepósito: ${depositName}\nPeríodo: ${periodStr}`,
         content: (
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="bg-gray-50">
                 <th className="p-3 text-left">Produto</th>
                 <th className="p-3 text-right">Qtd</th>
-                {financialData && <th className="p-3 text-right">PreÃ§o Unit.</th>}
+                {financialData && <th className="p-3 text-right">Preço Unit.</th>}
                 {financialData && <th className="p-3 text-right">Total</th>}
               </tr>
             </thead>
@@ -179,17 +179,17 @@ export default function StockReports() {
       });
     } else {
       setPrinting({
-        title: `MovimentaÃ§Ãµes de Estoque\nDepÃ³sito: ${depositName}\nPerÃ­odo: ${periodStr}`,
+        title: `Movimentações de Estoque\nDepósito: ${depositName}\nPeríodo: ${periodStr}`,
         content: (
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="bg-gray-50">
                 <th className="p-3 text-left">Data</th>
-                <th className="p-3 text-left">DepÃ³sito</th>
+                <th className="p-3 text-left">Depósito</th>
                 <th className="p-3 text-left">Produto</th>
                 <th className="p-3 text-center">Tipo</th>
                 <th className="p-3 text-right">Qtd</th>
-                <th className="p-3 text-right">PreÃ§o Unit.</th>
+                <th className="p-3 text-right">Preço Unit.</th>
                 <th className="p-3 text-right">Total</th>
                 <th className="p-3 text-left">Motivo</th>
               </tr>
@@ -200,7 +200,7 @@ export default function StockReports() {
                   <td className="p-3">{m.movement_date ? new Date(m.movement_date).toLocaleDateString('pt-BR') : '-'}</td>
                   <td className="p-3">{m.deposit_name}</td>
                   <td className="p-3">{m.product_name}</td>
-                  <td className="p-3 text-center">{m.movement_type === 'entrada' ? 'Entrada' : 'SaÃ­da'}</td>
+                  <td className="p-3 text-center">{m.movement_type === 'entrada' ? 'Entrada' : 'Saída'}</td>
                   <td className="p-3 text-right">{m.quantity}</td>
                   <td className="p-3 text-right">{formatCurrency(m.unit_price || 0)}</td>
                   <td className="p-3 text-right">{formatCurrency(m.total_value || 0)}</td>
@@ -218,14 +218,14 @@ export default function StockReports() {
 
   const tabs = [
     { key: 'balance', label: 'Saldo Detalhado', icon: List },
-    { key: 'synthetic', label: 'Saldo SintÃ©tico', icon: AlignJustify },
-    { key: 'movements', label: 'MovimentaÃ§Ãµes', icon: FileText },
+    { key: 'synthetic', label: 'Saldo Sintético', icon: AlignJustify },
+    { key: 'movements', label: 'Movimentações', icon: FileText },
   ];
 
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">RelatÃ³rios de Estoque</h1>
+        <h1 className="text-2xl font-bold">Relatórios de Estoque</h1>
         <div className="flex gap-2">
           {hasData && (
             <>
@@ -257,7 +257,7 @@ export default function StockReports() {
       <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
           <div>
-            <label className="block text-xs text-gray-500 mb-1">DepÃ³sito</label>
+            <label className="block text-xs text-gray-500 mb-1">Depósito</label>
             <select value={filters.deposit_id}
               onChange={e => setFilters({...filters, deposit_id: e.target.value})}
               className="w-full px-3 py-2 border rounded-lg text-sm">
@@ -266,7 +266,7 @@ export default function StockReports() {
             </select>
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Data InÃ­cio</label>
+            <label className="block text-xs text-gray-500 mb-1">Data Início</label>
             <input type="date" value={filters.start_date}
               onChange={e => setFilters({...filters, start_date: e.target.value})}
               max={filters.end_date || undefined}
@@ -306,7 +306,7 @@ export default function StockReports() {
                 <p className="text-xl font-bold text-green-600">{totalEntries}</p>
               </div>
               <div className="bg-white rounded-xl shadow-sm p-4 text-center">
-                <p className="text-xs text-gray-500">SaÃ­das</p>
+                <p className="text-xs text-gray-500">Saídas</p>
                 <p className="text-xl font-bold text-red-600">{totalExits}</p>
               </div>
               <div className="bg-white rounded-xl shadow-sm p-4 text-center">
@@ -318,7 +318,7 @@ export default function StockReports() {
                 <p className="text-xl font-bold text-green-600">{formatCurrency(totalValueIn)}</p>
               </div>
               <div className="bg-white rounded-xl shadow-sm p-4 text-center">
-                <p className="text-xs text-gray-500">Valor SaÃ­das</p>
+                <p className="text-xs text-gray-500">Valor Saídas</p>
                 <p className="text-xl font-bold text-red-600">{formatCurrency(totalValueOut)}</p>
               </div>
             </div>
@@ -331,7 +331,7 @@ export default function StockReports() {
                 <p className="text-xl font-bold text-green-600">{totalEntries}</p>
               </div>
               <div className="bg-white rounded-xl shadow-sm p-4 text-center">
-                <p className="text-xs text-gray-500">SaÃ­das</p>
+                <p className="text-xs text-gray-500">Saídas</p>
                 <p className="text-xl font-bold text-red-600">{totalExits}</p>
               </div>
               <div className="bg-white rounded-xl shadow-sm p-4 text-center">
@@ -347,10 +347,10 @@ export default function StockReports() {
                 <tr>
                   <th className="text-left p-3 whitespace-nowrap">Produto</th>
                   <th className="text-right p-3 whitespace-nowrap">Entradas</th>
-                  <th className="text-right p-3 whitespace-nowrap">SaÃ­das</th>
+                  <th className="text-right p-3 whitespace-nowrap">Saídas</th>
                   <th className="text-right p-3 whitespace-nowrap">Saldo</th>
                   {financialData && <th className="text-right p-3 whitespace-nowrap">Valor Entradas</th>}
-                  {financialData && <th className="text-right p-3 whitespace-nowrap">Valor SaÃ­das</th>}
+                  {financialData && <th className="text-right p-3 whitespace-nowrap">Valor Saídas</th>}
                 </tr>
               </thead>
               <tbody>
@@ -376,15 +376,15 @@ export default function StockReports() {
       {activeTab === 'synthetic' && !loading && (
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <div className="p-4 border-b bg-gray-50">
-            <p className="text-sm font-medium text-gray-700">RelatÃ³rio de estoque - Saldo</p>
-            <p className="text-xs text-gray-500">DepÃ³sito: {depositName} | PerÃ­odo: {periodStr}</p>
+            <p className="text-sm font-medium text-gray-700">Relatório de estoque - Saldo</p>
+            <p className="text-xs text-gray-500">Depósito: {depositName} | Período: {periodStr}</p>
           </div>
           <table className="text-sm" style={{ width: 'auto' }}>
             <thead className="bg-gray-50">
               <tr>
                 <th className="text-left p-3 whitespace-nowrap">Produto</th>
                 <th className="text-right p-3 whitespace-nowrap">Qtd</th>
-                {financialData && <th className="text-right p-3 whitespace-nowrap">PreÃ§o Unit.</th>}
+                {financialData && <th className="text-right p-3 whitespace-nowrap">Preço Unit.</th>}
                 {financialData && <th className="text-right p-3 whitespace-nowrap">Total</th>}
               </tr>
             </thead>
@@ -425,11 +425,11 @@ export default function StockReports() {
             <thead className="bg-gray-50">
               <tr>
                 <th className="text-left p-3 whitespace-nowrap">Data</th>
-                <th className="text-left p-3 whitespace-nowrap">DepÃ³sito</th>
+                <th className="text-left p-3 whitespace-nowrap">Depósito</th>
                 <th className="text-left p-3 whitespace-nowrap">Produto</th>
                 <th className="text-center p-3 whitespace-nowrap">Tipo</th>
                 <th className="text-right p-3 whitespace-nowrap">Qtd</th>
-                <th className="text-right p-3 whitespace-nowrap">PreÃ§o Unit.</th>
+                <th className="text-right p-3 whitespace-nowrap">Preço Unit.</th>
                 <th className="text-right p-3 whitespace-nowrap">Total</th>
                 <th className="text-left p-3 whitespace-nowrap">Motivo</th>
               </tr>
@@ -445,7 +445,7 @@ export default function StockReports() {
                       m.movement_type === 'entrada' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                     }`}>
                       {m.movement_type === 'entrada' ? <ArrowDownCircle size={12} /> : <ArrowUpCircle size={12} />}
-                      {m.movement_type === 'entrada' ? 'Entrada' : 'SaÃ­da'}
+                      {m.movement_type === 'entrada' ? 'Entrada' : 'Saída'}
                     </span>
                   </td>
                   <td className="p-3 text-right font-medium whitespace-nowrap">{m.quantity}</td>
@@ -455,7 +455,7 @@ export default function StockReports() {
                 </tr>
               ))}
               {movements.length === 0 && (
-                <tr><td colSpan={8} className="p-8 text-center text-gray-400">Nenhuma movimentaÃ§Ã£o encontrada</td></tr>
+                <tr><td colSpan={8} className="p-8 text-center text-gray-400">Nenhuma movimentação encontrada</td></tr>
               )}
             </tbody>
           </table>

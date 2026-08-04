@@ -1,4 +1,4 @@
-﻿import { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { Upload, FileSpreadsheet, Download, X, CheckCircle, AlertCircle } from 'lucide-react';
 import api from '../services/api';
 
@@ -68,7 +68,7 @@ export default function ImportExcelModal({ open, onClose, onImported }) {
             <p className="text-sm text-gray-600 mb-1">
               {file ? file.name : 'Clique ou arraste o arquivo .xlsx aqui'}
             </p>
-            {!file && <p className="text-xs text-gray-400">Colunas: Nome, SKU, DescriÃ§Ã£o, CÃ³digo de Barras, PreÃ§o Venda, PreÃ§o Custo, Categoria, Subcategoria, Unidade</p>}
+            {!file && <p className="text-xs text-gray-400">Colunas: Nome, SKU, Descrição, Código de Barras, Preço Venda, Preço Custo, Categoria, Subcategoria, Unidade</p>}
             <input ref={inputRef} type="file" accept=".xlsx,.xls" className="hidden"
               onChange={(e) => { const f = e.target.files[0]; if (f) setFile(f); }} />
           </div>

@@ -1,4 +1,4 @@
-﻿import { Clock } from 'lucide-react';
+import { Clock } from 'lucide-react';
 
 export default function InactivityWarning({ show, countdown, onStayLoggedIn, onLogout }) {
   if (!show) return null;
@@ -11,9 +11,9 @@ export default function InactivityWarning({ show, countdown, onStayLoggedIn, onL
             <Clock size={32} className="text-yellow-600" />
           </div>
         </div>
-        <h2 className="text-xl font-bold text-gray-900 mb-2">SessÃ£o expirando</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-2">Sessão expirando</h2>
         <p className="text-gray-500 mb-2">
-          Por inatividade, sua sessÃ£o serÃ¡ encerrada em
+          Por inatividade, sua sessão será encerrada em
         </p>
         <div className="text-4xl font-bold text-yellow-600 mb-6 font-mono">
           {countdown}s

@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -164,7 +164,7 @@ export default function Requisicoes() {
       quantity_approved: it.quantity_approved || it.quantity_requested,
     }));
     const totals = itens.reduce((s, it) => s + it.quantity_approved, 0);
-    if (!confirm(`Liberar requisiÃ§Ã£o #${r.id} (${totals} ite${totals === 1 ? 'm' : 'ns'}) para atendimento?`)) return;
+    if (!confirm(`Liberar requisição #${r.id} (${totals} ite${totals === 1 ? 'm' : 'ns'}) para atendimento?`)) return;
     try {
       await api.put(`/requisicoes/${r.id}/approve`, { items: itens });
       load();
@@ -179,7 +179,7 @@ export default function Requisicoes() {
     try {
       const res = await api.get(`/stock/balance/?deposit_id=${r.deposit_fulfilling_id}`);
       (res.data || []).forEach(b => { bal[b.product_id] = b.balance; });
-    } catch (e) { /* saldo indisponÃ­vel nÃ£o bloqueia */ }
+    } catch (e) { /* saldo indisponível não bloqueia */ }
     r.items.forEach(it => {
       const approved = it.quantity_approved || it.quantity_requested || 0;
       const b = bal[it.product_id];
@@ -200,8 +200,8 @@ export default function Requisicoes() {
     const exceed = r.items.filter(it => (fulfillQty[it.product_id] || 0) > (it.quantity_approved || it.quantity_requested));
     if (exceed.length > 0) {
       const msg = exceed.map(it => `${it.product_name}: entregar ${fulfillQty[it.product_id]} (solicitado ${it.quantity_requested})`).join('\n');
-      if (!confirm(`AtenÃ§Ã£o! A quantidade de alguns itens Ã© MAIOR que a solicitada:\n\n${msg}\n\nDeseja continuar mesmo assim?`)) return;
-    } else if (!confirm(`Confirmar atendimento da requisiÃ§Ã£o #${r.id}? Isso criarÃ¡ movimentaÃ§Ãµes de saÃ­da no estoque.`)) return;
+      if (!confirm(`Atenção! A quantidade de alguns itens é MAIOR que a solicitada:\n\n${msg}\n\nDeseja continuar mesmo assim?`)) return;
+    } else if (!confirm(`Confirmar atendimento da requisição #${r.id}? Isso criará movimentações de saída no estoque.`)) return;
     try {
       await api.put(`/requisicoes/${r.id}/fulfill`, { items });
       setFulfilling(null);
@@ -225,7 +225,7 @@ export default function Requisicoes() {
       product_id: it.product_id,
       quantity_received: roundQty(receiveQty[it.product_id] ?? 0, unitOf(it)),
     }));
-    if (!confirm(`Confirmar recebimento da requisiÃ§Ã£o #${r.id} no depÃ³sito? Isso criarÃ¡ movimentaÃ§Ãµes de entrada no estoque.`)) return;
+    if (!confirm(`Confirmar recebimento da requisição #${r.id} no depósito? Isso criará movimentações de entrada no estoque.`)) return;
     try {
       await api.put(`/requisicoes/${r.id}/receive`, { items });
       setReceiving(null);
@@ -236,7 +236,7 @@ export default function Requisicoes() {
   };
 
   const handleCancel = async (r) => {
-    if (!confirm(`Cancelar requisiÃ§Ã£o #${r.id}?`)) return;
+    if (!confirm(`Cancelar requisição #${r.id}?`)) return;
     try {
       await api.put(`/requisicoes/${r.id}/cancel`);
       load();
@@ -246,7 +246,7 @@ export default function Requisicoes() {
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Remover esta requisiÃ§Ã£o?')) return;
+    if (!confirm('Remover esta requisição?')) return;
     try {
       await api.delete(`/requisicoes/${id}`);
       load();
@@ -258,24 +258,24 @@ export default function Requisicoes() {
   const handlePrint = (r) => {
     const d = (v) => v ? new Date(v).toLocaleDateString('pt-BR') : '-';
     setPrinting({
-      title: `RequisiÃ§Ã£o #${r.id}`,
+      title: `Requisição #${r.id}`,
       content: (
         <div>
           <div className="text-center mb-6">
-            <h1 className="text-xl font-bold">RequisiÃ§Ã£o de Estoque #{r.id}</h1>
-            <p className="text-sm text-gray-500">Sistema de GestÃ£o</p>
+            <h1 className="text-xl font-bold">Requisição de Estoque #{r.id}</h1>
+            <p className="text-sm text-gray-500">Sistema de Gestão</p>
             <p className="text-xs text-gray-400">Gerado em {new Date().toLocaleString('pt-BR')}</p>
           </div>
           <div className="grid grid-cols-2 gap-3 text-sm mb-6">
             <div><span className="font-medium">Solicitante:</span> {userMap[r.requester_id] || '-'}</div>
             <div className="text-right"><span className="font-medium">Status:</span> {statusLabels[r.status]}</div>
-            <div><span className="font-medium">DepÃ³sito Solicitante:</span> {r.deposit_requesting_name}</div>
-            <div className="text-right"><span className="font-medium">DepÃ³sito Atendimento:</span> {r.deposit_fulfilling_name}</div>
+            <div><span className="font-medium">Depósito Solicitante:</span> {r.deposit_requesting_name}</div>
+            <div className="text-right"><span className="font-medium">Depósito Atendimento:</span> {r.deposit_fulfilling_name}</div>
             <div><span className="font-medium">Data:</span> {d(r.created_at)}</div>
             {r.approver_name && <div className="text-right"><span className="font-medium">Aprovador:</span> {r.approver_name}</div>}
           </div>
           {r.reason && <p className="text-sm mb-4"><span className="font-medium">Motivo:</span> {r.reason}</p>}
-          {r.notes && <p className="text-sm mb-4"><span className="font-medium">ObservaÃ§Ãµes:</span> {r.notes}</p>}
+          {r.notes && <p className="text-sm mb-4"><span className="font-medium">Observações:</span> {r.notes}</p>}
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="bg-gray-50">
@@ -284,7 +284,7 @@ export default function Requisicoes() {
                 {r.status !== 'pendente' && <th className="p-3 text-right">Aprovado</th>}
                 {(r.status === 'atendido' || r.status === 'recebido') && <th className="p-3 text-right">Enviado</th>}
                 {r.status === 'recebido' && <th className="p-3 text-right">Recebido</th>}
-                {(r.status === 'atendido' || r.status === 'recebido') && <th className="p-3 text-right">PreÃ§o Unit.</th>}
+                {(r.status === 'atendido' || r.status === 'recebido') && <th className="p-3 text-right">Preço Unit.</th>}
               </tr>
             </thead>
             <tbody>
@@ -307,8 +307,8 @@ export default function Requisicoes() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.deposit_requesting_id) { alert('Selecione o depÃ³sito solicitante'); return; }
-    if (!form.deposit_fulfilling_id) { alert('Selecione o depÃ³sito de atendimento'); return; }
+    if (!form.deposit_requesting_id) { alert('Selecione o depósito solicitante'); return; }
+    if (!form.deposit_fulfilling_id) { alert('Selecione o depósito de atendimento'); return; }
     if (form.items.length === 0) { alert('Adicione pelo menos um produto'); return; }
     try {
       const data = {
@@ -333,7 +333,7 @@ export default function Requisicoes() {
       }
       setShowModal(false); resetForm(); load();
     } catch (err) {
-      alert(err.response?.data?.detail || 'Erro ao salvar requisiÃ§Ã£o');
+      alert(err.response?.data?.detail || 'Erro ao salvar requisição');
     }
   };
 
@@ -342,7 +342,7 @@ export default function Requisicoes() {
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-3">
           <ClipboardList size={28} className="text-orange-600" />
-          <h1 className="text-2xl font-bold">RequisiÃ§Ãµes de Estoque</h1>
+          <h1 className="text-2xl font-bold">Requisições de Estoque</h1>
         </div>
         <div className="flex gap-2">
           <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
@@ -356,7 +356,7 @@ export default function Requisicoes() {
           </select>
           <button onClick={() => { resetForm(); setShowModal(true); }}
             className="bg-orange-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-orange-700 text-sm">
-            <Plus size={18} /> Nova RequisiÃ§Ã£o
+            <Plus size={18} /> Nova Requisição
           </button>
         </div>
       </div>
@@ -372,7 +372,7 @@ export default function Requisicoes() {
               <th className="text-center p-3">Itens</th>
               <th className="text-center p-3">Status</th>
               <th className="text-left p-3">Data</th>
-              <th className="text-center p-3">AÃ§Ãµes</th>
+              <th className="text-center p-3">Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -400,7 +400,7 @@ export default function Requisicoes() {
                       </>
                     )}
                     {r.status === 'aprovado' && canFulfill(r) && (
-                      <button onClick={() => openFulfill(r)} className="p-1 text-green-600 hover:text-green-800" title="Atender (saÃ­da)"><Truck size={15} /></button>
+                      <button onClick={() => openFulfill(r)} className="p-1 text-green-600 hover:text-green-800" title="Atender (saída)"><Truck size={15} /></button>
                     )}
                     {r.status === 'aprovado' && canManage(r) && (
                       <button onClick={() => handleCancel(r)} className="p-1 text-red-600 hover:text-red-800" title="Cancelar"><XCircle size={15} /></button>
@@ -416,7 +416,7 @@ export default function Requisicoes() {
               </tr>
             ))}
             {requisicoes.length === 0 && (
-              <tr><td colSpan={8} className="p-8 text-center text-gray-400">Nenhuma requisiÃ§Ã£o encontrada</td></tr>
+              <tr><td colSpan={8} className="p-8 text-center text-gray-400">Nenhuma requisição encontrada</td></tr>
             )}
           </tbody>
         </table>
@@ -429,13 +429,13 @@ export default function Requisicoes() {
               <div className="p-2 rounded-xl bg-orange-100 text-orange-600">
                 <ClipboardList size={20} />
               </div>
-              <h2 className="text-lg font-bold">{editing ? 'Editar' : 'Nova'} RequisiÃ§Ã£o</h2>
+              <h2 className="text-lg font-bold">{editing ? 'Editar' : 'Nova'} Requisição</h2>
             </div>
             <form onSubmit={handleSubmit}>
               <div className="px-6 py-4 space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">DepÃ³sito Solicitante *</label>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Depósito Solicitante *</label>
                     <select value={form.deposit_requesting_id}
                       onChange={e => setForm({...form, deposit_requesting_id: e.target.value})}
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" required>
@@ -444,7 +444,7 @@ export default function Requisicoes() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">DepÃ³sito Atendimento *</label>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Depósito Atendimento *</label>
                     <select value={form.deposit_fulfilling_id}
                       onChange={e => setForm({...form, deposit_fulfilling_id: e.target.value})}
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" required>
@@ -466,7 +466,7 @@ export default function Requisicoes() {
                           <span className="text-sm font-medium flex-1">{it.product_name}</span>
                           <div className="flex items-center gap-1.5">
                             <button type="button" onClick={() => updateItem(it.product_id, 'quantity_requested', Math.max(qtyMin(unitOf(it)), roundQty((it.quantity_requested || qtyMin(unitOf(it))) - qtyStep(unitOf(it)), unitOf(it))))}
-                              className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">âˆ’</button>
+                              className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">−</button>
                             <input type="number" min={qtyMin(unitOf(it))} step={qtyStep(unitOf(it))} value={it.quantity_requested}
                               ref={el => { qtyRefs.current[it.product_id] = el; }}
                               onChange={e => {
@@ -494,13 +494,13 @@ export default function Requisicoes() {
 
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1">Motivo / Destino</label>
-                  <CaseInput placeholder="Ex: Uso interno, TransferÃªncia, Cliente" value={form.reason}
+                  <CaseInput placeholder="Ex: Uso interno, Transferência, Cliente" value={form.reason}
                     onChange={e => setForm({...form, reason: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">ObservaÃ§Ãµes</label>
-                  <CaseTextarea placeholder="ObservaÃ§Ãµes" value={form.notes} rows={2}
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Observações</label>
+                  <CaseTextarea placeholder="Observações" value={form.notes} rows={2}
                     onChange={e => setForm({...form, notes: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
                 </div>
@@ -510,7 +510,7 @@ export default function Requisicoes() {
                   className="px-5 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">Cancelar</button>
                 <button type="submit"
                   className="px-5 py-2.5 bg-orange-600 text-white rounded-lg text-sm font-medium hover:bg-orange-700 shadow-sm">
-                  {editing ? 'Salvar AlteraÃ§Ãµes' : 'Criar RequisiÃ§Ã£o'}
+                  {editing ? 'Salvar Alterações' : 'Criar Requisição'}
                 </button>
               </div>
             </form>
@@ -525,11 +525,11 @@ export default function Requisicoes() {
               <div className="p-2 rounded-xl bg-green-100 text-green-600">
                 <Truck size={20} />
               </div>
-              <h2 className="text-lg font-bold">Atender RequisiÃ§Ã£o #{fulfilling.id}</h2>
+              <h2 className="text-lg font-bold">Atender Requisição #{fulfilling.id}</h2>
               <span className="ml-auto text-sm text-gray-500">Liberada por {fulfilling.approver_name || '-'}</span>
             </div>
             <div className="px-6 py-4 space-y-2">
-              <p className="text-sm text-gray-500 mb-3">Informe a quantidade entregue de cada item (parcial ou completa). Se informar mais que o solicitado, serÃ¡ pedida uma confirmaÃ§Ã£o.</p>
+              <p className="text-sm text-gray-500 mb-3">Informe a quantidade entregue de cada item (parcial ou completa). Se informar mais que o solicitado, será pedida uma confirmação.</p>
               {fulfilling.items.map(it => {
                 const u = unitOf(it);
                 const approved = it.quantity_approved || it.quantity_requested;
@@ -543,13 +543,13 @@ export default function Requisicoes() {
                         <div className="text-sm font-medium truncate">{it.product_name}</div>
                         <div className="text-xs text-gray-500">
                           Solicitado: {it.quantity_requested}
-                          {balLabel !== null ? ` Â· Saldo no Pai: ${balLabel}` : ''}
+                          {balLabel !== null ? ` · Saldo no Pai: ${balLabel}` : ''}
                         </div>
-                        {over && <div className="text-xs text-red-600 mt-0.5">AtenÃ§Ã£o: quantidade maior que o saldo no depÃ³sito pai ({bal})</div>}
+                        {over && <div className="text-xs text-red-600 mt-0.5">Atenção: quantidade maior que o saldo no depósito pai ({bal})</div>}
                       </div>
                       <div className="flex items-center gap-1.5">
                         <button type="button" onClick={() => setFulfillQty(q => ({ ...q, [it.product_id]: Math.max(0, roundQty((q[it.product_id] || 0) - qtyStep(u), u)) }))}
-                          className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">âˆ’</button>
+                          className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">−</button>
                         <input type="number" min="0" step={qtyStep(u)} value={fulfillQty[it.product_id] ?? 0}
                           onChange={e => {
                             if (e.target.value === '') return;
@@ -598,7 +598,7 @@ export default function Requisicoes() {
                     <span className="text-xs text-gray-500 mr-2">Enviado: {sent}</span>
                     <div className="flex items-center gap-1.5">
                       <button type="button" onClick={() => setReceiveQty(q => ({ ...q, [it.product_id]: Math.max(0, roundQty((q[it.product_id] ?? 0) - qtyStep(u), u)) }))}
-                        className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">âˆ’</button>
+                        className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-gray-600 text-lg hover:bg-gray-100">−</button>
                       <input type="number" min="0" max={sent} step={qtyStep(u)} value={receiveQty[it.product_id] ?? 0}
                         onChange={e => {
                           if (e.target.value === '') return;

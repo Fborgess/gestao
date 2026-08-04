@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import api from '../services/api';
 import { BarChart3, ArrowRightLeft, AlertTriangle, TrendingUp, Printer } from 'lucide-react';
 import PrintPreview from '../components/PrintPreview';
@@ -47,7 +47,7 @@ export default function TransferReport() {
       const res = await api.get('/stock/transfer-report/', { params });
       setReport(res.data);
     } catch (err) {
-      alert(err.response?.data?.detail || 'Erro ao carregar relatÃ³rio');
+      alert(err.response?.data?.detail || 'Erro ao carregar relatório');
     } finally { setLoading(false); }
   };
 
@@ -74,20 +74,20 @@ export default function TransferReport() {
   const handlePrint = () => {
     const filterLabel = deposits.find(d => String(d.id) === String(filterDeposit))?.name || 'Todos';
     setPrinting({
-      title: 'RelatÃ³rio de Abastecimento x DevoluÃ§Ã£o x Vendas',
+      title: 'Relatório de Abastecimento x Devolução x Vendas',
       content: (
         <div>
           <div className="mb-4 text-sm">
-            <p>DepÃ³sito: <span className="font-medium">{filterLabel}</span></p>
-            <p>PerÃ­odo: <span className="font-medium">{formatDate(startDate)} a {formatDate(endDate)}</span></p>
+            <p>Depósito: <span className="font-medium">{filterLabel}</span></p>
+            <p>Período: <span className="font-medium">{formatDate(startDate)} a {formatDate(endDate)}</span></p>
           </div>
           {summaries.length > 0 && (
             <table className="w-full text-sm border-collapse mb-6">
               <thead>
                 <tr className="bg-gray-50">
-                  <th className="p-3 text-left">DepÃ³sito</th>
+                  <th className="p-3 text-left">Depósito</th>
                   <th className="p-3 text-right">Abastecimento</th>
-                  <th className="p-3 text-right">DevoluÃ§Ã£o</th>
+                  <th className="p-3 text-right">Devolução</th>
                   <th className="p-3 text-right">Avaria</th>
                   <th className="p-3 text-right">Venda</th>
                   <th className="p-3 text-right">Total R$</th>
@@ -110,7 +110,7 @@ export default function TransferReport() {
           <table className="w-full text-sm border-collapse">
               <thead>
                 <tr className="bg-gray-50">
-                  <th className="p-3 text-left">DepÃ³sito</th>
+                  <th className="p-3 text-left">Depósito</th>
                   <th className="p-3 text-left">Produto</th>
                   <th className="p-3 text-center">Abast.</th>
                 <th className="p-3 text-center">Devol.</th>
@@ -142,28 +142,28 @@ export default function TransferReport() {
     <div>
       <div className="flex items-center gap-3 mb-6">
         <BarChart3 size={28} className="text-brand-600" />
-        <h1 className="text-2xl font-bold">RelatÃ³rio de Abastecimento x DevoluÃ§Ã£o x Vendas</h1>
+        <h1 className="text-2xl font-bold">Relatório de Abastecimento x Devolução x Vendas</h1>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
         <div className="flex items-end gap-3 flex-wrap">
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">DepÃ³sito</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">Depósito</label>
             <select value={filterDeposit} onChange={e => setFilterDeposit(e.target.value)}
               className="px-3 py-2 border rounded-lg text-sm">
               <option value="">Todos</option>
               {parentDeposits.length > 0 && (
-                <optgroup label="DepÃ³sitos">
+                <optgroup label="Depósitos">
                   {parentDeposits.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
                 </optgroup>
               )}
-              <optgroup label="Sub-depÃ³sitos">
+              <optgroup label="Sub-depósitos">
                 {subDeposits.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
               </optgroup>
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Data InÃ­cio</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">Data Início</label>
             <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)}
               className="px-3 py-2 border rounded-lg text-sm" />
           </div>
@@ -188,7 +188,7 @@ export default function TransferReport() {
               <h3 className="font-semibold text-sm mb-2">{s.deposit_name}</h3>
               <div className="space-y-1 text-sm">
                 <div className="flex justify-between"><span className="text-brand-600">Abastecimento</span><span className="font-medium">{s.abastecimento_qty}</span></div>
-                <div className="flex justify-between"><span className="text-orange-600">DevoluÃ§Ã£o</span><span className="font-medium">{s.devolucao_qty}</span></div>
+                <div className="flex justify-between"><span className="text-orange-600">Devolução</span><span className="font-medium">{s.devolucao_qty}</span></div>
                 <div className="flex justify-between"><span className="text-red-600">Avarias</span><span className="font-medium">{s.avaria_qty}</span></div>
                 <div className="flex justify-between border-t pt-1 mt-1"><span className="text-green-600 font-semibold">Vendas</span><span className="font-bold text-green-600">{s.venda_qty}</span></div>
                 <div className="flex justify-between text-xs text-gray-500">
@@ -204,7 +204,7 @@ export default function TransferReport() {
         <table className="w-full text-sm">
           <thead className="bg-gray-50">
             <tr>
-              <th className="text-left p-3">DepÃ³sito</th>
+              <th className="text-left p-3">Depósito</th>
               <th className="text-left p-3">Produto</th>
               <th className="text-center p-3">
                 <span className="flex items-center justify-center gap-1"><ArrowRightLeft size={12} className="text-brand-600" /> Abast.</span>
@@ -236,8 +236,8 @@ export default function TransferReport() {
             {report.length === 0 && !loading && (
               <tr><td colSpan={7} className="p-8 text-center text-gray-400">
                 {filterDeposit
-                  ? 'Nenhum dado de abastecimento, devoluÃ§Ã£o ou avaria para este depÃ³sito no perÃ­odo.'
-                  : 'Nenhum dado de abastecimento, devoluÃ§Ã£o ou avaria no perÃ­odo selecionado.'}
+                  ? 'Nenhum dado de abastecimento, devolução ou avaria para este depósito no período.'
+                  : 'Nenhum dado de abastecimento, devolução ou avaria no período selecionado.'}
               </td></tr>
             )}
           </tbody>

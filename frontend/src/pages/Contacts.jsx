@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
@@ -130,11 +130,11 @@ export default function Contacts() {
 
   const lookupCnpj = async () => {
     const cnpj = form.cpf_cnpj.replace(/\D/g, '');
-    if (cnpj.length !== 14) { alert('Informe um CNPJ vÃ¡lido (14 dÃ­gitos)'); return; }
+    if (cnpj.length !== 14) { alert('Informe um CNPJ válido (14 dígitos)'); return; }
     setLookupLoading(true);
     try {
       const res = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`);
-      if (!res.ok) throw new Error('CNPJ nÃ£o encontrado');
+      if (!res.ok) throw new Error('CNPJ não encontrado');
       const d = await res.json();
       const address = [d.logradouro, d.numero, d.complemento].filter(Boolean).join(', ');
       setForm(f => ({
@@ -156,11 +156,11 @@ export default function Contacts() {
 
   const lookupCep = async () => {
     const cep = form.cep.replace(/\D/g, '');
-    if (cep.length !== 8) { alert('Informe um CEP vÃ¡lido (8 dÃ­gitos)'); return; }
+    if (cep.length !== 8) { alert('Informe um CEP válido (8 dígitos)'); return; }
     setCepLoading(true);
     try {
       const res = await fetch(`https://brasilapi.com.br/api/cep/v2/${cep}`);
-      if (!res.ok) throw new Error('CEP nÃ£o encontrado');
+      if (!res.ok) throw new Error('CEP não encontrado');
       const d = await res.json();
       setForm(f => ({
         ...f,
@@ -220,7 +220,7 @@ export default function Contacts() {
               <div className="flex items-center gap-2">
                 {c.contact_type === 'fornecedor' ? <Building size={20} className="text-purple-600" /> : <User size={20} className="text-brand-600" />}
                 <span className="font-semibold">{c.name}</span>
-                {c.segment && <span className="text-xs text-gray-400">Â· {c.segment}</span>}
+                {c.segment && <span className="text-xs text-gray-400">· {c.segment}</span>}
               </div>
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${typeColors[c.contact_type]}`}>
                 {typeLabels[c.contact_type]}
@@ -284,13 +284,13 @@ export default function Contacts() {
                     onChange={e => setForm({...form, cep: e.target.value})}
                     className="flex-1 min-w-0 px-3 py-2 border rounded-lg text-sm" />
                   {form.cep.replace(/\D/g, '').length === 8 && (
-                    <button type="button" onClick={lookupCep} title="Buscar endereÃ§o pelo CEP"
+                    <button type="button" onClick={lookupCep} title="Buscar endereço pelo CEP"
                       className="px-3 py-2 rounded-lg bg-brand-50 text-brand-600 hover:bg-brand-100 border border-brand-200">
                       {cepLoading ? '...' : <Search size={16} />}
                     </button>
                   )}
                 </div>
-                <CaseInput placeholder="EndereÃ§o" value={form.address}
+                <CaseInput placeholder="Endereço" value={form.address}
                   onChange={e => setForm({...form, address: e.target.value})}
                   className="col-span-2 px-3 py-2 border rounded-lg text-sm" />
                 <CaseInput placeholder="Cidade" value={form.city}
@@ -301,13 +301,13 @@ export default function Contacts() {
                   className="px-3 py-2 border rounded-lg text-sm" />
                 <select value={form.price_table_id} onChange={e => setForm({...form, price_table_id: e.target.value})}
                   className="col-span-2 px-3 py-2 border rounded-lg text-sm">
-                  <option value="">Sem tabela de preÃ§os</option>
+                  <option value="">Sem tabela de preços</option>
                   {priceTables.map(t => (
                     <option key={t.id} value={t.id}>{t.name}</option>
                   ))}
                 </select>
               </div>
-              <CaseTextarea placeholder="ObservaÃ§Ãµes" value={form.notes} rows={2}
+              <CaseTextarea placeholder="Observações" value={form.notes} rows={2}
                 onChange={e => setForm({...form, notes: e.target.value})}
                 className="w-full px-3 py-2 border rounded-lg text-sm" />
               <div className="flex justify-end gap-2 mt-4">

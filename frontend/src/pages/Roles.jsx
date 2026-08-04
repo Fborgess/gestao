@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import api from '../services/api';
 import { Shield, Plus, Edit, Trash2, X, Save, Check } from 'lucide-react';
 import { CaseInput } from '../components/CaseInput';
@@ -9,32 +9,32 @@ const ALL_MODULES = [
     { key: 'contacts', label: 'Clientes/Fornecedores' },
   ]},
   { section: 'Estoque', items: [
-    { key: 'deposits', label: 'DepÃ³sitos (operaÃ§Ãµes)' },
-    { key: 'deposits_manage', label: 'DepÃ³sitos (gerenciar)' },
+    { key: 'deposits', label: 'Depósitos (operações)' },
+    { key: 'deposits_manage', label: 'Depósitos (gerenciar)' },
     { key: 'products', label: 'Produtos' },
-    { key: 'stock_reports', label: 'RelatÃ³rios Estoque' },
-    { key: 'requisicoes', label: 'RequisiÃ§Ãµes' },
-    { key: 'precificacao', label: 'PrecificaÃ§Ã£o' },
+    { key: 'stock_reports', label: 'Relatórios Estoque' },
+    { key: 'requisicoes', label: 'Requisições' },
+    { key: 'precificacao', label: 'Precificação' },
     { key: 'categories', label: 'Categorias' },
     { key: 'units', label: 'Unidades' },
-    { key: 'stock_movements', label: 'MovimentaÃ§Ãµes' },
+    { key: 'stock_movements', label: 'Movimentações' },
   ]},
   { section: 'Financeiro', items: [
-    { key: 'accounts', label: 'Contas/CartÃµes' },
-    { key: 'financial', label: 'LanÃ§amentos' },
+    { key: 'accounts', label: 'Contas/Cartões' },
+    { key: 'financial', label: 'Lançamentos' },
     { key: 'financial_categories', label: 'Categorias' },
     { key: 'payment_types', label: 'Tipos Pagamento' },
-    { key: 'recurrence_frequencies', label: 'FrequÃªncias' },
-    { key: 'financial_reports', label: 'RelatÃ³rios' },
+    { key: 'recurrence_frequencies', label: 'Frequências' },
+    { key: 'financial_reports', label: 'Relatórios' },
   ]},
   { section: 'Vendas', items: [
-    { key: 'sale_types', label: 'Tipos LanÃ§amento' },
-    { key: 'sales', label: 'LanÃ§amentos' },
+    { key: 'sale_types', label: 'Tipos Lançamento' },
+    { key: 'sales', label: 'Lançamentos' },
   ]},
   { section: 'Geral', items: [
-    { key: 'users', label: 'UsuÃ¡rios' },
+    { key: 'users', label: 'Usuários' },
     { key: 'roles', label: 'Perfis de Acesso' },
-    { key: 'settings', label: 'ConfiguraÃ§Ã£o' },
+    { key: 'settings', label: 'Configuração' },
   ]},
 ];
 
@@ -86,7 +86,7 @@ export default function Roles() {
   };
 
   const handleSave = async () => {
-    if (!form.name.trim()) { alert('Nome do perfil Ã© obrigatÃ³rio'); return; }
+    if (!form.name.trim()) { alert('Nome do perfil é obrigatório'); return; }
     const modules = Object.entries(form.modules)
       .filter(([, v]) => v)
       .map(([k, v]) => ({ module: k, access_level: v }));
@@ -139,7 +139,7 @@ export default function Roles() {
                   <div>
                     <h3 className="font-bold text-base">{r.name}</h3>
                     {r.is_admin && <span className="text-xs text-purple-600 font-medium">Acesso total</span>}
-                    {r.is_default && <span className="text-xs text-gray-400 ml-2">(padrÃ£o)</span>}
+                    {r.is_default && <span className="text-xs text-gray-400 ml-2">(padrão)</span>}
                   </div>
                 </div>
                 <div className="flex gap-1">
@@ -194,7 +194,7 @@ export default function Roles() {
               </label>
               {!form.is_admin && (
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-2">MÃ³dulos</label>
+                  <label className="block text-xs font-medium text-gray-500 mb-2">Módulos</label>
                   <div className="space-y-3">
                     {ALL_MODULES.map(s => s.items ? (
                       <div key={s.section}>

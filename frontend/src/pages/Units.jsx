@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import api from '../services/api';
 import { Plus, Edit, Trash2, Ruler } from 'lucide-react';
 import SortableHeader from '../components/SortableHeader';
@@ -63,8 +63,8 @@ export default function Units() {
           <thead className="bg-gray-50">
             <tr>
               <SortableHeader label="Nome" sortKey="name" currentSort={sortConfig} onSort={handleSort} />
-              <SortableHeader label="AbreviaÃ§Ã£o" sortKey="abbreviation" currentSort={sortConfig} onSort={handleSort} />
-              <th className="text-center p-3">AÃ§Ãµes</th>
+              <SortableHeader label="Abreviação" sortKey="abbreviation" currentSort={sortConfig} onSort={handleSort} />
+              <th className="text-center p-3">Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -95,7 +95,7 @@ export default function Units() {
               <CaseInput placeholder="Nome (ex: Quilograma)" value={form.name}
                 onChange={e => setForm({...form, name: e.target.value})}
                 className="w-full px-3 py-2 border rounded-lg text-sm" required />
-              <input placeholder="AbreviaÃ§Ã£o (ex: kg)" value={form.abbreviation}
+              <input placeholder="Abreviação (ex: kg)" value={form.abbreviation}
                 onChange={e => setForm({...form, abbreviation: e.target.value})}
                 className="w-full px-3 py-2 border rounded-lg text-sm" required />
               <div className="flex justify-end gap-2 mt-4">
