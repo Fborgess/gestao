@@ -179,12 +179,12 @@ export default function Layout() {
       <aside className={`${isMobile
           ? `fixed inset-y-0 left-0 z-40 w-72 transform transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`
           : `${sidebarOpen ? 'w-64' : 'w-16'} transition-all duration-300`
-        } bg-gray-900 text-white flex flex-col overflow-y-auto`}>
-        <div className={`p-4 border-b border-gray-700 flex items-center ${!isMobile && !sidebarOpen ? 'justify-center' : 'justify-between'}`}>
+        } bg-brand-900 text-white flex flex-col overflow-y-auto`}>
+        <div className={`p-4 border-b border-brand-800 flex items-center ${!isMobile && !sidebarOpen ? 'justify-center' : 'justify-between'}`}>
           {(!isMobile && sidebarOpen) || isMobile ? (
             <div>
               <h1 className="text-lg font-bold">Sistema de Gestão</h1>
-              <p className="text-xs text-gray-400 mt-1">Estoque, Vendas e Financeiro</p>
+              <p className="text-xs text-brand-200 mt-1">Estoque, Vendas e Financeiro</p>
             </div>
           ) : null}
           <button
@@ -207,13 +207,13 @@ export default function Layout() {
               {sidebarOpen ? (
                 <button
                   onClick={() => toggleSection(section.label)}
-                  className="flex items-center justify-between w-full px-3 py-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wider hover:text-gray-300"
+                  className="flex items-center justify-between w-full px-3 py-1.5 text-xs font-semibold text-brand-200 uppercase tracking-wider hover:text-white"
                 >
                   {section.label}
                   {expandedSections[section.label] ? <ChevronRight size={12} /> : <ChevronDown size={12} />}
                 </button>
               ) : (
-                <div className="px-3 py-1.5 text-xs text-gray-500 text-center border-b border-gray-700 mb-1" title={section.label}>
+                <div className="px-3 py-1.5 text-xs text-brand-300 text-center border-b border-brand-800 mb-1" title={section.label}>
                   {section.label.charAt(0)}
                 </div>
               )}
@@ -224,7 +224,7 @@ export default function Layout() {
                   end={item.path === '/'}
                   className={({ isActive }) =>
                     `flex items-center gap-2 px-3 py-2 rounded-lg mb-0.5 text-sm transition-colors ${
-                      isActive ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-800'
+                      isActive ? 'bg-brand-600 text-white' : 'text-brand-100 hover:bg-brand-800'
                     }`
                   }
                 >
@@ -240,7 +240,7 @@ export default function Layout() {
                   title={item.label}
                   className={({ isActive }) =>
                     `flex items-center justify-center px-3 py-2 rounded-lg mb-0.5 transition-colors ${
-                      isActive ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-800'
+                      isActive ? 'bg-brand-600 text-white' : 'text-brand-100 hover:bg-brand-800'
                     }`
                   }
                 >
@@ -251,9 +251,9 @@ export default function Layout() {
             );
           })}
         </nav>
-        <div className={`p-4 border-t border-gray-700 ${sidebarOpen ? '' : 'flex justify-center'}`}>
-          {sidebarOpen && <div className="text-sm text-gray-400 mb-2">{user?.name}</div>}
-          {!sidebarOpen && <div className="text-xs text-gray-400 mb-2 text-center" title={user?.name}>{user?.name?.charAt(0)?.toUpperCase()}</div>}
+        <div className={`p-4 border-t border-brand-800 ${sidebarOpen ? '' : 'flex justify-center'}`}>
+          {sidebarOpen && <div className="text-sm text-brand-100 mb-2">{user?.name}</div>}
+          {!sidebarOpen && <div className="text-xs text-brand-200 mb-2 text-center" title={user?.name}>{user?.name?.charAt(0)?.toUpperCase()}</div>}
           <button onClick={handleLogout} className={`flex items-center gap-2 text-sm text-red-400 hover:text-red-300 ${!sidebarOpen ? 'justify-center' : ''}`} title="Sair">
             <LogOut size={16} />
             {sidebarOpen && 'Sair'}
@@ -262,8 +262,8 @@ export default function Layout() {
       </aside>
       <main className="flex-1 overflow-auto">
         {isMobile && (
-          <div className="sticky top-0 z-20 bg-gray-900 text-white px-4 py-3 flex items-center gap-3 shadow-md">
-            <button onClick={() => setSidebarOpen(true)} className="text-gray-300 hover:text-white" title="Abrir menu">
+          <div className="sticky top-0 z-20 bg-brand-900 text-white px-4 py-3 flex items-center gap-3 shadow-md">
+            <button onClick={() => setSidebarOpen(true)} className="text-brand-100 hover:text-white" title="Abrir menu">
               <Menu size={20} />
             </button>
             <span className="text-sm font-semibold truncate">Sistema de Gestão</span>

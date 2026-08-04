@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import api from '../services/api';
-import { Calculator, Save, Trash2, Package, Percent, Edit, Tag, X } from 'lucide-react';
+import { Calculator, Save, Trash2, Package, Percent, Edit, Tag, X, TrendingUp } from 'lucide-react';
 import {
   currencyToDigits, formatDigitsToCurrency, parseCurrencyToNumber, formatNumberToCurrency,
   maskPercentInput, parsePercent, isWeightUnit, unitDecimals, formatValue,
@@ -188,17 +188,17 @@ export default function Pricing() {
     });
   };
 
-  const inputCls = 'w-full px-3 py-2 border border-gray-200 rounded-lg text-sm';
-  const labelCls = 'block text-xs font-medium text-gray-500 mb-1';
+  const inputCls = 'w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500';
+  const labelCls = 'block text-xs font-medium text-slate-600 mb-1';
 
   return (
-    <div>
-      <div className="flex items-center gap-3 mb-6">
-        <Calculator size={28} className="text-blue-600" />
+    <div className="space-y-6">
+      <div className="flex items-center gap-3">
+        <Calculator size={28} className="text-brand-600" />
         <h1 className="text-2xl font-bold">Precificação de Produtos</h1>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
         <div className="relative max-w-xl">
           <label className={labelCls}>Produto (opcional — para carregar/salvar os parâmetros de um produto)</label>
           <input
@@ -226,7 +226,7 @@ export default function Pricing() {
                 <button
                   key={p.id}
                   onMouseDown={() => handleSelectProduct(p)}
-                  className={`w-full text-left px-3 py-2 text-sm flex items-center justify-between gap-2 hover:bg-blue-50 ${String(p.id) === selectedProductId ? 'bg-blue-50' : ''}`}
+                  className={`w-full text-left px-3 py-2 text-sm flex items-center justify-between gap-2 hover:bg-brand-50 ${String(p.id) === selectedProductId ? 'bg-brand-50' : ''}`}
                 >
                   <span>{p.display_name || p.name}</span>
                   <span className="text-gray-400 text-xs">{p.price != null ? `R$ ${fmtMoney(p.price)}` : ''}</span>
@@ -237,52 +237,65 @@ export default function Pricing() {
         </div>
         {selected && (
           <div className="mt-3 text-sm text-gray-500 flex gap-4 flex-wrap">
-            <span className="flex items-center gap-1"><Package size={14} className="text-gray-400" /> {selected.display_name || selected.name}</span>
+            <span className="flex items-center gap-1"><Package size={14} className="text-brand-500" /> {selected.display_name || selected.name}</span>
             {selected.cost_price != null && <span>Preço de custo: <b>R$ {fmtMoney(selected.cost_price)}</b></span>}
             {selected.price != null && <span>Preço atual: <b>R$ {fmtMoney(selected.price)}</b></span>}
           </div>
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <div className="bg-white rounded-xl shadow-sm p-4">
-          <h3 className="font-semibold text-sm mb-3 flex items-center gap-2"><Tag size={16} className="text-blue-600" /> Custos Diretos & Deduções Variáveis</h3>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-5">
+          <h3 className="font-semibold text-sm flex items-center gap-2"><Tag size={16} className="text-brand-600" /> Custos Diretos & Deduções Variáveis</h3>
+
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={labelCls}>Preço de Aquisição / Matéria-Prima (R$)</label>
+              <label className={labelCls}>Preço de Aquisição (R$)</label>
               <input ref={priceRef} type="text" inputMode="decimal" value={form.acquisition_price} onChange={setCurrency} className={inputCls} placeholder={decimals === 3 ? '0,000' : '0,00'} />
             </div>
             <div>
               <label className={labelCls}>Lote (quantidade)</label>
               <input type="text" inputMode="numeric" value={form.lote} onChange={setLote} className={inputCls} placeholder="1" />
             </div>
-            <div className="col-span-2">
-              <div className={`rounded-xl p-3 ${result && result.preco_venda > 0 ? 'bg-green-50' : 'bg-gray-50'}`}>
-                <div className={`text-xs font-medium mb-0.5 ${result && result.preco_venda > 0 ? 'text-green-600' : 'text-gray-400'}`}>Valor de Venda</div>
-                <div className={`text-2xl font-bold ${result && result.preco_venda > 0 ? 'text-green-700' : 'text-gray-400'}`}>
-                  {result && result.preco_venda > 0 ? `R$ ${fmtMoney(result.preco_venda)}` : 'R$ 0,00'}
-                </div>
-              </div>
+          </div>
+
+          <div className={`rounded-2xl p-4 flex items-center justify-between gap-3 ${result && result.preco_venda > 0 ? 'bg-emerald-50 border border-emerald-200' : 'bg-slate-50 border border-slate-200'}`}>
+            <div>
+              <div className={`text-xs font-semibold uppercase tracking-wide ${result && result.preco_venda > 0 ? 'text-emerald-600' : 'text-slate-400'}`}>Valor de Venda</div>
+              {calcLoading ? (
+                <p className="text-sm text-slate-400 mt-1">Calculando...</p>
+              ) : result && result.preco_venda > 0 ? (
+                <div className="text-3xl font-bold text-emerald-700 mt-1">R$ {fmtMoney(result.preco_venda)}</div>
+              ) : (
+                <p className="text-sm text-slate-400 mt-1">Informe o preço de aquisição.</p>
+              )}
             </div>
-            {PERCENT_FIELDS.slice(0, 7).map(k => (
-              <div key={k}>
-                <label className={labelCls}>{PERCENT_LABELS[k]} (%)</label>
-                <div className="relative">
-                  <input type="text" inputMode="decimal" value={form[k]} onChange={setPercent(k)} className={inputCls + ' pr-7'} />
-                  <Percent size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400" />
+            <TrendingUp size={28} className={result && result.preco_venda > 0 ? 'text-emerald-500' : 'text-slate-300'} />
+          </div>
+
+          <div>
+            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Deduções Variáveis (%)</div>
+            <div className="grid grid-cols-2 gap-3">
+              {PERCENT_FIELDS.slice(0, 7).map(k => (
+                <div key={k}>
+                  <label className={labelCls}>{PERCENT_LABELS[k]}</label>
+                  <div className="relative">
+                    <input type="text" inputMode="decimal" value={form[k]} onChange={setPercent(k)} className={inputCls + ' pr-7'} />
+                    <Percent size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400" />
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
 
-        <div>
-          <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
-            <h3 className="font-semibold text-sm mb-3 flex items-center gap-2"><Percent size={16} className="text-blue-600" /> Estratégia de Margem & Impostos</h3>
+        <div className="space-y-6">
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+            <h3 className="font-semibold text-sm mb-3 flex items-center gap-2"><Percent size={16} className="text-brand-600" /> Estratégia de Margem & Impostos</h3>
             <div className="grid grid-cols-2 gap-3">
               {PERCENT_FIELDS.slice(7).map(k => (
                 <div key={k}>
-                  <label className={labelCls}>{PERCENT_LABELS[k]} (%)</label>
+                  <label className={labelCls}>{PERCENT_LABELS[k]}</label>
                   <div className="relative">
                     <input type="text" inputMode="decimal" value={form[k]} onChange={setPercent(k)} className={inputCls + ' pr-7'} />
                     <Percent size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -292,56 +305,47 @@ export default function Pricing() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm p-4">
-            <h3 className="font-semibold text-sm mb-3 flex items-center gap-2"><Calculator size={16} className="text-green-600" /> Preço de Venda Final</h3>
-            <div className={`rounded-xl p-4 mb-4 ${result && result.preco_venda > 0 ? 'bg-green-50' : 'bg-gray-50'}`}>
-              {calcLoading ? (
-                <p className="text-sm text-gray-400">Calculando...</p>
-              ) : result && result.preco_venda > 0 ? (
-                <div className="text-3xl font-bold text-green-700">R$ {fmtMoney(result.preco_venda)}</div>
-              ) : (
-                <p className="text-sm text-gray-400">Informe o preço de aquisição para calcular.</p>
-              )}
-            </div>
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div className="flex justify-between"><span className="text-gray-500">Custo unitário</span><span className="font-medium">R$ {fmtMoney(result?.custo_unitario)}</span></div>
-              <div className="flex justify-between"><span className="text-gray-500">% deduções variáveis</span><span className="font-medium">{fmtPct(result?.total_deducoes_pct)}</span></div>
-              <div className="flex justify-between"><span className="text-gray-500">Custos variáveis</span><span className="font-medium">R$ {fmtMoney(result?.custos_variaveis)}</span></div>
-              <div className="flex justify-between"><span className="text-gray-500">Total custos</span><span className="font-medium">R$ {fmtMoney(result?.total_custos)}</span></div>
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+            <h3 className="font-semibold text-sm mb-3 flex items-center gap-2"><Calculator size={16} className="text-emerald-600" /> Resultado da Precificação</h3>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+              <div className="flex justify-between"><span className="text-slate-500">Custo unitário</span><span className="font-medium">R$ {fmtMoney(result?.custo_unitario)}</span></div>
+              <div className="flex justify-between"><span className="text-slate-500">% deduções variáveis</span><span className="font-medium">{fmtPct(result?.total_deducoes_pct)}</span></div>
+              <div className="flex justify-between"><span className="text-slate-500">Custos variáveis</span><span className="font-medium">R$ {fmtMoney(result?.custos_variaveis)}</span></div>
+              <div className="flex justify-between"><span className="text-slate-500">Total custos</span><span className="font-medium">R$ {fmtMoney(result?.total_custos)}</span></div>
             </div>
             {result && result.preco_venda > 0 && (
-              <div className="mt-4 border-t pt-3 text-sm">
-                <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Confronto</h4>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="flex justify-between"><span className="text-gray-500">(-) Custos diretos</span><span className="font-medium">R$ {fmtMoney(result.custos_diretos)}</span></div>
-                  <div className="flex justify-between"><span className="text-gray-500">(-) Despesas variáveis</span><span className="font-medium">R$ {fmtMoney(result.despesas_variaveis)}</span></div>
-                  <div className="flex justify-between"><span className="text-gray-500">(-) Impostos</span><span className="font-medium">R$ {fmtMoney(result.impostos_rs)}</span></div>
-                  <div className="flex justify-between"><span className="text-gray-500">(-) Total custos</span><span className="font-medium">R$ {fmtMoney(result.total_custos_rs)}</span></div>
-                  <div className="flex justify-between"><span className="text-gray-500 font-medium">(=) Margem R$</span><span className="font-bold text-green-600">R$ {fmtMoney(result.margem_rs)}</span></div>
-                  <div className="flex justify-between"><span className="text-gray-500 font-medium">(=) % Margem</span><span className="font-bold text-green-600">{fmtPct(result.margem_pct)}</span></div>
-                  <div className="flex justify-between"><span className="text-gray-500">Markup multiplicador</span><span className="font-medium">{result.markup_multiplicador.toFixed(4).replace('.', ',')}</span></div>
-                  <div className="flex justify-between"><span className="text-gray-500">Markup resultado</span><span className="font-medium">R$ {fmtMoney(result.markup_resultado)}</span></div>
+              <div className="mt-4 border-t border-slate-100 pt-3 text-sm">
+                <h4 className="text-xs font-semibold text-slate-500 uppercase mb-2">Confronto</h4>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                  <div className="flex justify-between"><span className="text-slate-500">(-) Custos diretos</span><span className="font-medium">R$ {fmtMoney(result.custos_diretos)}</span></div>
+                  <div className="flex justify-between"><span className="text-slate-500">(-) Despesas variáveis</span><span className="font-medium">R$ {fmtMoney(result.despesas_variaveis)}</span></div>
+                  <div className="flex justify-between"><span className="text-slate-500">(-) Impostos</span><span className="font-medium">R$ {fmtMoney(result.impostos_rs)}</span></div>
+                  <div className="flex justify-between"><span className="text-slate-500">(-) Total custos</span><span className="font-medium">R$ {fmtMoney(result.total_custos_rs)}</span></div>
+                  <div className="flex justify-between"><span className="text-slate-500 font-medium">(=) Margem R$</span><span className="font-bold text-emerald-600">R$ {fmtMoney(result.margem_rs)}</span></div>
+                  <div className="flex justify-between"><span className="text-slate-500 font-medium">(=) % Margem</span><span className="font-bold text-emerald-600">{fmtPct(result.margem_pct)}</span></div>
+                  <div className="flex justify-between"><span className="text-slate-500">Markup multiplicador</span><span className="font-medium">{result.markup_multiplicador.toFixed(4).replace('.', ',')}</span></div>
+                  <div className="flex justify-between"><span className="text-slate-500">Markup resultado</span><span className="font-medium">R$ {fmtMoney(result.markup_resultado)}</span></div>
                 </div>
               </div>
             )}
             <div className="flex gap-2 mt-4">
               <button onClick={handleSave} disabled={!selectedProductId}
                 className={`px-4 py-2 rounded-lg text-sm flex items-center gap-2 ${selectedProductId
-                  ? 'bg-blue-600 text-white hover:bg-blue-700'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}>
+                  ? 'bg-brand-700 text-white hover:bg-brand-800'
+                  : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}>
                 <Save size={16} /> Salvar Precificação
               </button>
             </div>
-            {!selectedProductId && <p className="mt-2 text-xs text-gray-400">Selecione um produto para salvar os parâmetros.</p>}
-            {msg && <p className="mt-3 text-sm text-green-600">{msg}</p>}
+            {!selectedProductId && <p className="mt-2 text-xs text-slate-400">Selecione um produto para salvar os parâmetros.</p>}
+            {msg && <p className="mt-3 text-sm text-emerald-600">{msg}</p>}
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-        <div className="px-4 py-3 border-b border-gray-100 font-semibold text-sm">Precificações Salvas</div>
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="px-4 py-3 border-b border-slate-100 font-semibold text-sm">Precificações Salvas</div>
         <table className="w-full text-sm">
-          <thead className="bg-gray-50">
+          <thead className="bg-slate-50">
             <tr>
               <th className="text-left p-3">Produto</th>
               <th className="text-right p-3">Aquisição</th>
@@ -353,14 +357,14 @@ export default function Pricing() {
           </thead>
           <tbody>
             {pricings.map(p => (
-              <tr key={p.id} className="border-t hover:bg-gray-50">
+              <tr key={p.id} className="border-t border-slate-100 hover:bg-slate-50">
                 <td className="p-3 font-medium">{p.display_name || p.product_name}</td>
                 <td className="p-3 text-right">R$ {formatValue(p.acquisition_price, unitDecimals(products.find(x => String(x.id) === String(p.product_id))?.unit))}</td>
                 <td className="p-3 text-center">{p.lote}</td>
                 <td className="p-3 text-center">{fmtPct(p.margem_alvo)}</td>
                 <td className="p-3 text-right">{p.price != null ? `R$ ${fmtMoney(p.price)}` : '-'}</td>
                 <td className="p-3 text-center">
-                  <button onClick={() => handleEdit(p)} className="text-blue-600 hover:text-blue-800 mr-2" title="Editar"><Edit size={16} /></button>
+                  <button onClick={() => handleEdit(p)} className="text-brand-600 hover:text-brand-800 mr-2" title="Editar"><Edit size={16} /></button>
                   <button onClick={() => handleDelete(p.product_id)} className="text-red-600 hover:text-red-800" title="Remover"><Trash2 size={16} /></button>
                 </td>
               </tr>

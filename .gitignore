@@ -9,6 +9,9 @@ venv/
 # Node
 node_modules/
 frontend/dist/
+financas-pessoais/frontend/dist/
+financas-pessoais/
+
 
 # IDE
 .vscode/
