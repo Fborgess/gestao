@@ -48,8 +48,13 @@ const defaultForm = () => ({ ...DEFAULTS, ...loadBasePercents() });
 const fmtMoney = (n) => n == null ? '-' : Number(n).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtPct = (n) => n == null ? '-' : (Number(n) * 100).toFixed(2).replace('.', ',') + '%';
 
+const maskInt = (raw) => {
+  const digits = currencyToDigits(raw);
+  return digits ? digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '';
+};
+
 function toPayload(f, decimals = 2) {
-  const p = { acquisition_price: parseCurrencyToNumber(f.acquisition_price, decimals), lote: parseFloat(f.lote) || 1 };
+  const p = { acquisition_price: parseCurrencyToNumber(f.acquisition_price, decimals), lote: parseFloat(String(f.lote || '').replace(/\./g, '')) || 1 };
   PERCENT_FIELDS.forEach(k => { p[k] = parsePercent(f[k]) / 100; });
   return p;
 }
@@ -63,7 +68,7 @@ function fromConfig(obj, decimals = 2) {
     if (obj.acquisition_price !== undefined && obj.acquisition_price !== null) {
       f.acquisition_price = formatNumberToCurrency(obj.acquisition_price, decimals);
     }
-    if (obj.lote !== undefined && obj.lote !== null) f.lote = obj.lote;
+    if (obj.lote !== undefined && obj.lote !== null) f.lote = maskInt(String(obj.lote));
   }
   return f;
 }
@@ -167,11 +172,8 @@ export default function Pricing() {
     setTimeout(() => priceRef.current?.focus(), 50);
   };
 
-  const setNum = (k) => (e) => {
-    const v = e.target.value;
-    if (v === '') { setForm(f => ({ ...f, [k]: '' })); return; }
-    const n = Number(v);
-    if (!isNaN(n)) setForm(f => ({ ...f, [k]: n }));
+  const setLote = (e) => {
+    setForm(f => ({ ...f, lote: maskInt(e.target.value) }));
   };
 
   const setCurrency = (e) => {
@@ -252,7 +254,15 @@ export default function Pricing() {
             </div>
             <div>
               <label className={labelCls}>Lote (quantidade)</label>
-              <input type="number" step="1" min="1" value={form.lote} onChange={setNum('lote')} className={inputCls} />
+              <input type="text" inputMode="numeric" value={form.lote} onChange={setLote} className={inputCls} placeholder="1" />
+            </div>
+            <div className="col-span-2">
+              <div className={`rounded-xl p-3 ${result && result.preco_venda > 0 ? 'bg-green-50' : 'bg-gray-50'}`}>
+                <div className={`text-xs font-medium mb-0.5 ${result && result.preco_venda > 0 ? 'text-green-600' : 'text-gray-400'}`}>Valor de Venda</div>
+                <div className={`text-2xl font-bold ${result && result.preco_venda > 0 ? 'text-green-700' : 'text-gray-400'}`}>
+                  {result && result.preco_venda > 0 ? `R$ ${fmtMoney(result.preco_venda)}` : 'R$ 0,00'}
+                </div>
+              </div>
             </div>
             {PERCENT_FIELDS.slice(0, 7).map(k => (
               <div key={k}>
@@ -284,13 +294,15 @@ export default function Pricing() {
 
           <div className="bg-white rounded-xl shadow-sm p-4">
             <h3 className="font-semibold text-sm mb-3 flex items-center gap-2"><Calculator size={16} className="text-green-600" /> Preço de Venda Final</h3>
-            {calcLoading ? (
-              <p className="text-sm text-gray-400">Calculando...</p>
-            ) : result && result.preco_venda > 0 ? (
-              <div className="text-3xl font-bold text-green-600 mb-4">R$ {fmtMoney(result.preco_venda)}</div>
-            ) : (
-              <p className="text-sm text-gray-400 mb-4">Informe o preço de aquisição para calcular.</p>
-            )}
+            <div className={`rounded-xl p-4 mb-4 ${result && result.preco_venda > 0 ? 'bg-green-50' : 'bg-gray-50'}`}>
+              {calcLoading ? (
+                <p className="text-sm text-gray-400">Calculando...</p>
+              ) : result && result.preco_venda > 0 ? (
+                <div className="text-3xl font-bold text-green-700">R$ {fmtMoney(result.preco_venda)}</div>
+              ) : (
+                <p className="text-sm text-gray-400">Informe o preço de aquisição para calcular.</p>
+              )}
+            </div>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div className="flex justify-between"><span className="text-gray-500">Custo unitário</span><span className="font-medium">R$ {fmtMoney(result?.custo_unitario)}</span></div>
               <div className="flex justify-between"><span className="text-gray-500">% deduções variáveis</span><span className="font-medium">{fmtPct(result?.total_deducoes_pct)}</span></div>
