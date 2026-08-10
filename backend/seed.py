@@ -4,6 +4,9 @@ Executa apenas se o banco estiver vazio (sem usuarios).
 """
 import sys
 import os
+import logging
+import secrets
+
 sys.path.insert(0, os.path.dirname(__file__))
 
 from app.database import engine, SessionLocal
@@ -15,16 +18,20 @@ from app.models.recurrence_frequency import RecurrenceFrequency
 from app.models.role import Role, RoleModule
 from app.utils.security import get_password_hash
 
+from app.config import ADMIN_EMAIL, ADMIN_PASSWORD
+
+logger = logging.getLogger("gestao.seed")
+
 ALL_MODULES = ["dashboard", "contacts", "deposits", "deposits_manage", "products", "stock_reports", "requisicoes", "categories", "units", "stock_movements", "accounts", "financial", "financial_categories", "payment_types", "recurrence_frequencies", "financial_reports", "sale_types", "sales", "users", "roles", "precificacao", "price_tables", "settings"]
 
 def seed():
     db = SessionLocal()
     try:
         if db.query(User).count() > 0:
-            print("Banco ja possui dados. Seed ignorado.")
+            logger.debug("Banco já possui dados. Seed ignorado.")
             return
 
-        print("Criando dados iniciais...")
+        logger.info("Criando dados iniciais...")
 
         roles = [
             Role(name="admin", is_admin=True, is_default=False),
@@ -49,10 +56,20 @@ def seed():
 
         db.flush()
 
+        email = ADMIN_EMAIL
+        password = ADMIN_PASSWORD
+        if password == "admin" and not os.getenv("ADMIN_PASSWORD"):
+            password = secrets.token_urlsafe(12)
+            logger.warning(
+                "ADMIN_PASSWORD não configurada. Senha aleatória gerada para %s: %s",
+                email,
+                password,
+            )
+
         user = User(
             name="Administrador",
-            email="admin@admin.com",
-            hashed_password=get_password_hash("admin"),
+            email=email,
+            hashed_password=get_password_hash(password),
             role="admin",
         )
         db.add(user)
@@ -90,8 +107,7 @@ def seed():
         db.add_all(deps)
         db.commit()
 
-        print("Dados iniciais criados!")
-        print("  Login: admin@admin.com / admin")
+        logger.info("Dados iniciais criados. Admin: %s", email)
     finally:
         db.close()
 
@@ -111,7 +127,7 @@ def seed_frequencies():
         ]
         db.add_all(defaults)
         db.commit()
-        print("Frequências de recorrência criadas!")
+        logger.info("Frequências de recorrência criadas!")
     finally:
         db.close()
 
