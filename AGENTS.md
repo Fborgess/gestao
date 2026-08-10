@@ -9,6 +9,14 @@ Toda alteração feita em código deve ser publicada na nuvem (commit + push). S
 3. **Push** para `origin/main` — o Render (autoDeploy) reimplanta sozinho.
 4. **Verificar** a nova versão no ar em `https://financas-pessoais-3udv.onrender.com` antes de encerrar.
 
+## Testes
+
+Rodar os testes antes de concluir uma alteração que mexa no backend ou em utils do frontend:
+
+- **Backend** (na pasta `financas-pessoais/backend`): `python -m pytest tests -v` (usa SQLite isolado em TMP; credenciais de dev no `.venv`). Dependências de teste ficam em `backend/requirements-dev.txt` (`pip install -r requirements-dev.txt`), fora do `requirements.txt` de produção.
+- **Frontend** (na pasta `financas-pessoais/frontend`): `npm run test` (vitest, testes unitários de utils/masks/permissões).
+- A suíte guarda regressões como a quebra da página de Transações (uso de estado antes da declaração) e regras do backend (transação paga não pode ser editada até cancelar o pagamento).
+
 ## Deploy / infra
 
 - **App**: Finanças Pessoais — `financas-pessoais/` (repo `Fborgess/financas-pessoais`).
