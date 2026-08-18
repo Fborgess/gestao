@@ -1,20 +1,3 @@
-services:
-  - type: web
-    name: gestao
-    env: python
-    plan: free
-    buildCommand: cd frontend && npm install && npm run build && cd ../backend && pip install -r requirements.txt
-    startCommand: cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
-    envVars:
-      - key: DATABASE_URL
-        fromDatabase:
-          name: gestao-db
-          property: connectionString
-      - key: SECRET_KEY
-        generateValue: true
-      - key: ACCESS_TOKEN_EXPIRE_MINUTES
-        value: 480
-
 databases:
   - name: gestao-db
     databaseName: gestao
